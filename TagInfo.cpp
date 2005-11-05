@@ -38,45 +38,52 @@ int CTagInfo::GetExtendedFileInfo(extendedFileInfoStruct *ExtendedFileInfo)
 {
 	::EnterCriticalSection(&CriticalSection);
 
-	tta_info *ttainfo = new tta_info;
+	tta_info ttainfo;
 
 	int RetCode;
-	bool 	FindTag = 
-		(open_tta_file((const char *)&ExtendedFileInfo->filename, ttainfo) == 0) 
-		? true : false;
+	bool FindTag = true;
+
+	ttainfo.HFILE = CreateFile(ExtendedFileInfo->filename, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (ttainfo.HFILE == INVALID_HANDLE_VALUE) {
+		ttainfo.STATE = OPEN_ERROR;
+		FindTag = false;
+	}
+	if (FindTag){
+		get_id3v1_tag(&ttainfo);
+		get_id3v2_tag(&ttainfo);
+	}
 
 	if(FindTag) {
 		strncpy(Cache.FileName, ExtendedFileInfo->filename, MAX_PATHLEN);
-		get_id3v1_tag(ttainfo);
 		
-//		if((ttainfo->id3v2.id3has)) {
-//			strncpy(Cache.Title, (const char *)ttainfo->id3v2.title, MAX_MUSICTEXT);
-//			strncpy(Cache.Artist, (const char *)ttainfo->id3v2.artist, MAX_MUSICTEXT);
-//			strncpy(Cache.Comment, (const char *)ttainfo->id3v2.comment, MAX_MUSICTEXT);
-//			strncpy(Cache.Album, (const char *)ttainfo->id3v2.album, MAX_MUSICTEXT);
-//			strncpy(Cache.Year, (const char *)ttainfo->id3v2.year, MAX_MUSICTEXT);
-//			strncpy(Cache.Genre, (const char *)ttainfo->id3v2.genre, MAX_MUSICTEXT);
-//			strncpy(Cache.Track, (const char *)ttainfo->id3v2.track, MAX_MUSICTEXT);
-//		} else if (ttainfo->id3v1.id3has) {
-		if (ttainfo->id3v1.id3has) {
-			strncpy(Cache.Title, (const char *)ttainfo->id3v1.title, MAX_MUSICTEXT);
-			strncpy(Cache.Artist, (const char *)ttainfo->id3v1.artist, MAX_MUSICTEXT);
-			strncpy(Cache.Comment, (const char *)ttainfo->id3v1.comment, MAX_MUSICTEXT);
-			strncpy(Cache.Album, (const char *)ttainfo->id3v1.album, MAX_MUSICTEXT);
-			strncpy(Cache.Year, (const char *)ttainfo->id3v1.year, MAX_MUSICTEXT);
-			strncpy(Cache.Genre, (const char *)ttainfo->id3v1.genre, MAX_MUSICTEXT);
-			strncpy(Cache.Track, (const char *)ttainfo->id3v1.track, MAX_MUSICTEXT);
+		if((ttainfo.id3v2.id3has)) {
+			strncpy(Cache.Title, (const char *)ttainfo.id3v2.title, MAX_MUSICTEXT);
+			strncpy(Cache.Artist, (const char *)ttainfo.id3v2.artist, MAX_MUSICTEXT);
+			strncpy(Cache.Comment, (const char *)ttainfo.id3v2.comment, MAX_MUSICTEXT);
+			strncpy(Cache.Album, (const char *)ttainfo.id3v2.album, MAX_MUSICTEXT);
+			strncpy(Cache.Year, (const char *)ttainfo.id3v2.year, MAX_MUSICTEXT);
+			strncpy(Cache.Genre, (const char *)ttainfo.id3v2.genre, MAX_MUSICTEXT);
+			strncpy(Cache.Track, (const char *)ttainfo.id3v2.track, MAX_MUSICTEXT);
+		} else if (ttainfo.id3v1.id3has) {
+			strncpy(Cache.Title, (const char *)ttainfo.id3v1.title, MAX_MUSICTEXT);
+			strncpy(Cache.Artist, (const char *)ttainfo.id3v1.artist, MAX_MUSICTEXT);
+			strncpy(Cache.Comment, (const char *)ttainfo.id3v1.comment, MAX_MUSICTEXT);
+			strncpy(Cache.Album, (const char *)ttainfo.id3v1.album, MAX_MUSICTEXT);
+			strncpy(Cache.Year, (const char *)ttainfo.id3v1.year, MAX_MUSICTEXT);
+			strncpy(Cache.Genre, (const char *)ttainfo.id3v1.genre, MAX_MUSICTEXT);
+			strncpy(Cache.Track, (const char *)ttainfo.id3v1.track, MAX_MUSICTEXT);
 		} else {
 			strncpy(Cache.Title, (const char *)ExtendedFileInfo->filename, MAX_PATHLEN);
 		}		
-		Cache.Length = ttainfo->LENGTH;
+		Cache.Length = ttainfo.LENGTH;
 	}
 
 	if (FindTag)
 	{
 		char	Buff[16];
 		char   *RetBuff;
-		const char*	MetaData = ExtendedFileInfo->metadata;
+		const char *MetaData = ExtendedFileInfo->metadata;
 
 		if(_stricmp(MetaData, "length") == 0) {
 			RetBuff = _ltoa((long)Cache.Length * 1000, Buff, 10);
@@ -112,7 +119,6 @@ int CTagInfo::GetExtendedFileInfo(extendedFileInfoStruct *ExtendedFileInfo)
 	} else {
 		RetCode = 0;
 	}
-	delete ttainfo;
 
 	::LeaveCriticalSection(&CriticalSection);
 

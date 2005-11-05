@@ -18,7 +18,7 @@
 
 int open_tta_file(const char *filename, tta_info *ttainfo);
 void get_id3v1_tag(tta_info *ttainfo);
-static void get_id3v2_tag (tta_info *ttainfo);
+void get_id3v2_tag (tta_info *ttainfo);
 static void save_id3v1_tag (tta_info *ttainfo);
 static void save_id3v2_tag (tta_info *ttainfo);
 static void del_id3v1_tag (tta_info *ttainfo);

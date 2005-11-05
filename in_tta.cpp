@@ -1414,7 +1414,7 @@ static void del_id3v1_tag (tta_info *ttainfo) {
 	ttainfo->id3v1.id3has = 0;
 }
 
-static void get_id3v2_tag (tta_info *ttainfo) {
+void get_id3v2_tag (tta_info *ttainfo) {
 	HANDLE hMap;
 	id3v2_tag id3v2;
 	id3v2_frame frame_header;

@@ -6,21 +6,14 @@
 --------------------\¬: in_tta - Win32 Debug--------------------
 </h3>
 <h3>ºÏİÄŞ ×²İ</h3>
-Creating command line "rc.exe /l 0x411 /fo"Debug/in_tta.res" /d "_DEBUG" /d "_AFXDLL" "C:\home\bun\work\sources\in_tta\in_tta.rc"" 
-ˆêÌ§²Ù "C:\DOCUME~1\bun\LOCALS~1\Temp\RSP313.tmp" ‚ğì¬‚µAŸ‚Ì“à—e‚ğ‹L˜^‚µ‚Ü‚·
+ˆêÌ§²Ù "C:\DOCUME~1\bun\LOCALS~1\Temp\RSP386.tmp" ‚ğì¬‚µAŸ‚Ì“à—e‚ğ‹L˜^‚µ‚Ü‚·
 [
 /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Fp"Debug/in_tta.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "C:\home\bun\work\sources\in_tta\in_tta.cpp"
 "C:\home\bun\work\sources\in_tta\TagInfo.cpp"
 ]
-Creating command line "cl.exe @C:\DOCUME~1\bun\LOCALS~1\Temp\RSP313.tmp" 
-ˆêÌ§²Ù "C:\DOCUME~1\bun\LOCALS~1\Temp\RSP314.tmp" ‚ğì¬‚µAŸ‚Ì“à—e‚ğ‹L˜^‚µ‚Ü‚·
-[
-/nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Fp"Debug/in_tta.pch" /Yc"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
-"C:\home\bun\work\sources\in_tta\StdAfx.cpp"
-]
-Creating command line "cl.exe @C:\DOCUME~1\bun\LOCALS~1\Temp\RSP314.tmp" 
-ˆêÌ§²Ù "C:\DOCUME~1\bun\LOCALS~1\Temp\RSP315.tmp" ‚ğì¬‚µAŸ‚Ì“à—e‚ğ‹L˜^‚µ‚Ü‚·
+Creating command line "cl.exe @C:\DOCUME~1\bun\LOCALS~1\Temp\RSP386.tmp" 
+ˆêÌ§²Ù "C:\DOCUME~1\bun\LOCALS~1\Temp\RSP387.tmp" ‚ğì¬‚µAŸ‚Ì“à—e‚ğ‹L˜^‚µ‚Ü‚·
 [
 /nologo /subsystem:windows /dll /incremental:yes /pdb:"Debug/in_tta.pdb" /debug /machine:I386 /def:".\in_tta.def" /out:"Debug/in_tta.dll" /implib:"Debug/in_tta.lib" /pdbtype:sept 
 .\Debug\in_tta.obj
@@ -28,11 +21,8 @@ Creating command line "cl.exe @C:\DOCUME~1\bun\LOCALS~1\Temp\RSP314.tmp"
 .\Debug\TagInfo.obj
 .\Debug\in_tta.res
 ]
-ºÏİÄŞ ×²İ "link.exe @C:\DOCUME~1\bun\LOCALS~1\Temp\RSP315.tmp" ‚Ìì¬’†
+ºÏİÄŞ ×²İ "link.exe @C:\DOCUME~1\bun\LOCALS~1\Temp\RSP387.tmp" ‚Ìì¬’†
 <h3>±³ÄÌß¯Ä ³¨İÄŞ³</h3>
-Ø¿°½‚ğºİÊß²Ù’†...
-ºİÊß²Ù’†...
-StdAfx.cpp
 ºİÊß²Ù’†...
 in_tta.cpp
 C:\home\bun\work\sources\in_tta\in_tta.cpp(1249) : warning C4244: '=' : 'long' ‚©‚ç 'unsigned char' ‚É•ÏŠ·‚µ‚Ü‚µ‚½BÃŞ°À‚ª¸‚í‚ê‚Ä‚¢‚é‚©‚à‚µ‚ê‚Ü‚¹‚ñB
@@ -43,7 +33,6 @@ C:\home\bun\work\sources\in_tta\in_tta.cpp(1726) : warning C4101: 'indx' : Û°¶Ù•
 TagInfo.cpp
 º°ÄŞ‚ğ¶¬’†...
 Øİ¸’†...
-   ×²ÌŞ×Ø Debug/in_tta.lib ‚ÆµÌŞ¼Şª¸Ä Debug/in_tta.exp ‚ğì¬’†
 
 
 
