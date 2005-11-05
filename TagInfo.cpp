@@ -106,7 +106,7 @@ int CTagInfo::GetExtendedFileInfo(extendedFileInfoStruct *ExtendedFileInfo)
 			RetCode = 0;
 		}
 
-		if(RetCode && ExtendedFileInfo->retlen) {
+		if(RetCode && (ExtendedFileInfo->retlen != 0)) {
 			strncpy(ExtendedFileInfo->ret, RetBuff, ExtendedFileInfo->retlen - 1);
 		}
 	} else {
