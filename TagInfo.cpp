@@ -58,23 +58,22 @@ int CTagInfo::GetExtendedFileInfo(extendedFileInfoStruct *ExtendedFileInfo)
 		strncpy(Cache.FileName, ExtendedFileInfo->filename, MAX_PATHLEN);
 		
 		if((ttainfo.id3v2.id3has)) {
-			strncpy(Cache.Title, (const char *)ttainfo.id3v2.title, MAX_MUSICTEXT);
-			strncpy(Cache.Artist, (const char *)ttainfo.id3v2.artist, MAX_MUSICTEXT);
-			strncpy(Cache.Comment, (const char *)ttainfo.id3v2.comment, MAX_MUSICTEXT);
-			strncpy(Cache.Album, (const char *)ttainfo.id3v2.album, MAX_MUSICTEXT);
-			strncpy(Cache.Year, (const char *)ttainfo.id3v2.year, MAX_MUSICTEXT);
-			strncpy(Cache.Genre, (const char *)ttainfo.id3v2.genre, MAX_MUSICTEXT);
-			strncpy(Cache.Track, (const char *)ttainfo.id3v2.track, MAX_MUSICTEXT);
+			strncpy(Cache.Title, (const char *)ttainfo.id3v2.title, MAX_MUSICTEXT - 1);
+			strncpy(Cache.Artist, (const char *)ttainfo.id3v2.artist, MAX_MUSICTEXT - 1);
+			strncpy(Cache.Comment, (const char *)ttainfo.id3v2.comment, MAX_MUSICTEXT -1);
+			strncpy(Cache.Album, (const char *)ttainfo.id3v2.album, MAX_MUSICTEXT - 1);
+			strncpy(Cache.Year, (const char *)ttainfo.id3v2.year, MAX_MUSICTEXT - 1);
+			strncpy(Cache.Genre, (const char *)ttainfo.id3v2.genre, MAX_MUSICTEXT - 1);
+			strncpy(Cache.Track, (const char *)ttainfo.id3v2.track, MAX_MUSICTEXT - 1);
 		} else if (ttainfo.id3v1.id3has) {
-			strncpy(Cache.Title, (const char *)ttainfo.id3v1.title, MAX_MUSICTEXT);
-			strncpy(Cache.Artist, (const char *)ttainfo.id3v1.artist, MAX_MUSICTEXT);
-			strncpy(Cache.Comment, (const char *)ttainfo.id3v1.comment, MAX_MUSICTEXT);
-			strncpy(Cache.Album, (const char *)ttainfo.id3v1.album, MAX_MUSICTEXT);
-			strncpy(Cache.Year, (const char *)ttainfo.id3v1.year, MAX_MUSICTEXT);
-			strncpy(Cache.Genre, (const char *)ttainfo.id3v1.genre, MAX_MUSICTEXT);
-			strncpy(Cache.Track, (const char *)ttainfo.id3v1.track, MAX_MUSICTEXT);
+			strncpy(Cache.Title, (const char *)ttainfo.id3v1.title, MAX_MUSICTEXT - 1);
+			strncpy(Cache.Artist, (const char *)ttainfo.id3v1.artist, MAX_MUSICTEXT - 1);
+			strncpy(Cache.Comment, (const char *)ttainfo.id3v1.comment, MAX_MUSICTEXT - 1);
+			strncpy(Cache.Year, (const char *)ttainfo.id3v1.year, MAX_MUSICTEXT - 1);
+			strncpy(Cache.Genre, (const char *)ttainfo.id3v1.genre, MAX_MUSICTEXT - 1);
+			strncpy(Cache.Track, (const char *)ttainfo.id3v1.track, MAX_MUSICTEXT -1 );
 		} else {
-			strncpy(Cache.Title, (const char *)ExtendedFileInfo->filename, MAX_PATHLEN);
+			strncpy(Cache.Title, (const char *)ExtendedFileInfo->filename, MAX_PATHLEN - 1);
 		}		
 		Cache.Length = ttainfo.LENGTH;
 	}
