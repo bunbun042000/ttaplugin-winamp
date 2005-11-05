@@ -85,7 +85,7 @@ int CTagInfo::GetExtendedFileInfo(extendedFileInfoStruct *ExtendedFileInfo)
 		const char *MetaData = ExtendedFileInfo->metadata;
 
 		if(_stricmp(MetaData, "length") == 0) {
-			RetBuff = _itoa(Cache.Length, Buff, 10);
+			RetBuff = _itoa(Cache.Length , Buff, 10);
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "title") == 0) {
 			RetBuff = Cache.Title;
