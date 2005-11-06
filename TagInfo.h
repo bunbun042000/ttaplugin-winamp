@@ -19,6 +19,7 @@
 #include "ttadec.h"
 #include "in_tta.h"
 
+extern char *genre[];
 
 struct TagInfo
 {
@@ -50,6 +51,7 @@ private:
 	DWORD				GetTagTime;
 
 	void FlushCache(void);
+	bool GetTagInfo();
 
 };
 

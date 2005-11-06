@@ -10,6 +10,8 @@
 
 #define MAX_LINE 4096
 #define ID3_VERSION 3
+#define GENRES	148
+
 
 /* ID3 common headers set */
 

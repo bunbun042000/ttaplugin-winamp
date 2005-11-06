@@ -1,6 +1,6 @@
 /* ID3v1 names with Winamp extensions */
-
-#define GENRES	148
+#ifndef ID3GENRE_H_INCLUDE
+#define ID3GENRE_H_INCLUDE
 
 char *genre[] = {
   /*   0 */  "Blues",
@@ -153,4 +153,4 @@ char *genre[] = {
   /* 147 */  "Synthpop"
 };
 
-
+#endif // ID3GENRE_H_INCLUDED

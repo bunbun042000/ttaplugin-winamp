@@ -25,7 +25,6 @@ static void del_id3v1_tag (tta_info *ttainfo);
 static void del_id3v2_tag (tta_info *ttainfo);
 
 #define MAX_PATHLEN		512
-//#define WAVE_FORMAT_PCM	1
 
 /////////////////////////////////////////////////////////////////////////////
 // CIn_ttaApp
