@@ -46,10 +46,26 @@ bool CTagInfo::GetTagInfo()
 	if (*Cache.FileName == NULL)
 		return false;
 
-	bool FindTag = true;
+	bool FindTag = false;
+
+	Cache.Title[0] = '\0';
+	Cache.Artist[0] = '\0';
+	Cache.Comment[0] = '\0';
+	Cache.Album[0] = '\0';
+	Cache.Year[0] = '\0';
+	Cache.Genre[0] = '\0';
+	Cache.Track[0] = '\0';
+	Cache.Composer[0] = '\0';
+	Cache.OrgArtist[0] = '\0';
+	Cache.Copyright[0] = '\0';
+	Cache.Encoder[0] = '\0';
 
 	if(open_tta_file((const char *)Cache.FileName, &ttainfo) == 0)
+	{
 		Cache.Length = (int) ttainfo.LENGTH;
+		FindTag = true;
+	}
+
 //	ttainfo.HFILE = CreateFile(Cache.FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
 //		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 //	if (ttainfo.HFILE == INVALID_HANDLE_VALUE) {
@@ -105,8 +121,8 @@ bool CTagInfo::GetTagInfo()
 			if (genrenum < GENRES)
 				lstrcpyn(Cache.Genre, (const char *)genre[genrenum], MAX_MUSICTEXT - 1);
 			lstrcpyn(Cache.Track, (const char *)_itoa((int)ttainfo.id3v1.track, buf, MAX_MUSICTEXT -1), MAX_MUSICTEXT -1 );
-		} else {
-			strncpy(Cache.Title, (const char *)Cache.FileName, MAX_PATHLEN - 1);
+//		} else {
+//			strncpy(Cache.Title, (const char *)Cache.FileName, MAX_PATHLEN - 1);
 		}		
 	}
 //	MessageBox(0,_itoa(Cache.Length, buf, 10),0,0);
