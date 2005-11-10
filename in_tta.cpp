@@ -71,7 +71,7 @@ CIn_ttaApp theApp;
 #include "wa_ipc.h"
 #include "TagInfo.h"
 
-#define  PLUGIN_VERSION "3.2"
+#define  PLUGIN_VERSION "3.2 (Media Library Extension)"
 #define  PROJECT_URL "<http://www.sourceforge.net>"
 
 static int paused = 0;
