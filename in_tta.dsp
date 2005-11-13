@@ -109,6 +109,10 @@ SOURCE=.\StdAfx.cpp
 
 SOURCE=.\TagInfo.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\TtaTag.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -152,6 +156,10 @@ SOURCE=.\TagInfo.h
 # Begin Source File
 
 SOURCE=.\ttadec.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TtaTag.h
 # End Source File
 # Begin Source File
 

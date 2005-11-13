@@ -44,7 +44,7 @@
 #define FIELD_TEXT_UTF_8		0x03
 
 typedef struct {
-	unsigned char  id[3];
+	char  id[3];
 	char  title[30];
 	char  artist[30];
 	char  album[30];
