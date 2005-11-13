@@ -2,7 +2,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-// $ LastChangedDate $
+// $ LastChangedDate: $
 #include "stdafx.h"
 #include "in_tta.h"
 #include "TtaTag.h"

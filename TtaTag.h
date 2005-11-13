@@ -1,7 +1,7 @@
 // TtaTag.h: CTtaTag クラスのインターフェイス
 //
 //////////////////////////////////////////////////////////////////////
-// $LastChangedDate $
+// $LastChangedDate$
 
 #if !defined(AFX_TTATAG_H__17D3307A_BCA3_4A1A_A6E1_7749937C8172__INCLUDED_)
 #define AFX_TTATAG_H__17D3307A_BCA3_4A1A_A6E1_7749937C8172__INCLUDED_
