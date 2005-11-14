@@ -90,6 +90,14 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\ID3v1.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ID3v2.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\in_tta.cpp
 # End Source File
 # Begin Source File
@@ -128,6 +136,14 @@ SOURCE=.\id3genre.h
 # Begin Source File
 
 SOURCE=.\id3tag.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ID3v1.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ID3v2.h
 # End Source File
 # Begin Source File
 

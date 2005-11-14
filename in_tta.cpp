@@ -70,7 +70,9 @@ CIn_ttaApp theApp;
 #include "ttadec.h"
 #include "wa_ipc.h"
 #include "TagInfo.h"
-#include "TtaTag.h"
+//#include "TtaTag.h"
+#include "ID3v1.h"
+
 
 #define  PLUGIN_VERSION "3.2 (Media Library Extension)"
 #define  PROJECT_URL "<http://www.sourceforge.net>"
@@ -88,7 +90,7 @@ static long vis_buffer[BUFFER_SIZE*MAX_NCH];	// vis buffer
 static tta_info info;			// currently playing file info
 static tta_info dlgInfo;
 CTagInfo m_Tag;
-CTtaTag  ttaTag;
+//CTtaTag  ttaTag;
 
 unsigned long fframes;			// number of frames in file
 unsigned long framelen;			// the frame length in samples
