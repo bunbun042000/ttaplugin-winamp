@@ -26,10 +26,11 @@ CID3v1::~CID3v1()
 
 }
 
-int CID3v1::ReadTag(const char *filename)
+bool CID3v1::ReadTag(const char *filename)
 {
 	// File open
 	unsigned long result;
+	has_tag = false;
 
 	::strncpy(FileName, filename, MAX_PATHLEN);
 
@@ -37,7 +38,7 @@ int CID3v1::ReadTag(const char *filename)
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (HFILE == INVALID_HANDLE_VALUE) {
 		STATE = OPEN_ERROR;
-		return -1;
+		return false;
 	}
 	SetFilePointer(HFILE, -(int) sizeof(v1tag), NULL, FILE_END);
 	if (ReadFile(HFILE, &tag, sizeof(v1tag), &result, NULL) &&
@@ -46,7 +47,7 @@ int CID3v1::ReadTag(const char *filename)
 	}
 	SetFilePointer(HFILE, 0, NULL, FILE_BEGIN);
 	CloseHandle(HFILE);
-	return (0);
+	return true;
 }
 
 bool CID3v1::SaveTag()

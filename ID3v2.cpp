@@ -183,7 +183,7 @@ done:
 	if (header.flags & ID3_FOOTERPRESENT_FLAG) tag_length += 10;
 	SetFilePointer(HFILE, tag_length, NULL, FILE_BEGIN);
 
-	has_tag = true;
+	has_tag = false; // for debug
 	CloseHandle(HFILE);
 	return 0;
 }

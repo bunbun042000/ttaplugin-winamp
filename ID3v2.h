@@ -55,6 +55,9 @@ public:
 	bool hasTag() {return has_tag;}
 	int  TagLength() {return tag_length;}
 
+	CString GetArtist() {return "";}
+	CString GetTitle() {return "";}
+	CString GetAlbum() {return "";}
 private:
 	HANDLE	HFILE;
 	char	FileName[MAX_PATHLEN];	// filename

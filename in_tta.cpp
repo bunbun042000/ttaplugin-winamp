@@ -70,8 +70,8 @@ CIn_ttaApp theApp;
 #include "ttadec.h"
 #include "wa_ipc.h"
 #include "TagInfo.h"
-//#include "TtaTag.h"
-#include "ID3v1.h"
+#include "TtaTag.h"
+//#include "ID3v1.h"
 
 
 #define  PLUGIN_VERSION "3.2 (Media Library Extension)"
@@ -87,10 +87,11 @@ static decoder tta[2*MAX_NCH];			// decoder state
 static long	cache[MAX_NCH];				// decoder cache
 static long vis_buffer[BUFFER_SIZE*MAX_NCH];	// vis buffer
 
-static tta_info info;			// currently playing file info
-static tta_info dlgInfo;
+//static tta_info info;			// currently playing file info
+//static tta_info dlgInfo;
 CTagInfo m_Tag;
-//CTtaTag  ttaTag;
+CTtaTag  ttaTag;
+CTtaTag  dlgTag;
 
 unsigned long fframes;			// number of frames in file
 unsigned long framelen;			// the frame length in samples
@@ -174,7 +175,7 @@ void unpause() { paused = 0; mod.outMod->Pause(0); }
 
 void init () {
 	heap = GetProcessHeap();
-	ZeroMemory(&info, sizeof(tta_info));
+	ttaTag.Flush();
 }
 
 static void tta_error (int error, char *filename) {
@@ -251,84 +252,9 @@ void config (HWND parent) {
 		parent, config_dialog);
 }
 
-int open_tta_file (const char *filename, tta_info *ttainfo) {
-	tta_hdr ttahdr;
-	unsigned long checksum;
-	unsigned long datasize;
-	unsigned long origsize;
-	DWORD result;
-
-	// clear the memory
-	ZeroMemory (ttainfo, sizeof(tta_info));
-
-	ttainfo->HFILE = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
-		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (ttainfo->HFILE == INVALID_HANDLE_VALUE) {
-		ttainfo->STATE = OPEN_ERROR;
+int open_tta_file (const char *filename) {
+	if (!ttaTag.ReadTag(filename))
 		return -1;
-	}
-
-	// get file size
-	ttainfo->FILESIZE = GetFileSize(ttainfo->HFILE, NULL);
-	lstrcpyn(ttainfo->filename, filename, MAX_PATH - 1);
-
-	// ID3V1 support
-	get_id3v1_tag(ttainfo);
-
-	// ID3V2 minimal support
-	get_id3v2_tag(ttainfo);
-
-	// read TTA header
-	if (!ReadFile(ttainfo->HFILE, &ttahdr, sizeof(tta_hdr), &result, NULL) ||
-		result != sizeof(tta_hdr)) {
-		CloseHandle(ttainfo->HFILE);
-		ttainfo->STATE = READ_ERROR;
-		return -1;
-	}
-
-	// check for TTA3 signature
-	if (ttahdr.TTAid != TTA1_SIGN) {
-		CloseHandle(ttainfo->HFILE);
-		ttainfo->STATE = FORMAT_ERROR;
-		return -1;
-	}
-
-	checksum = crc32((unsigned char *) &ttahdr,
-	sizeof(tta_hdr) - sizeof(long));
-	if (checksum != ttahdr.CRC32) {
-		CloseHandle(ttainfo->HFILE);
-		ttainfo->STATE = FILE_ERROR;
-		return -1;
-	}
-
-	// check for player supported formats
-	if ((ttahdr.AudioFormat != WAVE_FORMAT_PCM &&
-		ttahdr.AudioFormat != WAVE_FORMAT_IEEE_FLOAT &&
-		ttahdr.AudioFormat != WAVE_FORMAT_EXTENSIBLE) ||
-		ttahdr.BitsPerSample > MAX_BPS ||
-		ttahdr.NumChannels > MAX_NCH) {
-		CloseHandle(ttainfo->HFILE);
-		ttainfo->STATE = PLAYER_ERROR;
-		return -1;
-	}
-
-	// fill the File Info
-	ttainfo->NCH = ttahdr.NumChannels;
-	ttainfo->BPS = ttahdr.BitsPerSample;
-	ttainfo->BSIZE = (ttahdr.BitsPerSample + 7)/8;
-	ttainfo->FORMAT = ttahdr.AudioFormat;
-	ttainfo->SAMPLERATE = ttahdr.SampleRate;
-	ttainfo->DATALENGTH = ttahdr.DataLength;
-	ttainfo->FRAMELEN = (long) (FRAME_TIME * ttahdr.SampleRate);
-	ttainfo->LENGTH = ttahdr.DataLength / ttahdr.SampleRate * 1000;
-
-	datasize = ttainfo->FILESIZE - ttainfo->id3v2.size;
-	origsize = ttainfo->DATALENGTH * ttainfo->BSIZE * ttainfo->NCH;
-
-	ttainfo->COMPRESS = (float) datasize / origsize;
-	ttainfo->BITRATE = (long) ((ttainfo->COMPRESS *
-		ttainfo->SAMPLERATE * ttainfo->NCH * ttainfo->BPS) / 1000);
-
 	return 0;
 }
 
@@ -337,13 +263,13 @@ static int fill_id3_data (HWND dialog, int id3version) {
 
 	// set text limits
 	if (id3version == 1) {
-		BOOL state = (BOOL) dlgInfo.id3v1.id3has;
+		bool state = dlgTag.id3v1.has_tag();
 
 		SetDlgItemText(dialog, IDC_ID3_EDITOR, "ID3v1");
 		EnableWindow(GetDlgItem(dialog, IDC_ID3_EDITOR), state);
 		EnableWindow(GetDlgItem(dialog, IDC_ID3_DELETE), state);
 
-		if (!state && dlgInfo.id3v2.id3has) {
+		if (!state && dlgTag.id3v2.hasTag()) {
 			SendDlgItemMessage(dialog, IDC_ID3_TITLE,	EM_SETSEL, 30, -1);
 			SendDlgItemMessage(dialog, IDC_ID3_TITLE,	EM_REPLACESEL, FALSE, (LPARAM)"");
 			SendDlgItemMessage(dialog, IDC_ID3_TITLE,	EM_SETSEL, 0, 0);
@@ -365,7 +291,7 @@ static int fill_id3_data (HWND dialog, int id3version) {
 		SendDlgItemMessage(dialog, IDC_ID3_TRACK,	EM_SETLIMITTEXT,  3, 0);
 		SendDlgItemMessage(dialog, IDC_ID3_COMMENT,	EM_SETLIMITTEXT, 28, 0);
 	} else {
-		BOOL state = (BOOL) dlgInfo.id3v2.id3has;
+		bool state = dlgTag.id3v2.hasTag();
 
 		SetDlgItemText(dialog, IDC_ID3_EDITOR, "ID3v2");
 		EnableWindow(GetDlgItem(dialog, IDC_ID3_EDITOR), state);
@@ -380,42 +306,42 @@ static int fill_id3_data (HWND dialog, int id3version) {
 		SendDlgItemMessage(dialog, IDC_ID3_COMMENT,	EM_SETLIMITTEXT, MAX_LINE, 0);
 	}
 
-	if (id3version == 1 && dlgInfo.id3v1.id3has) {
-		SetDlgItemText(dialog, IDC_ID3_TITLE, dlgInfo.id3v1.title);
-		SetDlgItemText(dialog, IDC_ID3_ARTIST, dlgInfo.id3v1.artist);
-		SetDlgItemText(dialog, IDC_ID3_ALBUM, dlgInfo.id3v1.album);
-		SetDlgItemText(dialog, IDC_ID3_YEAR, dlgInfo.id3v1.year);
-		SetDlgItemText(dialog, IDC_ID3_COMMENT, dlgInfo.id3v1.comment);
-		if (dlgInfo.id3v1.track > 0)
-			SetDlgItemInt(dialog, IDC_ID3_TRACK, dlgInfo.id3v1.track, FALSE);
+	if (id3version == 1 && dlgTag.id3v1.hasTag()) {
+		SetDlgItemText(dialog, IDC_ID3_TITLE, dlgTag.id3v1.GetTitle());
+		SetDlgItemText(dialog, IDC_ID3_ARTIST, dlgTag.id3v1.GetArtist());
+		SetDlgItemText(dialog, IDC_ID3_ALBUM, dlgTag.id3v1.GetAlbum());
+		SetDlgItemText(dialog, IDC_ID3_YEAR, dlgTag.id3v1.GetYear());
+		SetDlgItemText(dialog, IDC_ID3_COMMENT, dlgTag.id3v1.GetComment());
+		if (dlgTag.id3v1.GetTrack() > 0)
+			SetDlgItemInt(dialog, IDC_ID3_TRACK, dlgTag.id3v1.GetTrack(), FALSE);
 		else  {
 			SendDlgItemMessage(dialog, IDC_ID3_TRACK,	EM_SETSEL, 0, -1);
 			SendDlgItemMessage(dialog, IDC_ID3_TRACK,	EM_REPLACESEL, FALSE, (LPARAM)"");
 		}
-		if (dlgInfo.id3v1.genre >= 0 && dlgInfo.id3v1.genre != 0xFF) {
-			if (dlgInfo.id3v1.genre > GENRES-1) dlgInfo.id3v1.genre = 12; // Other
+		if (dlgTag.id3v1.GetGenre() >= 0 && dlgTag.id3v1.GetGenre() != 0xFF) {
+			if (dlgTag.id3v1.GetGenre() > GENRES-1) dlgTag.id3v1.GetGenre() = 12; // Other
 			indx = SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_FINDSTRINGEXACT,
-				-1, (LPARAM) genre[dlgInfo.id3v1.genre]);
+				-1, (LPARAM) genre[dlgTag.id3v1.GetGenre()]);
 			SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_SETCURSEL, indx, 0);
 		} else SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_SETCURSEL, -1, 0);
 		return 0;
-	} else if (id3version == 2 && dlgInfo.id3v2.id3has) {
-		SetDlgItemText(dialog, IDC_ID3_TITLE, dlgInfo.id3v2.title);
-		SetDlgItemText(dialog, IDC_ID3_ARTIST, dlgInfo.id3v2.artist);
-		SetDlgItemText(dialog, IDC_ID3_ALBUM, dlgInfo.id3v2.album);
-		SetDlgItemText(dialog, IDC_ID3_YEAR, dlgInfo.id3v2.year);
-		SetDlgItemText(dialog, IDC_ID3_COMMENT, dlgInfo.id3v2.comment);
-		SetDlgItemText(dialog, IDC_ID3_TRACK, dlgInfo.id3v2.track);
-		if (*dlgInfo.id3v2.genre && dlgInfo.id3v2.genre[0] != 0x20) {
-			for (indx = 0, genre_indx = 12; indx < GENRES; indx++) {
-				if (lstrcmp(dlgInfo.id3v2.genre, genre[indx]) == 0) {
-					genre_indx = indx;
-					break;
-				}
-			}
-			indx = SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_FINDSTRINGEXACT,
-				-1, (LPARAM) genre[genre_indx]);
-			SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_SETCURSEL, indx, 0);
+	} else if (id3version == 2 && dlgTag.id3v2.hasTag()) {
+		SetDlgItemText(dialog, IDC_ID3_TITLE, dlgTag.id3v2.GetTitle());
+		SetDlgItemText(dialog, IDC_ID3_ARTIST, dlgTag.id3v2.GetArtist());
+		SetDlgItemText(dialog, IDC_ID3_ALBUM, dlgTag.id3v2.GetAlbum());
+//		SetDlgItemText(dialog, IDC_ID3_YEAR, dlgInfo.id3v2.year);
+//		SetDlgItemText(dialog, IDC_ID3_COMMENT, dlgInfo.id3v2.comment);
+//		SetDlgItemText(dialog, IDC_ID3_TRACK, dlgInfo.id3v2.track);
+//		if (*dlgInfo.id3v2.genre && dlgInfo.id3v2.genre[0] != 0x20) {
+//			for (indx = 0, genre_indx = 12; indx < GENRES; indx++) {
+//				if (lstrcmp(dlgInfo.id3v2.genre, genre[indx]) == 0) {
+//					genre_indx = indx;
+//					break;
+//				}
+//			}
+//			indx = SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_FINDSTRINGEXACT,
+//				-1, (LPARAM) genre[genre_indx]);
+//			SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_SETCURSEL, indx, 0);
 		}
 		return 0;
 	}
@@ -430,7 +356,7 @@ static void update_id3_data (HWND dialog, int id3version) {
 	if (id3version == 1) {
 
 		// title, artist, album, year, comment, track
-		GetDlgItemText(dialog, IDC_ID3_TITLE, dlgInfo.id3v1.title,
+		GetDlgItemText(dialog, IDC_ID3_TITLE, Info.id3v1.title,
 			sizeof(dlgInfo.id3v1.title));
 		GetDlgItemText(dialog, IDC_ID3_ARTIST, dlgInfo.id3v1.artist,
 			sizeof(dlgInfo.id3v1.artist));
@@ -550,17 +476,19 @@ int infodlg (char *filename, HWND parent) {
 
 	// check for required data presented
 	if (!filename || !*filename) {
-		if (!info.filename || !*info.filename) return 1;
-		fn = info.filename;
+		if (!ttaTag.GetFileName() || !*ttaTag.GetFileName()) return 1;
+		fn = ttaTag.GetFileName();
 	} else fn = filename;
 
-	if (open_tta_file (fn, &dlgInfo) < 0) {
-		tta_error (dlgInfo.STATE, fn);
-		return 1;
-	}
 
-	if (dlgInfo.HFILE != INVALID_HANDLE_VALUE)
-		CloseHandle(dlgInfo.HFILE);
+	// ToDo : include tta_error into CTtaTag
+//	if (!dlgTag.ReadTag(fn)) {
+//		tta_error (dlgTag.GetState(), fn);
+//		return 1;
+//	}
+
+//	if (dlgInfo.HFILE != INVALID_HANDLE_VALUE)
+//		CloseHandle(dlgInfo.HFILE);
 
 	p = fn + lstrlen(fn);
 	while (*p != '\\' && p >= fn) p--;
@@ -586,10 +514,10 @@ void stop () {
 		decoder_handle = NULL;
 	}
 
-	if (info.HFILE != INVALID_HANDLE_VALUE) {
-		CloseHandle(info.HFILE);
-		info.HFILE = INVALID_HANDLE_VALUE;
-	}
+//	if (info.HFILE != INVALID_HANDLE_VALUE) {
+//		CloseHandle(info.HFILE);
+//		info.HFILE = INVALID_HANDLE_VALUE;
+//	}
 
 	mod.outMod->Close();
 	mod.SAVSADeInit();
@@ -601,7 +529,7 @@ void stop () {
 }
 
 void show_bitrate (int bitrate) {
-	mod.SetInfo(bitrate, info.SAMPLERATE/1000, info.NCH, 1);
+	mod.SetInfo(bitrate, ttaTag.GetSampleRate()/1000, ttaTag.GetNumberofChannel(), 1);
 }
 
 int play (char *filename) {
@@ -612,14 +540,14 @@ int play (char *filename) {
 	if (!filename || !*filename) return -1;
 
 	// open TTA file
-	if (open_tta_file (filename, &info) < 0) {
-		if (info.STATE != FORMAT_ERROR)
-			tta_error (info.STATE, filename);
-		return 1;
+	if (!ttaTag.ReadTag(filename)) {
+	//	if (info.STATE != FORMAT_ERROR)
+	//		tta_error (info.STATE, filename);
+	return 1;
 	}
 
 	if (player_init () < 0) {
-		tta_error (info.STATE, filename);
+//		tta_error (info.STATE, filename);
 		return 1;
 	}
 
@@ -628,19 +556,18 @@ int play (char *filename) {
 	seek_needed = -1;
 	mod.is_seekable = st_state;
 
-	maxlatency = mod.outMod->Open(info.SAMPLERATE, info.NCH, out_bps, -1, -1);
+	maxlatency = mod.outMod->Open(ttaTag.GetSampleRate(), ttaTag.GetNumberofChannel(), out_bps, -1, -1);
 	if (maxlatency < 0) {
-		CloseHandle(info.HFILE);
-		info.HFILE = INVALID_HANDLE_VALUE;
+		ttaTag.CloseFile();
 		return 1;
 	}
 
 	// setup information display
-	show_bitrate(info.BITRATE);
+	show_bitrate(ttaTag.GetBitrate());
 
 	// initialize vis stuff
-	mod.SAVSAInit(maxlatency, info.SAMPLERATE);
-	mod.VSASetInfo(info.NCH, info.SAMPLERATE);
+	mod.SAVSAInit(maxlatency, ttaTag.GetSampleRate());
+	mod.VSASetInfo(ttaTag.GetNumberofChannel(), ttaTag.GetSampleRate());
 
 	// set the output plug-ins default volume
 	mod.outMod->SetVolume(-666);
@@ -653,56 +580,22 @@ int play (char *filename) {
 	return 0;
 }
 
-int  getlength () { return info.LENGTH; }
+int  getlength () { return ttaTag.GetLengthbymsec(); }
 int  getoutputtime () { return decode_pos_ms + (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime()); }
 void setoutputtime (int time_in_ms) { seek_needed = time_in_ms; }
 void setvolume (int volume) { mod.outMod->SetVolume(volume); }
 void setpan (int pan) { mod.outMod->SetPan(pan); }
 void eq_set (int on, char data[10], int preamp) {}
 
-static int get_info_data (tta_info *fInfo, char *title) {
-	if (fInfo->id3v2.id3has &&
-		(*fInfo->id3v2.artist || *fInfo->id3v2.title)) {
-		if (*fInfo->id3v2.artist && *fInfo->id3v2.title)
-			wsprintf(title, "%s - %s", fInfo->id3v2.artist, fInfo->id3v2.title);
-		else if (*fInfo->id3v2.artist && *fInfo->id3v2.album)
-			wsprintf(title, "%s - %s", fInfo->id3v2.artist, fInfo->id3v2.album);
-		else if (*fInfo->id3v2.artist) lstrcpy(title, fInfo->id3v2.artist);
-		else if (*fInfo->id3v2.title) lstrcpy(title, fInfo->id3v2.title);
-	} else if (fInfo->id3v1.id3has &&
-		(*fInfo->id3v1.artist || *fInfo->id3v1.title)) {
-		if (*fInfo->id3v1.artist && *fInfo->id3v1.title)
-			wsprintf(title, "%s - %s", fInfo->id3v1.artist, fInfo->id3v1.title);
-		else if (*fInfo->id3v1.artist && *fInfo->id3v1.album)
-			wsprintf(title, "%s - %s", fInfo->id3v1.artist, fInfo->id3v1.album);
-		else if (*fInfo->id3v1.artist) lstrcpy(title, fInfo->id3v1.artist);
-		else if (*fInfo->id3v1.title) lstrcpy(title, fInfo->id3v1.title);
-	} else {
-		char *p = fInfo->filename + lstrlen(fInfo->filename);
-		while (*p != '\\' && p >= fInfo->filename) p--;
-		lstrcpy(title, ++p);
-		p = title + lstrlen(title);
-		while (*p != '.' && p >= title) p--;
-		if (*p == '.') *p = '\0';
-	}
-	return (fInfo->LENGTH);
-}
 
 void getfileinfo (char *filename, char *title, int *length_in_ms) {
 	if (!filename || !*filename) { // currently playing file
-		*length_in_ms = get_info_data(&info, title);
+		*length_in_ms = ttaTag.GetLengthbymsec();
+		ttaTag.SetPlayTitle(title);
 	} else {
-		tta_info fInfo;
-
-		if (open_tta_file (filename, &fInfo) < 0) {
-			if (fInfo.STATE != FORMAT_ERROR)
-				tta_error (fInfo.STATE, filename);
-			return;
-		}
-
-		if (fInfo.HFILE != INVALID_HANDLE_VALUE)
-			CloseHandle(fInfo.HFILE);
-		*length_in_ms = get_info_data(&fInfo, title);
+		ttaTag.ReadTag(filename);
+		*length_in_ms = ttaTag.GetLengthbymsec();
+		ttaTag.SetPlayTitle(title);
 	}
 }
 
@@ -720,8 +613,8 @@ static void do_vis(unsigned char *data, int count, int bps, int position) {
 		data = (unsigned char *)vis_buffer;
 	}
 
-	mod.SAAddPCMData(data, info.NCH, 16, position);
-	mod.VSAAddPCMData(data, info.NCH, 16, position);
+	mod.SAAddPCMData(data, ttaTag.GetNumberofChannel(), 16, position);
+	mod.VSAAddPCMData(data, ttaTag.GetNumberofChannel(), 16, position);
 }
 
 static DWORD WINAPI DecoderThread (void *p) {
@@ -730,8 +623,8 @@ static DWORD WINAPI DecoderThread (void *p) {
 
 	while (!killDecoderThread) {
 		if (seek_needed != -1) {
-			if (seek_needed >= info.LENGTH) {
-				decode_pos_ms = info.LENGTH;
+			if (seek_needed >= ttaTag.GetLengthbymsec()) {
+				decode_pos_ms = ttaTag.GetLengthbymsec();
 				mod.outMod->Flush(decode_pos_ms);
 				done = 1;
 			} else {
@@ -750,15 +643,15 @@ static DWORD WINAPI DecoderThread (void *p) {
 				return 0;
 			} else Sleep(10);
 		} else if (mod.outMod->CanWrite() >= 
-			((576 * info.NCH * info.BSIZE) << (mod.dsp_isactive()? 1:0))) {
+			((576 * ttaTag.GetNumberofChannel() * ttaTag.GetByteSize()) << (mod.dsp_isactive()? 1:0))) {
 			if (!(len = get_samples(pcm_buffer, 576))) done = 1;
 			else {
-				decode_pos_ms += (len * 1000) / info.SAMPLERATE;
+				decode_pos_ms += (len * 1000) / ttaTag.GetSampleRate();
 				do_vis(pcm_buffer, len, out_bps, decode_pos_ms);
 				if (mod.dsp_isactive())
 					len = mod.dsp_dosamples((short *)pcm_buffer, len, out_bps,
-						info.NCH, info.SAMPLERATE);
-				mod.outMod->Write((char *)pcm_buffer, len * info.NCH * (out_bps >> 3));
+						ttaTag.GetNumberofChannel(), ttaTag.GetSampleRate());
+				mod.outMod->Write((char *)pcm_buffer, len * ttaTag.GetNumberofChannel() * (out_bps >> 3));
 			}
 		} else Sleep(20);
 	}
@@ -852,9 +745,9 @@ __inline void get_binary(unsigned long *value, unsigned long bits) {
     while (bit_count < bits) {
 		if (bitpos == (isobuffer + ISO_BUFFER_SIZE)) {
 			DWORD result;
-			if (!ReadFile(info.HFILE, isobuffer, ISO_BUFFER_SIZE,
+			if (!ReadFile(ttaTag.GetHFILE(), isobuffer, ISO_BUFFER_SIZE,
 				&result, NULL) || !result) {
-				info.STATE = READ_ERROR;
+//				info.STATE = READ_ERROR;
 				return;
 			}
 			bitpos = isobuffer;
@@ -878,9 +771,9 @@ __inline void get_unary(unsigned long *value) {
     while (!(bit_cache ^ bit_mask[bit_count])) {
 		if (bitpos == (isobuffer + ISO_BUFFER_SIZE)) {
 			DWORD result;
-			if (!ReadFile(info.HFILE, isobuffer, ISO_BUFFER_SIZE,
+			if (!ReadFile(ttaTag.GetHFILE(), isobuffer, ISO_BUFFER_SIZE,
 				&result, NULL) || !result) {
-				info.STATE = READ_ERROR;
+//				info.STATE = READ_ERROR;
 				return;
 			}
 			bitpos = isobuffer;
@@ -911,9 +804,9 @@ __inline int done_buffer_read() {
     rbytes = (isobuffer + ISO_BUFFER_SIZE) - bitpos;
     if (rbytes < sizeof(long)) {
 		*(long *)isobuffer = *(long *)bitpos;
-		if (!ReadFile(info.HFILE, isobuffer + rbytes,
+		if (!ReadFile(ttaTag.GetHFILE(), isobuffer + rbytes,
 			ISO_BUFFER_SIZE - rbytes, &result, NULL) || !result) {
-			info.STATE = READ_ERROR;
+//			info.STATE = READ_ERROR;
 			return 0;
 		}
 		bitpos = isobuffer;
@@ -1051,12 +944,12 @@ int set_position (unsigned long pos) {
 
 	if (pos >= fframes) return 0;
 	if (!st_state) {
-		info.STATE = FILE_ERROR;
+//		info.STATE = FILE_ERROR;
 		return -1;
 	}
 
-	seek_pos = info.id3v2.size + seek_table[data_pos = pos];
-	SetFilePointer(info.HFILE, seek_pos, NULL, FILE_BEGIN);
+	seek_pos = ttaTag.id3v2.TagLength() + seek_table[data_pos = pos];
+	SetFilePointer(ttaTag.GetHFILE(), seek_pos, NULL, FILE_BEGIN);
 
 	data_cur = 0;
 	framelen = 0;
@@ -1077,20 +970,20 @@ int player_init () {
 	data_pos = 0;
 	data_cur = 0;
 
-	lastlen = info.DATALENGTH % info.FRAMELEN;
-	fframes = info.DATALENGTH / info.FRAMELEN + (lastlen ? 1:0);
+	lastlen = ttaTag.GetDataLength() % ttaTag.GetLengthbyFrame();
+	fframes = ttaTag.GetDataLength() / ttaTag.GetLengthbyFrame() + (lastlen ? 1:0);
 
 	st_size = (fframes + 1) * sizeof(long);
 	seek_table = (unsigned long *)HeapAlloc(heap, HEAP_ZERO_MEMORY, st_size);
 	if (!seek_table) {
-		info.STATE = MEMORY_ERROR;
+//		info.STATE = MEMORY_ERROR;
 		return -1;
 	}
 
 	// read seek table
-	if (!ReadFile(info.HFILE, seek_table, st_size, &result, NULL) ||
+	if (!ReadFile(ttaTag.GetHFILE(), seek_table, st_size, &result, NULL) ||
 		result != st_size) {
-		info.STATE = READ_ERROR;
+//		info.STATE = READ_ERROR;
 		return -1;
 	}
 
@@ -1104,19 +997,19 @@ int player_init () {
 	// init bit reader
 	init_buffer_read();
 
-	data_float = (info.FORMAT == WAVE_FORMAT_IEEE_FLOAT);
-	out_bps = (info.BPS > OUT_BPS)? OUT_BPS:info.BPS;
+	data_float = (ttaTag.GetFormat() == WAVE_FORMAT_IEEE_FLOAT);
+	out_bps = (ttaTag.GetBitsperSample() > OUT_BPS)? OUT_BPS : ttaTag.GetBitsperSample();
 
 	if (data_float)
 		maxvalue = 1UL << (OUT_BPS - 1);
-	else maxvalue = (1UL << info.BPS) - 1;
+	else maxvalue = (1UL << ttaTag.GetBitsperSample()) - 1;
 
 	return 0;
 }
 
 int get_samples (BYTE *buffer, long count) {
 	unsigned long k, depth, unary, binary;
-	long buffer_size = count * info.BSIZE * info.NCH;
+	long buffer_size = count * ttaTag.GetByteSize() * ttaTag.GetNumberofChannel();
 	BYTE *p = buffer;
 	decoder *dec = tta;
 	long *prev = (long *)cache;
@@ -1138,9 +1031,9 @@ int get_samples (BYTE *buffer, long count) {
 
 			if (data_pos == fframes - 1 && lastlen)
 				framelen = lastlen;
-			else framelen = info.FRAMELEN;
+			else framelen = ttaTag.GetLengthbyFrame();
 
-			decoder_init(tta, info.NCH, info.BSIZE);
+			decoder_init(tta, ttaTag.GetNumberofChannel(), ttaTag.GetByteSize());
 			data_pos++; data_cur = 0;
 		}
 
@@ -1181,7 +1074,7 @@ int get_samples (BYTE *buffer, long count) {
 		hybrid_filter(fst, &value);
 
 		// decompress stage 2: fixed order 1 prediction
-		switch (info.BSIZE) {
+		switch (ttaTag.GetByteSize()) {
 		case 1: value += PREDICTOR1(*last, 4); break;	// bps 8
 		case 2: value += PREDICTOR1(*last, 5); break;	// bps 16
 		case 3: value += PREDICTOR1(*last, 5); break;	// bps 24
@@ -1191,7 +1084,7 @@ int get_samples (BYTE *buffer, long count) {
 		// check for errors
 		if (!data_float && abs(value) > maxvalue) {
 			unsigned long tail =
-				buffer_size / (info.BSIZE * info.NCH) - res;
+				buffer_size / (ttaTag.GetByteSize() * ttaTag.GetNumberofChannel()) - res;
 			ZeroMemory(buffer, buffer_size);
 			data_cur += tail; res += tail;
 			break;
@@ -1221,42 +1114,42 @@ int get_samples (BYTE *buffer, long count) {
 			// check for errors
 			if (fvalue > 1.0) {
 				unsigned long tail =
-					buffer_size / (info.BSIZE * info.NCH) - res;
+					buffer_size / (ttaTag.GetByteSize() * ttaTag.GetNumberofChannel()) - res;
 				ZeroMemory(buffer, buffer_size);
 				data_cur += tail; res += tail;
 				break;
 			}
 
 			value = (long)(maxvalue * fvalue);
-			if (info.BSIZE == 4) SHR8(value);
+			if (ttaTag.GetByteSize() == 4) SHR8(value);
 
 			*p++ = (BYTE) value;
-			if (info.BSIZE > 1) *p++ = (BYTE)(value >> 8);
-			if (info.BSIZE > 2) *p++ = (BYTE)(value >> 16);
+			if (ttaTag.GetByteSize() > 1) *p++ = (BYTE)(value >> 8);
+			if (ttaTag.GetByteSize() > 2) *p++ = (BYTE)(value >> 16);
 
 			flag = 0;
 		} else flag = 1;
 
-		if (dec < tta + (info.NCH << data_float) - 1) {
+		if (dec < tta + (ttaTag.GetNumberofChannel() << data_float) - 1) {
 			if (!data_float) *prev++ = value;
 			else *prev = value;
 			dec++;
 		} else {
 			if (!data_float) {
 				*prev = value;
-				if (info.NCH > 1) {
+				if (ttaTag.GetNumberofChannel() > 1) {
 					long *r = prev - 1;
 					for (*prev += *r/2; r >= cache; r--)
 						*r = *(r + 1) - *r;
 					for (r = cache; r < prev; r++) {
-						*p++ = (info.BSIZE == 1)? (*r + 0x80): *r;
-						if (info.BSIZE > 1) *p++ = (BYTE)(*r >> 8);
-						if (info.BSIZE > 2) *p++ = (BYTE)(*r >> 16);
+						*p++ = (ttaTag.GetByteSize() == 1)? (*r + 0x80): *r;
+						if (ttaTag.GetByteSize() > 1) *p++ = (BYTE)(*r >> 8);
+						if (ttaTag.GetByteSize() > 2) *p++ = (BYTE)(*r >> 16);
 					}
 				}
-				*p++ = (info.BSIZE == 1)? (*prev + 0x80): *prev;
-				if (info.BSIZE > 1) *p++ = (BYTE)(*prev >> 8);
-				if (info.BSIZE > 2) *p++ = (BYTE)(*prev >> 16);
+				*p++ = (ttaTag.GetByteSize() == 1)? (*prev + 0x80): *prev;
+				if (ttaTag.GetByteSize() > 1) *p++ = (BYTE)(*prev >> 8);
+				if (ttaTag.GetByteSize() > 2) *p++ = (BYTE)(*prev >> 16);
 				prev = cache;
 			}
 			data_cur++; res++;
@@ -1549,237 +1442,237 @@ static void add_comm_frame (char *id, unsigned char **dest, char *src) {
 	}
 }
 
-static void save_id3v2_tag (tta_info *ttainfo) {
-	HANDLE hFile, hMap;
-	id3v2_tag id3v2;
-	unsigned char *buffer, *ptr;
-	unsigned char *tag_data, *tptr;
-	DWORD new_size, id3v2_size;
-	int indx, offset;
-	DWORD result;
-	BOOL copy_data = TRUE;
-	BOOL safe_mode = FALSE;
+//static void save_id3v2_tag (tta_info *ttainfo) {
+//	HANDLE hFile, hMap;
+//	id3v2_tag id3v2;
+//	unsigned char *buffer, *ptr;
+//	unsigned char *tag_data, *tptr;
+//	DWORD new_size, id3v2_size;
+//	int indx, offset;
+//	DWORD result;
+//	BOOL copy_data = TRUE;
+//	BOOL safe_mode = FALSE;
+//
+//	if (!memcmp(ttainfo->filename, info.filename,
+//		lstrlen(ttainfo->filename))) safe_mode = TRUE;
+//
+//	hFile = CreateFile(ttainfo->filename, GENERIC_READ|GENERIC_WRITE,
+//		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
+//	if (hFile == INVALID_HANDLE_VALUE) {
+//		tta_error(OPEN_ERROR, ttainfo->filename);
+//		return;
+//	}
+//
+//	if (!ReadFile(hFile, &id3v2, sizeof(id3v2_tag), &result, NULL) ||
+//		result != (DWORD) sizeof(id3v2_tag)) {
+//		tta_error(READ_ERROR, ttainfo->filename);
+//		CloseHandle(hFile);
+//		return;
+//	}
+//
+//	if (!memcmp(id3v2.id, "ID3", 3)) {
+//		id3v2_size = unpack_sint28(id3v2.size) + 10;
+//		if (id3v2.flags & ID3_FOOTERPRESENT_FLAG) id3v2_size += 10;
+//	} else {
+//		ZeroMemory(&id3v2, sizeof(id3v2_tag));
+//		CopyMemory(id3v2.id, "ID3", 3);
+//		id3v2_size = 0;
+//	}
+//
+//	tag_data = (unsigned char *)HeapAlloc(heap, HEAP_ZERO_MEMORY,
+//		id3v2_size + sizeof(id3v2_data));
+//	tptr = tag_data + 10;
+//
+//	if (!(id3v2.flags & ID3_UNSYNCHRONISATION_FLAG) &&
+//		!(id3v2.flags & ID3_EXPERIMENTALTAG_FLAG) &&
+//		(id3v2.version >= ID3_VERSION) && id3v2_size) {
+//
+//		hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, id3v2_size, NULL);
+//		if (!hMap) goto done;
+//
+//		buffer = (unsigned char *)MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, id3v2_size);
+//		if (!buffer) {
+//			CloseHandle(hMap);
+//			goto done;
+//		}
+//
+//		ptr = buffer + 10;
+//
+//		// copy extended header if present
+//		if ((id3v2.flags & ID3_EXTENDEDHEADER_FLAG)) {
+//			int ext_size = (int) unpack_sint32(ptr);
+//			CopyMemory(tptr, ptr, ext_size);
+//			ptr += ext_size; tptr += ext_size;
+//		}
+//	} else copy_data = FALSE;
+//
+//	// add updated id3v2 frames
+//	add_text_frame("TIT2", &tptr, ttainfo->id3v2.title);
+//	add_text_frame("TPE1", &tptr, ttainfo->id3v2.artist);
+//	add_text_frame("TALB", &tptr, ttainfo->id3v2.album);
+//	add_text_frame("TRCK", &tptr, ttainfo->id3v2.track);
+//	add_text_frame("TYER", &tptr, ttainfo->id3v2.year);
+//	add_text_frame("TCON", &tptr, ttainfo->id3v2.genre);
+//	add_comm_frame("COMM", &tptr, ttainfo->id3v2.comment);
+//
+//	if (!copy_data) goto save;
+//
+//	// copy unchanged frames
+//	while ((unsigned long)abs(ptr - buffer) < id3v2_size) {
+//		int data_size, frame_size;
+//		int frame_id, comments = 0;
+//		id3v2_frame frame_header;
+//
+//		// get frame header
+//		CopyMemory(&frame_header, ptr, sizeof(id3v2_frame));
+//		data_size = unpack_sint32(frame_header.size);
+//		frame_size = sizeof(id3v2_frame) + data_size;
+//
+//		if (!*frame_header.id) break;
+//
+//		if ((frame_id = get_frame_id(frame_header.id)))
+//			if (frame_id != COMM || !comments++) {
+//				ptr += frame_size; continue;
+//			}
+//
+//		// copy frame
+//		CopyMemory(tptr, ptr, frame_size);
+//		tptr += frame_size; ptr += frame_size;
+//	}
+//
+//	// copy footer if present
+//	if (id3v2.flags & ID3_FOOTERPRESENT_FLAG) {
+//		CopyMemory(tptr, ptr, 10);
+//		tptr += 10; ptr += 10;
+//	}
+//
+//save:
+//	if (copy_data) {
+//		UnmapViewOfFile((LPCVOID *) buffer);
+//		CloseHandle(hMap);
+//	}
+//
+//	new_size = tptr - tag_data;
+//
+//	// fill ID3v2 header
+//	id3v2.flags &= ~ID3_UNSYNCHRONISATION_FLAG;
+//	id3v2.flags &= ~ID3_EXPERIMENTALTAG_FLAG;
+//	id3v2.version = ID3_VERSION;
+//
+//	// write data
+//	if (new_size <= id3v2_size) {
+//		pack_sint28(id3v2_size - 10, id3v2.size);
+//		CopyMemory(tag_data, &id3v2, sizeof(id3v2_tag));
+//
+//		SetFilePointer(hFile, 0, NULL, FILE_BEGIN);
+//		if (!WriteFile(hFile, tag_data, id3v2_size, &result, 0) ||
+//			result != id3v2_size) {
+//			CloseHandle(hFile);
+//			tta_error(WRITE_ERROR, ttainfo->filename);
+//			return;
+//		}
+//		goto done;
+//	}
+//
+//	pack_sint28(new_size - 10, id3v2.size);
+//	CopyMemory(tag_data, &id3v2, sizeof(id3v2_tag));
+//	offset = (int) new_size - id3v2_size;
+//
+//	hMap = CreateFileMapping(hFile, NULL, PAGE_READWRITE, 0,
+//		ttainfo->FILESIZE + offset, NULL);
+//	if (!hMap) goto done;
+//
+//	buffer = (unsigned char *)MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0,
+//		ttainfo->FILESIZE + offset);
+//	if (!buffer) {
+//		CloseHandle(hMap);
+//		goto done;
+//	}
+//
+//	if (safe_mode) pause();
+//
+//	MoveMemory(buffer + ((int)id3v2_size + offset),
+//		buffer + id3v2_size, ttainfo->FILESIZE);
+//	CopyMemory(buffer, tag_data, new_size);
+//
+//	if (safe_mode) FlushViewOfFile((LPCVOID *) buffer, 0);
+//	UnmapViewOfFile((LPCVOID *) buffer);
+//	CloseHandle(hMap);
+//
+//	ttainfo->FILESIZE += offset;
+//	ttainfo->id3v2.size = new_size;
+//
+//	if (safe_mode) {
+//		info.FILESIZE = ttainfo->FILESIZE;
+//		info.id3v2.size = ttainfo->id3v2.size;
+//		seek_needed = decode_pos_ms;
+//		unpause();
+//	}
+//
+//done:
+//	CloseHandle(hFile);
+//	HeapFree(heap, 0, tag_data);
+//
+//	ttainfo->id3v2.id3has = 1;
+//}
 
-	if (!memcmp(ttainfo->filename, info.filename,
-		lstrlen(ttainfo->filename))) safe_mode = TRUE;
-
-	hFile = CreateFile(ttainfo->filename, GENERIC_READ|GENERIC_WRITE,
-		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
-	if (hFile == INVALID_HANDLE_VALUE) {
-		tta_error(OPEN_ERROR, ttainfo->filename);
-		return;
-	}
-
-	if (!ReadFile(hFile, &id3v2, sizeof(id3v2_tag), &result, NULL) ||
-		result != (DWORD) sizeof(id3v2_tag)) {
-		tta_error(READ_ERROR, ttainfo->filename);
-		CloseHandle(hFile);
-		return;
-	}
-
-	if (!memcmp(id3v2.id, "ID3", 3)) {
-		id3v2_size = unpack_sint28(id3v2.size) + 10;
-		if (id3v2.flags & ID3_FOOTERPRESENT_FLAG) id3v2_size += 10;
-	} else {
-		ZeroMemory(&id3v2, sizeof(id3v2_tag));
-		CopyMemory(id3v2.id, "ID3", 3);
-		id3v2_size = 0;
-	}
-
-	tag_data = (unsigned char *)HeapAlloc(heap, HEAP_ZERO_MEMORY,
-		id3v2_size + sizeof(id3v2_data));
-	tptr = tag_data + 10;
-
-	if (!(id3v2.flags & ID3_UNSYNCHRONISATION_FLAG) &&
-		!(id3v2.flags & ID3_EXPERIMENTALTAG_FLAG) &&
-		(id3v2.version >= ID3_VERSION) && id3v2_size) {
-
-		hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, id3v2_size, NULL);
-		if (!hMap) goto done;
-
-		buffer = (unsigned char *)MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, id3v2_size);
-		if (!buffer) {
-			CloseHandle(hMap);
-			goto done;
-		}
-
-		ptr = buffer + 10;
-
-		// copy extended header if present
-		if ((id3v2.flags & ID3_EXTENDEDHEADER_FLAG)) {
-			int ext_size = (int) unpack_sint32(ptr);
-			CopyMemory(tptr, ptr, ext_size);
-			ptr += ext_size; tptr += ext_size;
-		}
-	} else copy_data = FALSE;
-
-	// add updated id3v2 frames
-	add_text_frame("TIT2", &tptr, ttainfo->id3v2.title);
-	add_text_frame("TPE1", &tptr, ttainfo->id3v2.artist);
-	add_text_frame("TALB", &tptr, ttainfo->id3v2.album);
-	add_text_frame("TRCK", &tptr, ttainfo->id3v2.track);
-	add_text_frame("TYER", &tptr, ttainfo->id3v2.year);
-	add_text_frame("TCON", &tptr, ttainfo->id3v2.genre);
-	add_comm_frame("COMM", &tptr, ttainfo->id3v2.comment);
-
-	if (!copy_data) goto save;
-
-	// copy unchanged frames
-	while ((unsigned long)abs(ptr - buffer) < id3v2_size) {
-		int data_size, frame_size;
-		int frame_id, comments = 0;
-		id3v2_frame frame_header;
-
-		// get frame header
-		CopyMemory(&frame_header, ptr, sizeof(id3v2_frame));
-		data_size = unpack_sint32(frame_header.size);
-		frame_size = sizeof(id3v2_frame) + data_size;
-
-		if (!*frame_header.id) break;
-
-		if ((frame_id = get_frame_id(frame_header.id)))
-			if (frame_id != COMM || !comments++) {
-				ptr += frame_size; continue;
-			}
-
-		// copy frame
-		CopyMemory(tptr, ptr, frame_size);
-		tptr += frame_size; ptr += frame_size;
-	}
-
-	// copy footer if present
-	if (id3v2.flags & ID3_FOOTERPRESENT_FLAG) {
-		CopyMemory(tptr, ptr, 10);
-		tptr += 10; ptr += 10;
-	}
-
-save:
-	if (copy_data) {
-		UnmapViewOfFile((LPCVOID *) buffer);
-		CloseHandle(hMap);
-	}
-
-	new_size = tptr - tag_data;
-
-	// fill ID3v2 header
-	id3v2.flags &= ~ID3_UNSYNCHRONISATION_FLAG;
-	id3v2.flags &= ~ID3_EXPERIMENTALTAG_FLAG;
-	id3v2.version = ID3_VERSION;
-
-	// write data
-	if (new_size <= id3v2_size) {
-		pack_sint28(id3v2_size - 10, id3v2.size);
-		CopyMemory(tag_data, &id3v2, sizeof(id3v2_tag));
-
-		SetFilePointer(hFile, 0, NULL, FILE_BEGIN);
-		if (!WriteFile(hFile, tag_data, id3v2_size, &result, 0) ||
-			result != id3v2_size) {
-			CloseHandle(hFile);
-			tta_error(WRITE_ERROR, ttainfo->filename);
-			return;
-		}
-		goto done;
-	}
-
-	pack_sint28(new_size - 10, id3v2.size);
-	CopyMemory(tag_data, &id3v2, sizeof(id3v2_tag));
-	offset = (int) new_size - id3v2_size;
-
-	hMap = CreateFileMapping(hFile, NULL, PAGE_READWRITE, 0,
-		ttainfo->FILESIZE + offset, NULL);
-	if (!hMap) goto done;
-
-	buffer = (unsigned char *)MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0,
-		ttainfo->FILESIZE + offset);
-	if (!buffer) {
-		CloseHandle(hMap);
-		goto done;
-	}
-
-	if (safe_mode) pause();
-
-	MoveMemory(buffer + ((int)id3v2_size + offset),
-		buffer + id3v2_size, ttainfo->FILESIZE);
-	CopyMemory(buffer, tag_data, new_size);
-
-	if (safe_mode) FlushViewOfFile((LPCVOID *) buffer, 0);
-	UnmapViewOfFile((LPCVOID *) buffer);
-	CloseHandle(hMap);
-
-	ttainfo->FILESIZE += offset;
-	ttainfo->id3v2.size = new_size;
-
-	if (safe_mode) {
-		info.FILESIZE = ttainfo->FILESIZE;
-		info.id3v2.size = ttainfo->id3v2.size;
-		seek_needed = decode_pos_ms;
-		unpause();
-	}
-
-done:
-	CloseHandle(hFile);
-	HeapFree(heap, 0, tag_data);
-
-	ttainfo->id3v2.id3has = 1;
-}
-
-static void del_id3v2_tag (tta_info *ttainfo) {
-	HANDLE hFile, hMap;
-	unsigned char *buffer;
-	int indx, result;
-	BOOL safe_mode = FALSE;
-
-	if (!ttainfo->id3v2.id3has) return;
-
-	if (!memcmp(ttainfo->filename, info.filename,
-		lstrlen(ttainfo->filename))) safe_mode = TRUE;
-
-	hFile = CreateFile(ttainfo->filename, GENERIC_READ|GENERIC_WRITE,
-		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
-	if (hFile == INVALID_HANDLE_VALUE) {
-		tta_error(OPEN_ERROR, ttainfo->filename);
-		return;
-	}
-
-	hMap = CreateFileMapping(hFile, NULL, PAGE_READWRITE, 0, 0, NULL);
-	if (!hMap) {
-		CloseHandle(hFile);
-		CloseHandle(hMap);
-		return;
-	}
-
-	buffer = (unsigned char *)MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, 0);
-	if (!buffer) {
-		CloseHandle(hFile);
-		CloseHandle(hMap);
-		return;
-	}
-
-	if (safe_mode) pause();
-
-	MoveMemory(buffer, buffer + ttainfo->id3v2.size,
-		ttainfo->FILESIZE - ttainfo->id3v2.size);
-
-	if (safe_mode) FlushViewOfFile((LPCVOID *) buffer, 0);
-	UnmapViewOfFile((LPCVOID *) buffer);
-	CloseHandle(hMap);
-
-	SetFilePointer(hFile, -(int) ttainfo->id3v2.size, NULL, FILE_END);
-	SetEndOfFile(hFile);
-	CloseHandle(hFile);
-
-	ttainfo->FILESIZE -= ttainfo->id3v2.size;
-	ttainfo->id3v2.size = 0;
-
-	if (safe_mode) {
-		info.FILESIZE = ttainfo->FILESIZE;
-		info.id3v2.size = ttainfo->id3v2.size;
-		seek_needed = decode_pos_ms;
-		unpause();
-	}
-
-	ttainfo->id3v2.id3has = 0;
-}
+//static void del_id3v2_tag (tta_info *ttainfo) {
+//	HANDLE hFile, hMap;
+//	unsigned char *buffer;
+//	int indx, result;
+//	BOOL safe_mode = FALSE;
+//
+//	if (!ttainfo->id3v2.id3has) return;
+//
+//	if (!memcmp(ttainfo->filename, info.filename,
+//		lstrlen(ttainfo->filename))) safe_mode = TRUE;
+//
+//	hFile = CreateFile(ttainfo->filename, GENERIC_READ|GENERIC_WRITE,
+//		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
+//	if (hFile == INVALID_HANDLE_VALUE) {
+//		tta_error(OPEN_ERROR, ttainfo->filename);
+//		return;
+//	}
+//
+//	hMap = CreateFileMapping(hFile, NULL, PAGE_READWRITE, 0, 0, NULL);
+//	if (!hMap) {
+//		CloseHandle(hFile);
+//		CloseHandle(hMap);
+//		return;
+//	}
+//
+//	buffer = (unsigned char *)MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+//	if (!buffer) {
+//		CloseHandle(hFile);
+//		CloseHandle(hMap);
+//		return;
+//	}
+//
+//	if (safe_mode) pause();
+//
+//	MoveMemory(buffer, buffer + ttainfo->id3v2.size,
+//		ttainfo->FILESIZE - ttainfo->id3v2.size);
+//
+//	if (safe_mode) FlushViewOfFile((LPCVOID *) buffer, 0);
+//	UnmapViewOfFile((LPCVOID *) buffer);
+//	CloseHandle(hMap);
+//
+//	SetFilePointer(hFile, -(int) ttainfo->id3v2.size, NULL, FILE_END);
+//	SetEndOfFile(hFile);
+//	CloseHandle(hFile);
+//
+//	ttainfo->FILESIZE -= ttainfo->id3v2.size;
+//	ttainfo->id3v2.size = 0;
+//
+//	if (safe_mode) {
+//		info.FILESIZE = ttainfo->FILESIZE;
+//		info.id3v2.size = ttainfo->id3v2.size;
+//		seek_needed = decode_pos_ms;
+//		unpause();
+//	}
+//
+//	ttainfo->id3v2.id3has = 0;
+//}
 
 /* eof */
 

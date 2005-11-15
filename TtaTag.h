@@ -30,8 +30,13 @@ class CTtaTag
 public:
 	CTtaTag();
 	virtual ~CTtaTag();
+	void Flush();
 	bool ReadTag(const char *filename);
+	void CloseFile();
+	void SetPlayTitle(char *title);
 
+	HANDLE GetHFILE() {return HFILE;}
+	char *GetFileName() {return FileName;}
 	int GetNumberofChannel() {return NCH;}
 	int GetBitsperSample() {return BPS;}
 	int GetByteSize() {return BSIZE;}
@@ -43,8 +48,8 @@ public:
 	int GetFileSize() {return FILESIZE;}
 	double GetCompressRate() {return COMPRESS;}
 	int GetBitrate() {return BITRATE;}
-	bool HasID3v1Tag() {return id3v1.hasTag();}
-	bool HasID3v2Tag() {return id3v2.hasTag();}
+//	bool HasID3v1Tag() {return id3v1.hasTag();}
+//	bool HasID3v2Tag() {return id3v2.hasTag();}
 
 	CID3v1	id3v1;
 	CID3v2	id3v2;

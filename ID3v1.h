@@ -28,7 +28,7 @@ class CID3v1
 public:
 	CID3v1();
 	virtual ~CID3v1();
-	int     ReadTag(const char *filename);
+	bool    ReadTag(const char *filename);
 	bool    SaveTag();
 	void    DeleteTag();
 
