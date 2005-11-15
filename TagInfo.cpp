@@ -73,11 +73,11 @@ bool CTagInfo::GetTagInfo()
 //			strncpy(Cache.Genre, (const char *)ttainfo.id3v2.genre, MAX_MUSICTEXT - 1);
 //			strncpy(Cache.Track, (const char *)ttainfo.id3v2.track, MAX_MUSICTEXT - 1);
 		} else if (ttatag.HasID3v1Tag()) {
-			lstrcpyn(Cache.Title, ttatag.id3v1.GetTitle(), MAX_MUSICTEXT - 1);
-			lstrcpyn(Cache.Artist, ttatag.id3v1.GetArtist(), MAX_MUSICTEXT - 1);
-			lstrcpyn(Cache.Comment, ttatag.id3v1.GetComment(), MAX_MUSICTEXT - 1);
-			lstrcpyn(Cache.Year, ttatag.id3v1.GetYear(), MAX_MUSICTEXT - 1);
-			lstrcpyn(Cache.Album, ttatag.id3v1.GetAlbum(), MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Title, (LPCTSTR)ttatag.id3v1.GetTitle(), MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Artist, (LPCTSTR)ttatag.id3v1.GetArtist(), MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Comment, (LPCTSTR)ttatag.id3v1.GetComment(), MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Year, (LPCTSTR)ttatag.id3v1.GetYear(), MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Album, (LPCTSTR)ttatag.id3v1.GetAlbum(), MAX_MUSICTEXT - 1);
 			genrenum = (unsigned int)ttatag.id3v1.GetGenre();
 			if (genrenum < GENRES)
 				lstrcpyn(Cache.Genre, (const char *)genre[genrenum], MAX_MUSICTEXT - 1);
