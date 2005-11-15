@@ -18,7 +18,7 @@ static char THIS_FILE[]=__FILE__;
 
 CID3v1::CID3v1()
 {
-
+	has_tag = false;
 }
 
 CID3v1::~CID3v1()
@@ -58,7 +58,7 @@ bool CID3v1::SaveTag()
 	HFILE = CreateFile(FileName, GENERIC_READ|GENERIC_WRITE,
 		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
 	if (HFILE == INVALID_HANDLE_VALUE) {
-		error(OPEN_ERROR, FileName);
+		error(OPEN_ERROR);
 		return false;
 	}
 
@@ -67,7 +67,7 @@ bool CID3v1::SaveTag()
 	if (!WriteFile(HFILE, &tag, sizeof(v1tag), &result, 0) ||
 		result != sizeof(v1tag)) {
 		CloseHandle(HFILE);
-		error(WRITE_ERROR, FileName);
+		error(WRITE_ERROR);
 		return false;
 	}
 	CloseHandle(HFILE);
@@ -84,7 +84,7 @@ void CID3v1::DeleteTag()
 	HFILE = CreateFile(FileName, GENERIC_READ|GENERIC_WRITE,
 		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
 	if (HFILE == INVALID_HANDLE_VALUE) {
-		error(OPEN_ERROR, FileName);
+		error(OPEN_ERROR);
 		return;
 	}
 
@@ -128,4 +128,10 @@ void CID3v1::SetTrack(const char track)
 void CID3v1::SetYear(const char *year)
 {
 	strncpy(tag.year, year, 4);
+}
+
+void CID3v1::error(int err_no)
+{
+	bool i;
+	i = false;
 }

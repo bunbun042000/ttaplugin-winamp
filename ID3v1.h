@@ -44,12 +44,12 @@ public:
 	void    SetYear(const char *year);
 	CString GetComment() {return tag.comment;}
 	void    SetComment(const char *comment);
-	CString GetTrack() {return tag.track;}
+	char    GetTrack() {return tag.track;}
 	void    SetTrack(const char track);
-	CString GetGenre() {return tag.genre;}
+	char    GetGenre() {return tag.genre;}
 	void    SetGenre(const char genre);
 
-	bool    hastag() {return has_tag;}
+	bool    hasTag() {return has_tag;}
 private:
 	HANDLE	HFILE;
 	char	FileName[MAX_PATHLEN];	// filename
@@ -58,7 +58,7 @@ private:
 	v1tag	tag;
 	bool	has_tag;
 
-	void  error(int error_no, const char *FileName);
+	void  error(int error_no);
 };
 
 #endif // !defined(AFX_ID3V1_H__F52065F6_B156_468F_8A35_DAD534E31131__INCLUDED_)

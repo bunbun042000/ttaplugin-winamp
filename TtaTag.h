@@ -12,7 +12,7 @@
 
 #include "ID3v1.h"
 #include "ID3v2.h"
-
+#include "crc32.h"
 
 struct TTA_header
 {
@@ -30,7 +30,24 @@ class CTtaTag
 public:
 	CTtaTag();
 	virtual ~CTtaTag();
-	int ReadTag(const char *filename);
+	bool ReadTag(const char *filename);
+
+	int GetNumberofChannel() {return NCH;}
+	int GetBitsperSample() {return BPS;}
+	int GetByteSize() {return BSIZE;}
+	int GetFormat() {return FORMAT;}
+	int GetSampleRate() {return SAMPLERATE;}
+	int GetDataLength() {return DATALENGTH;}
+	int GetLengthbyFrame() {return FRAMELEN;}
+	int GetLengthbymsec() {return LENGTH;}
+	int GetFileSize() {return FILESIZE;}
+	double GetCompressRate() {return COMPRESS;}
+	int GetBitrate() {return BITRATE;}
+	bool HasID3v1Tag() {return id3v1.hasTag();}
+	bool HasID3v2Tag() {return id3v2.hasTag();}
+
+	CID3v1	id3v1;
+	CID3v2	id3v2;
 
 private:
 	HANDLE	HFILE;
@@ -49,8 +66,6 @@ private:
 	int		BITRATE;	// bitrate (kbps)
 	int		STATE;		// return code
 
-	CID3v1	id3v1;
-	CID3v2	id3v2;
 	TTA_header		ttaheader;
 
 	int ReadTTAheader();

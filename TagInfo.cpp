@@ -37,9 +37,6 @@ void CTagInfo::FlushCache(void)
 
 bool CTagInfo::GetTagInfo()
 {
-	tta_info ttainfo;
-	ttainfo.id3v1.id3has = 0;
-	ttainfo.id3v2.id3has = 0;
 	char buf[MAX_MUSICTEXT];
 	unsigned int genrenum;
 
@@ -60,33 +57,34 @@ bool CTagInfo::GetTagInfo()
 	Cache.Copyright[0] = '\0';
 	Cache.Encoder[0] = '\0';
 
-	if(open_tta_file((const char *)Cache.FileName, &ttainfo) == 0)
+	if(ttatag.ReadTag(Cache.FileName))
 	{
-		Cache.Length = (int) ttainfo.LENGTH;
+		Cache.Length = (int) ttatag.GetLengthbymsec();
 		FindTag = true;
 	}
 
 	if(FindTag) {
-		if(ttainfo.id3v2.id3has) {
-			strncpy(Cache.Title, (const char *)ttainfo.id3v2.title, MAX_MUSICTEXT - 1);
-			strncpy(Cache.Artist, (const char *)ttainfo.id3v2.artist, MAX_MUSICTEXT - 1);
-			strncpy(Cache.Comment, (const char *)ttainfo.id3v2.comment, MAX_MUSICTEXT -1);
-			strncpy(Cache.Album, (const char *)ttainfo.id3v2.album, MAX_MUSICTEXT - 1);
-			strncpy(Cache.Year, (const char *)ttainfo.id3v2.year, MAX_MUSICTEXT - 1);
-			strncpy(Cache.Genre, (const char *)ttainfo.id3v2.genre, MAX_MUSICTEXT - 1);
-			strncpy(Cache.Track, (const char *)ttainfo.id3v2.track, MAX_MUSICTEXT - 1);
-		} else if (ttainfo.id3v1.id3has) {
-			lstrcpyn(Cache.Title, (const char *)ttainfo.id3v1.title, MAX_MUSICTEXT - 1);
-			lstrcpyn(Cache.Artist, (const char *)ttainfo.id3v1.artist, MAX_MUSICTEXT - 1);
-			lstrcpyn(Cache.Comment, (const char *)ttainfo.id3v1.comment, MAX_MUSICTEXT - 1);
-			lstrcpyn(Cache.Year, (const char *)ttainfo.id3v1.year, MAX_MUSICTEXT - 1);
-			lstrcpyn(Cache.Album, (const char *)ttainfo.id3v1.album, MAX_MUSICTEXT - 1);
-			genrenum = (unsigned int)ttainfo.id3v1.genre;
+		if(ttatag.HasID3v2Tag()) {
+//			strncpy(Cache.Title, (const char *)ttainfo.id3v2.title, MAX_MUSICTEXT - 1);
+//			strncpy(Cache.Artist, (const char *)ttainfo.id3v2.artist, MAX_MUSICTEXT - 1);
+//			strncpy(Cache.Comment, (const char *)ttainfo.id3v2.comment, MAX_MUSICTEXT -1);
+//			strncpy(Cache.Album, (const char *)ttainfo.id3v2.album, MAX_MUSICTEXT - 1);
+//			strncpy(Cache.Year, (const char *)ttainfo.id3v2.year, MAX_MUSICTEXT - 1);
+//			strncpy(Cache.Genre, (const char *)ttainfo.id3v2.genre, MAX_MUSICTEXT - 1);
+//			strncpy(Cache.Track, (const char *)ttainfo.id3v2.track, MAX_MUSICTEXT - 1);
+		} else if (ttatag.HasID3v1Tag()) {
+			lstrcpyn(Cache.Title, ttatag.id3v1.GetTitle(), MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Artist, ttatag.id3v1.GetArtist(), MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Comment, ttatag.id3v1.GetComment(), MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Year, ttatag.id3v1.GetYear(), MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Album, ttatag.id3v1.GetAlbum(), MAX_MUSICTEXT - 1);
+			genrenum = (unsigned int)ttatag.id3v1.GetGenre();
 			if (genrenum < GENRES)
 				lstrcpyn(Cache.Genre, (const char *)genre[genrenum], MAX_MUSICTEXT - 1);
-			lstrcpyn(Cache.Track, (const char *)_itoa((int)ttainfo.id3v1.track, buf, MAX_MUSICTEXT -1), MAX_MUSICTEXT -1 );
+			lstrcpyn(Cache.Track, (const char *)_itoa((int)ttatag.id3v1.GetTrack(), buf, MAX_MUSICTEXT -1), MAX_MUSICTEXT -1 );
 		}		
 	}
+	MessageBox(0, ttatag.id3v1.GetArtist(), 0, 0);
 //	MessageBox(0,_itoa(Cache.Length, buf, 10),0,0);
 
 	return FindTag;

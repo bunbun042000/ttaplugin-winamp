@@ -143,15 +143,15 @@ int CID3v2::ReadTag(const char *filename)
 
 	// read id3v2 frames
 	while (ptr - buffer < tag_length) {
-		int data_size, frame_id;
-		int size, comments = 0;
+		int data_size;
+		int comments = 0;
 		frame temp_frame;
 		char *data;
 
 		// get frame header
 		CopyMemory(&temp_frame, ptr, sizeof(frame));
 		ptr += sizeof(frame);
-		data_size = (int) ntohl((u_long)*(temp_frame.size));
+		data_size = (int) ::ntohl((u_long)*(temp_frame.size));
 
 		if (!*temp_frame.id) break;
 

@@ -177,7 +177,6 @@ void init () {
 	ZeroMemory(&info, sizeof(tta_info));
 }
 
-
 static void tta_error (int error, char *filename) {
 	char message[1024];
 	char *name = NULL;

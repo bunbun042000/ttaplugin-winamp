@@ -18,6 +18,7 @@
 #include "wa_ipc.h"
 #include "ttadec.h"
 #include "in_tta.h"
+#include "TtaTag.h"
 
 extern char *genre[];
 
@@ -47,6 +48,7 @@ public:
 	
 private:
 	CRITICAL_SECTION	CriticalSection;
+	CTtaTag				ttatag;
 	TagInfo				Cache;
 	DWORD				GetTagTime;
 
