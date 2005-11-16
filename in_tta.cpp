@@ -252,18 +252,12 @@ void config (HWND parent) {
 		parent, config_dialog);
 }
 
-int open_tta_file (const char *filename) {
-	if (!ttaTag.ReadTag(filename))
-		return -1;
-	return 0;
-}
-
 static int fill_id3_data (HWND dialog, int id3version) {
-	int indx, genre_indx;
+	int indx;
 
 	// set text limits
 	if (id3version == 1) {
-		bool state = dlgTag.id3v1.has_tag();
+		bool state = dlgTag.id3v1.hasTag();
 
 		SetDlgItemText(dialog, IDC_ID3_EDITOR, "ID3v1");
 		EnableWindow(GetDlgItem(dialog, IDC_ID3_EDITOR), state);
@@ -319,7 +313,7 @@ static int fill_id3_data (HWND dialog, int id3version) {
 			SendDlgItemMessage(dialog, IDC_ID3_TRACK,	EM_REPLACESEL, FALSE, (LPARAM)"");
 		}
 		if (dlgTag.id3v1.GetGenre() >= 0 && dlgTag.id3v1.GetGenre() != 0xFF) {
-			if (dlgTag.id3v1.GetGenre() > GENRES-1) dlgTag.id3v1.GetGenre() = 12; // Other
+			if (dlgTag.id3v1.GetGenre() > GENRES-1) dlgTag.id3v1.SetGenre(12); // Other
 			indx = SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_FINDSTRINGEXACT,
 				-1, (LPARAM) genre[dlgTag.id3v1.GetGenre()]);
 			SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_SETCURSEL, indx, 0);
@@ -342,7 +336,7 @@ static int fill_id3_data (HWND dialog, int id3version) {
 //			indx = SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_FINDSTRINGEXACT,
 //				-1, (LPARAM) genre[genre_indx]);
 //			SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_SETCURSEL, indx, 0);
-		}
+//		}
 		return 0;
 	}
 
@@ -351,58 +345,60 @@ static int fill_id3_data (HWND dialog, int id3version) {
 
 static void update_id3_data (HWND dialog, int id3version) {
 	char itemtext[64];
+	char tempchar[MAX_MUSICTEXT];
 	int indx;
 
 	if (id3version == 1) {
 
 		// title, artist, album, year, comment, track
-		GetDlgItemText(dialog, IDC_ID3_TITLE, Info.id3v1.title,
-			sizeof(dlgInfo.id3v1.title));
-		GetDlgItemText(dialog, IDC_ID3_ARTIST, dlgInfo.id3v1.artist,
-			sizeof(dlgInfo.id3v1.artist));
-		GetDlgItemText(dialog, IDC_ID3_ALBUM, dlgInfo.id3v1.album,
-			sizeof(dlgInfo.id3v1.album));
-		GetDlgItemText(dialog, IDC_ID3_YEAR, dlgInfo.id3v1.year,
-			sizeof(dlgInfo.id3v1.year));
-		GetDlgItemText(dialog, IDC_ID3_COMMENT, dlgInfo.id3v1.comment,
-			sizeof(dlgInfo.id3v1.comment));
-		dlgInfo.id3v1.track = GetDlgItemInt(dialog, IDC_ID3_TRACK, 0, FALSE);
+		GetDlgItemText(dialog, IDC_ID3_TITLE, tempchar,	sizeof(tempchar));
+		dlgTag.id3v1.SetTitle(tempchar);
+		GetDlgItemText(dialog, IDC_ID3_ARTIST, tempchar, sizeof(tempchar));
+		dlgTag.id3v1.SetArtist(tempchar);
+		GetDlgItemText(dialog, IDC_ID3_ALBUM, tempchar,	sizeof(tempchar));
+		dlgTag.id3v1.SetAlbum(tempchar);
+		GetDlgItemText(dialog, IDC_ID3_YEAR, tempchar, sizeof(tempchar));
+		dlgTag.id3v1.SetYear(tempchar);
+		GetDlgItemText(dialog, IDC_ID3_COMMENT, tempchar, sizeof(tempchar));
+		dlgTag.id3v1.SetComment(tempchar);
+		dlgTag.id3v1.SetTrack(GetDlgItemInt(dialog, IDC_ID3_TRACK, 0, FALSE));
 
 		// genre
 		GetDlgItemText(dialog, IDC_ID3_GENRE, itemtext, sizeof(itemtext));
-		for (indx = 0, dlgInfo.id3v1.genre = 0xFF; indx < GENRES; indx++) {
+		for (indx = 0, dlgTag.id3v1.SetGenre((char)0xFF); indx < GENRES; indx++) {
 			if (!*itemtext && itemtext[0] == 0x20) break;
 			if (lstrcmp(itemtext, genre[indx]) == 0) {
-				dlgInfo.id3v1.genre = indx;
+				dlgTag.id3v1.SetGenre(indx);
 				break;
 			}
 		}
 
-		save_id3v1_tag(&dlgInfo);
+		dlgTag.id3v1.SaveTag(mod.hMainWindow);
 		EnableWindow(GetDlgItem(dialog, IDC_ID3_EDITOR), TRUE);
 
+		fill_id3_data(dialog,1);
 		return;
-	} else {
-
-		// title, artist, album, year, comment, track
-		GetDlgItemText(dialog, IDC_ID3_TITLE, dlgInfo.id3v2.title,
-			sizeof(dlgInfo.id3v2.title));
-		GetDlgItemText(dialog, IDC_ID3_ARTIST, dlgInfo.id3v2.artist,
-			sizeof(dlgInfo.id3v2.artist));
-		GetDlgItemText(dialog, IDC_ID3_ALBUM, dlgInfo.id3v2.album,
-			sizeof(dlgInfo.id3v2.album));
-		GetDlgItemText(dialog, IDC_ID3_YEAR, dlgInfo.id3v2.year,
-			sizeof(dlgInfo.id3v2.year));
-		GetDlgItemText(dialog, IDC_ID3_COMMENT, dlgInfo.id3v2.comment,
-			sizeof(dlgInfo.id3v2.comment));
-		GetDlgItemText(dialog, IDC_ID3_TRACK, dlgInfo.id3v2.track,
-			sizeof(dlgInfo.id3v2.track));
-		GetDlgItemText(dialog, IDC_ID3_GENRE, dlgInfo.id3v2.genre,
-			sizeof(dlgInfo.id3v2.genre));
-		if (*dlgInfo.id3v2.genre == 0x20) *dlgInfo.id3v2.genre = 0;
-
-		save_id3v2_tag(&dlgInfo);
-		EnableWindow(GetDlgItem(dialog, IDC_ID3_EDITOR), TRUE);
+//	} else {
+//
+//		// title, artist, album, year, comment, track
+//		GetDlgItemText(dialog, IDC_ID3_TITLE, dlgInfo.id3v2.title,
+//			sizeof(dlgInfo.id3v2.title));
+//		GetDlgItemText(dialog, IDC_ID3_ARTIST, dlgInfo.id3v2.artist,
+//			sizeof(dlgInfo.id3v2.artist));
+//		GetDlgItemText(dialog, IDC_ID3_ALBUM, dlgInfo.id3v2.album,
+//			sizeof(dlgInfo.id3v2.album));
+//		GetDlgItemText(dialog, IDC_ID3_YEAR, dlgInfo.id3v2.year,
+//			sizeof(dlgInfo.id3v2.year));
+//		GetDlgItemText(dialog, IDC_ID3_COMMENT, dlgInfo.id3v2.comment,
+//			sizeof(dlgInfo.id3v2.comment));
+//		GetDlgItemText(dialog, IDC_ID3_TRACK, dlgInfo.id3v2.track,
+//			sizeof(dlgInfo.id3v2.track));
+//		GetDlgItemText(dialog, IDC_ID3_GENRE, dlgInfo.id3v2.genre,
+//			sizeof(dlgInfo.id3v2.genre));
+//		if (*dlgInfo.id3v2.genre == 0x20) *dlgInfo.id3v2.genre = 0;
+//
+//		save_id3v2_tag(&dlgInfo);
+//		EnableWindow(GetDlgItem(dialog, IDC_ID3_EDITOR), TRUE);
 	}
 }
 
@@ -427,17 +423,17 @@ static BOOL CALLBACK info_dialog (HWND dialog, UINT message,
 		indx = SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_ADDSTRING, 0, (LPARAM) " ");
 
 		// load data
-		SetDlgItemText(dialog, IDC_FILE_LOCATION, dlgInfo.filename);
+		SetDlgItemText(dialog, IDC_FILE_LOCATION, dlgTag.GetFileName());
 		SetDlgItemInt(dialog, IDC_TTA_LEVEL, TTA_LEVEL, FALSE);
-		SetDlgItemInt(dialog, IDC_TTA_BPS, dlgInfo.BPS, FALSE);
-		SetDlgItemInt(dialog, IDC_TTA_SAMPLERATE, dlgInfo.SAMPLERATE, FALSE);
-		SetDlgItemInt(dialog, IDC_TTA_CHANNELS, dlgInfo.NCH, FALSE);
+		SetDlgItemInt(dialog, IDC_TTA_BPS, dlgTag.GetBitsperSample(), FALSE);
+		SetDlgItemInt(dialog, IDC_TTA_SAMPLERATE, dlgTag.GetSampleRate(), FALSE);
+		SetDlgItemInt(dialog, IDC_TTA_CHANNELS, dlgTag.GetNumberofChannel(), FALSE);
 
-		SetDlgItemInt(dialog, IDC_TTA_FILESIZE, dlgInfo.FILESIZE, FALSE);
-		sprintf(itemtext, "%.2f", dlgInfo.COMPRESS);
+		SetDlgItemInt(dialog, IDC_TTA_FILESIZE, dlgTag.GetFileSize(), FALSE);
+		sprintf(itemtext, "%.2f", dlgTag.GetCompressRate());
 		SetDlgItemText(dialog, IDC_TTA_COMPRESSION, itemtext);
 
-		if (dlgInfo.id3v2.id3has) fill_id3_data(dialog, 2);
+		if (dlgTag.id3v2.hasTag()) fill_id3_data(dialog, 2);
 		else fill_id3_data(dialog, 1); 
 
 		return TRUE;
@@ -452,8 +448,9 @@ static BOOL CALLBACK info_dialog (HWND dialog, UINT message,
 			return TRUE;
 		case IDC_ID3_DELETE:
 			if (IsDlgButtonChecked(dialog, IDC_ID3_SWITCH) == BST_CHECKED)
-				 del_id3v2_tag(&dlgInfo);
-			else del_id3v1_tag(&dlgInfo);
+//				 del_id3v2_tag(&dlgInfo);
+				int i;
+			else dlgTag.id3v1.DeleteTag(mod.hMainWindow);
 			EnableWindow(GetDlgItem(dialog, IDC_ID3_EDITOR), FALSE);
 			EnableWindow(GetDlgItem(dialog, IDC_ID3_DELETE), FALSE);
 			return TRUE;
@@ -472,28 +469,28 @@ static BOOL CALLBACK info_dialog (HWND dialog, UINT message,
 }
 
 int infodlg (char *filename, HWND parent) {
-	char *fn, *p, *caption;
+	char *p, *fn, *caption;
 
 	// check for required data presented
-	if (!filename || !*filename) {
-		if (!ttaTag.GetFileName() || !*ttaTag.GetFileName()) return 1;
-		fn = ttaTag.GetFileName();
-	} else fn = filename;
+//	if (!filename || !*filename) {
+//		if (!ttaTag.GetFileName() || !*ttaTag.GetFileName()) return 1;
+//		fn = ttaTag.GetFileName();
+//	} else fn = filename;
 
 
-	// ToDo : include tta_error into CTtaTag
-//	if (!dlgTag.ReadTag(fn)) {
-//		tta_error (dlgTag.GetState(), fn);
-//		return 1;
-//	}
+	if (!dlgTag.ReadTag(parent, filename)) {
+		return 1;
+	}
 
 //	if (dlgInfo.HFILE != INVALID_HANDLE_VALUE)
 //		CloseHandle(dlgInfo.HFILE);
 
+	fn = filename;
 	p = fn + lstrlen(fn);
 	while (*p != '\\' && p >= fn) p--;
 	if (*p == '\\') caption = ++p;
 	else caption = fn;
+//	::GetFileTitle(filename, caption, MAX_PATHLEN - 1);
 
 	DialogBoxParam(mod.hDllInstance, MAKEINTRESOURCE(IDD_INFO),
 		parent, info_dialog, (LPARAM) caption);
@@ -540,7 +537,7 @@ int play (char *filename) {
 	if (!filename || !*filename) return -1;
 
 	// open TTA file
-	if (!ttaTag.ReadTag(filename)) {
+	if (!ttaTag.ReadTag(mod.hMainWindow, filename)) {
 	//	if (info.STATE != FORMAT_ERROR)
 	//		tta_error (info.STATE, filename);
 	return 1;
@@ -593,7 +590,7 @@ void getfileinfo (char *filename, char *title, int *length_in_ms) {
 		*length_in_ms = ttaTag.GetLengthbymsec();
 		ttaTag.SetPlayTitle(title);
 	} else {
-		ttaTag.ReadTag(filename);
+		ttaTag.ReadTag(mod.hMainWindow, filename);
 		*length_in_ms = ttaTag.GetLengthbymsec();
 		ttaTag.SetPlayTitle(title);
 	}
@@ -670,7 +667,7 @@ extern "C"
 	__declspec(dllexport) int
 	winampGetExtendedFileInfo(extendedFileInfoStruct ExtendedFileInfo)
 	{
-		return m_Tag.GetExtendedFileInfo(&ExtendedFileInfo);
+		return m_Tag.GetExtendedFileInfo(mod.hMainWindow, &ExtendedFileInfo);
 	}
 }
 
@@ -1221,24 +1218,24 @@ static int get_frame_id (const char *id) {
 	return 0;
 }
 
-void get_id3v1_tag (tta_info *ttainfo) {
-	id3v1_tag id3v1;
-	unsigned long result;
-
-	SetFilePointer(ttainfo->HFILE, -(int) sizeof(id3v1_tag), NULL, FILE_END);
-	if (ReadFile(ttainfo->HFILE, &id3v1, sizeof(id3v1_tag), &result, NULL) &&
-		result == sizeof(id3v1_tag) && !memcmp(id3v1.id, "TAG", 3)) {
-		CopyMemory(ttainfo->id3v1.title, id3v1.title, 30);
-		CopyMemory(ttainfo->id3v1.artist, id3v1.artist, 30);
-		CopyMemory(ttainfo->id3v1.album, id3v1.album, 30);
-		CopyMemory(ttainfo->id3v1.year, id3v1.year, 4);
-		CopyMemory(ttainfo->id3v1.comment, id3v1.comment, 28);
-		ttainfo->id3v1.track = id3v1.track;
-		ttainfo->id3v1.genre = id3v1.genre;
-		ttainfo->id3v1.id3has = 1;
-	}
-	SetFilePointer(ttainfo->HFILE, 0, NULL, FILE_BEGIN);
-}
+//void get_id3v1_tag (tta_info *ttainfo) {
+//	id3v1_tag id3v1;
+//	unsigned long result;
+//
+//	SetFilePointer(ttainfo->HFILE, -(int) sizeof(id3v1_tag), NULL, FILE_END);
+//	if (ReadFile(ttainfo->HFILE, &id3v1, sizeof(id3v1_tag), &result, NULL) &&
+//		result == sizeof(id3v1_tag) && !memcmp(id3v1.id, "TAG", 3)) {
+//		CopyMemory(ttainfo->id3v1.title, id3v1.title, 30);
+//		CopyMemory(ttainfo->id3v1.artist, id3v1.artist, 30);
+//		CopyMemory(ttainfo->id3v1.album, id3v1.album, 30);
+//		CopyMemory(ttainfo->id3v1.year, id3v1.year, 4);
+//		CopyMemory(ttainfo->id3v1.comment, id3v1.comment, 28);
+//		ttainfo->id3v1.track = id3v1.track;
+//		ttainfo->id3v1.genre = id3v1.genre;
+//		ttainfo->id3v1.id3has = 1;
+//	}
+//	SetFilePointer(ttainfo->HFILE, 0, NULL, FILE_BEGIN);
+//}
 
 static char *unwrap (char *str, int length) {
 	char *ptr = str, *e = str + length;
@@ -1251,64 +1248,64 @@ static char *unwrap (char *str, int length) {
 	return str;
 }
 
-static void save_id3v1_tag (tta_info *ttainfo) {
-	HANDLE hFile;
-	id3v1_tag tag;
-	int offset;
-	unsigned long result;
+//static void save_id3v1_tag (tta_info *ttainfo) {
+//	HANDLE hFile;
+//	id3v1_tag tag;
+//	int offset;
+//	unsigned long result;
+//
+//	ZeroMemory(&tag, sizeof(id3v1_tag));
+//	CopyMemory(tag.id, "TAG", 3);
+//
+//	CopyMemory(tag.title, ttainfo->id3v1.title, sizeof(tag.title));
+//	CopyMemory(tag.artist, ttainfo->id3v1.artist, sizeof(tag.artist));
+//	CopyMemory(tag.album, ttainfo->id3v1.album, sizeof(tag.album));
+//	CopyMemory(tag.year, ttainfo->id3v1.year, sizeof(tag.year));
+//	CopyMemory(tag.comment, unwrap(ttainfo->id3v1.comment,
+//		sizeof(tag.comment)), sizeof(tag.comment));
+//	tag.track = ttainfo->id3v1.track;
+//	tag.genre = ttainfo->id3v1.genre;
+//
+//	// update ID3V1 tag
+//	hFile = CreateFile(ttainfo->filename, GENERIC_READ|GENERIC_WRITE,
+//		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
+//	if (hFile == INVALID_HANDLE_VALUE) {
+//		tta_error(OPEN_ERROR, ttainfo->filename);
+//		return;
+//	}
+//
+//	offset = (ttainfo->id3v1.id3has)? -(int) sizeof(id3v1_tag):0;
+//	SetFilePointer(hFile, offset, NULL, FILE_END);
+//	if (!WriteFile(hFile, &tag, sizeof(id3v1_tag), &result, 0) ||
+//		result != sizeof(id3v1_tag)) {
+//		CloseHandle(hFile);
+//		tta_error(WRITE_ERROR, ttainfo->filename);
+//		return;
+//	}
+//	CloseHandle(hFile);
+//
+//	ttainfo->id3v1.id3has = 1;
+//}
 
-	ZeroMemory(&tag, sizeof(id3v1_tag));
-	CopyMemory(tag.id, "TAG", 3);
-
-	CopyMemory(tag.title, ttainfo->id3v1.title, sizeof(tag.title));
-	CopyMemory(tag.artist, ttainfo->id3v1.artist, sizeof(tag.artist));
-	CopyMemory(tag.album, ttainfo->id3v1.album, sizeof(tag.album));
-	CopyMemory(tag.year, ttainfo->id3v1.year, sizeof(tag.year));
-	CopyMemory(tag.comment, unwrap(ttainfo->id3v1.comment,
-		sizeof(tag.comment)), sizeof(tag.comment));
-	tag.track = ttainfo->id3v1.track;
-	tag.genre = ttainfo->id3v1.genre;
-
-	// update ID3V1 tag
-	hFile = CreateFile(ttainfo->filename, GENERIC_READ|GENERIC_WRITE,
-		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
-	if (hFile == INVALID_HANDLE_VALUE) {
-		tta_error(OPEN_ERROR, ttainfo->filename);
-		return;
-	}
-
-	offset = (ttainfo->id3v1.id3has)? -(int) sizeof(id3v1_tag):0;
-	SetFilePointer(hFile, offset, NULL, FILE_END);
-	if (!WriteFile(hFile, &tag, sizeof(id3v1_tag), &result, 0) ||
-		result != sizeof(id3v1_tag)) {
-		CloseHandle(hFile);
-		tta_error(WRITE_ERROR, ttainfo->filename);
-		return;
-	}
-	CloseHandle(hFile);
-
-	ttainfo->id3v1.id3has = 1;
-}
-
-static void del_id3v1_tag (tta_info *ttainfo) {
-	HANDLE hFile;
-
-	if (!ttainfo->id3v1.id3has) return;
-
-	// delete ID3V1 tag
-	hFile = CreateFile(ttainfo->filename, GENERIC_READ|GENERIC_WRITE,
-		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
-	if (hFile == INVALID_HANDLE_VALUE) {
-		tta_error(OPEN_ERROR, ttainfo->filename);
-		return;
-	}
-
-	SetFilePointer(hFile, -(int) sizeof(id3v1_tag), NULL, FILE_END);
-	SetEndOfFile(hFile);
-	CloseHandle(hFile);
-
-	ttainfo->id3v1.id3has = 0;
-}
+//static void del_id3v1_tag (tta_info *ttainfo) {
+//	HANDLE hFile;
+//
+//	if (!ttainfo->id3v1.id3has) return;
+//
+//	// delete ID3V1 tag
+//	hFile = CreateFile(ttainfo->filename, GENERIC_READ|GENERIC_WRITE,
+//		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
+//	if (hFile == INVALID_HANDLE_VALUE) {
+//		tta_error(OPEN_ERROR, ttainfo->filename);
+//		return;
+//	}
+//
+//	SetFilePointer(hFile, -(int) sizeof(id3v1_tag), NULL, FILE_END);
+//	SetEndOfFile(hFile);
+//	CloseHandle(hFile);
+//
+//	ttainfo->id3v1.id3has = 0;
+//}
 
 void get_id3v2_tag (tta_info *ttainfo) {
 	HANDLE hMap;

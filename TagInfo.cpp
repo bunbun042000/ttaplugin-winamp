@@ -35,7 +35,7 @@ void CTagInfo::FlushCache(void)
 	::LeaveCriticalSection(&CriticalSection);
 }
 
-bool CTagInfo::GetTagInfo()
+bool CTagInfo::GetTagInfo(HWND hMainWindow)
 {
 	char buf[MAX_MUSICTEXT];
 	unsigned int genrenum;
@@ -57,7 +57,7 @@ bool CTagInfo::GetTagInfo()
 	Cache.Copyright[0] = '\0';
 	Cache.Encoder[0] = '\0';
 
-	if(ttatag.ReadTag(Cache.FileName))
+	if(ttatag.ReadTag(hMainWindow, Cache.FileName))
 	{
 		Cache.Length = (int) ttatag.GetLengthbymsec();
 		FindTag = true;
@@ -90,7 +90,7 @@ bool CTagInfo::GetTagInfo()
 	return FindTag;
 }
 
-int CTagInfo::GetExtendedFileInfo(extendedFileInfoStruct *ExtendedFileInfo)
+int CTagInfo::GetExtendedFileInfo(HWND hMainWindow, extendedFileInfoStruct *ExtendedFileInfo)
 {
 	::EnterCriticalSection(&CriticalSection);
 
@@ -99,7 +99,7 @@ int CTagInfo::GetExtendedFileInfo(extendedFileInfoStruct *ExtendedFileInfo)
 	bool FindTag;
 	int RetCode;
 		
-	FindTag = GetTagInfo();
+	FindTag = GetTagInfo(hMainWindow);
 
 
 	if (FindTag)

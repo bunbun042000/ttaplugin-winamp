@@ -44,7 +44,7 @@ class CTagInfo
 public:
 	CTagInfo();
 	virtual ~CTagInfo();
-	int  GetExtendedFileInfo(extendedFileInfoStruct *ExtendedFileInfo);
+	int  GetExtendedFileInfo(HWND hMainWindow, extendedFileInfoStruct *ExtendedFileInfo);
 	
 private:
 	CRITICAL_SECTION	CriticalSection;
@@ -53,7 +53,7 @@ private:
 	DWORD				GetTagTime;
 
 	void FlushCache(void);
-	bool GetTagInfo();
+	bool GetTagInfo(HWND hMainWindow);
 
 };
 

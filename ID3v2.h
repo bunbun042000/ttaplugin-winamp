@@ -52,7 +52,7 @@ public:
 	CID3v2();
 	virtual ~CID3v2();
 	int ReadTag(const char *filename);
-	bool hasTag() {return has_tag;}
+	bool hasTag() {return false;}
 	int  TagLength() {return tag_length;}
 
 	CString GetArtist() {return "";}
