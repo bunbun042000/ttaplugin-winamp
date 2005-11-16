@@ -312,10 +312,10 @@ static int fill_id3_data (HWND dialog, int id3version) {
 			SendDlgItemMessage(dialog, IDC_ID3_TRACK,	EM_SETSEL, 0, -1);
 			SendDlgItemMessage(dialog, IDC_ID3_TRACK,	EM_REPLACESEL, FALSE, (LPARAM)"");
 		}
-		if (dlgTag.id3v1.GetGenre() >= 0 && dlgTag.id3v1.GetGenre() != 0xFF) {
-			if (dlgTag.id3v1.GetGenre() > GENRES-1) dlgTag.id3v1.SetGenre(12); // Other
+		if ((unsigned char)dlgTag.id3v1.GetGenre() >= 0 && dlgTag.id3v1.GetGenre() != 0xFF) {
+			if ((unsigned int) dlgTag.id3v1.GetGenre() > GENRES - 1) dlgTag.id3v1.SetGenre(12); // Other
 			indx = SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_FINDSTRINGEXACT,
-				-1, (LPARAM) genre[dlgTag.id3v1.GetGenre()]);
+				-1, (LPARAM) genre[(unsigned char)dlgTag.id3v1.GetGenre()]);
 			SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_SETCURSEL, indx, 0);
 		} else SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_SETCURSEL, -1, 0);
 		return 0;

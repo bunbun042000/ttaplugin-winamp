@@ -2,6 +2,8 @@
 #ifndef ID3GENRE_H_INCLUDE
 #define ID3GENRE_H_INCLUDE
 
+#define GENRES	148
+
 char *genre[] = {
   /*   0 */  "Blues",
   /*   1 */  "Classic Rock",
