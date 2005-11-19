@@ -91,6 +91,10 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\About.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ID3v1.cpp
 # End Source File
 # Begin Source File
@@ -111,6 +115,10 @@ SOURCE=.\in_tta.rc
 # End Source File
 # Begin Source File
 
+SOURCE=.\InfoDialog.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\StdAfx.cpp
 # ADD CPP /Yc"stdafx.h"
 # End Source File
@@ -126,6 +134,10 @@ SOURCE=.\TtaTag.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\About.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\crc32.h
@@ -153,6 +165,10 @@ SOURCE=.\in2.h
 # Begin Source File
 
 SOURCE=.\in_tta.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\InfoDialog.h
 # End Source File
 # Begin Source File
 

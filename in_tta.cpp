@@ -58,7 +58,7 @@ CIn_ttaApp::CIn_ttaApp()
 
 CIn_ttaApp theApp;
 
-//#include <windows.h>
+#include <windows.h>
 #include <mmreg.h>
 //#include <time.h>
 
@@ -72,7 +72,8 @@ CIn_ttaApp theApp;
 #include "TagInfo.h"
 #include "TtaTag.h"
 //#include "ID3v1.h"
-
+#include "InfoDialog.h"
+#include "About.h"
 
 #define  PLUGIN_VERSION "3.2 (Media Library Extension)"
 #define  PROJECT_URL "<http://www.sourceforge.net>"
@@ -492,9 +493,15 @@ int infodlg (char *filename, HWND parent) {
 	else caption = fn;
 //	::GetFileTitle(filename, caption, MAX_PATHLEN - 1);
 
-	DialogBoxParam(mod.hDllInstance, MAKEINTRESOURCE(IDD_INFO),
-		parent, info_dialog, (LPARAM) caption);
+//	DialogBoxParam(mod.hDllInstance, MAKEINTRESOURCE(IDD_INFO),
+//		parent, info_dialog, (LPARAM) caption);
 
+	CInfoDialog *infodialog = new CInfoDialog(NULL);
+
+//	infodialog->ttaTag = &dlgTag;
+	infodialog->DoModal();
+
+	delete infodialog;
 	return 0;
 }
 
