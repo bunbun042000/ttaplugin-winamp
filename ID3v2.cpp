@@ -5,7 +5,6 @@
 #include "stdafx.h"
 #include "in_tta.h"
 #include "ID3v2.h"
-#include <winsock2.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -99,7 +98,7 @@ void CID3v2::GetCommentNames(CStringArray &strArray)
 
 int CID3v2::ReadTag(const char *filename)
 {
-	::strncpy(FileName, filename, MAX_PATHLEN);
+	::strncpy_s(FileName, filename, MAX_PATHLEN);
 
 	HFILE = CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -137,7 +136,7 @@ int CID3v2::ReadTag(const char *filename)
 
 	// skip extended header if present
 	if (header.flags & ID3_EXTENDEDHEADER_FLAG) {
-		int offset = (int) ntohl((u_long)*ptr);
+		int offset = (int) 0;//ntohl((u_long)*ptr);
 		ptr += offset;
 	}
 
@@ -151,7 +150,7 @@ int CID3v2::ReadTag(const char *filename)
 		// get frame header
 		CopyMemory(&temp_frame, ptr, sizeof(frame));
 		ptr += sizeof(frame);
-		data_size = (int) ::ntohl((u_long)*(temp_frame.size));
+		data_size = (int) 0;//::ntohl((u_long)*(temp_frame.size));
 
 		if (!*temp_frame.id) break;
 

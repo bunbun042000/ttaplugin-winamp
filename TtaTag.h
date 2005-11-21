@@ -44,7 +44,7 @@ public:
 	int GetSampleRate() {return SAMPLERATE;}
 	int GetDataLength() {return DATALENGTH;}
 	int GetLengthbyFrame() {return FRAMELEN;}
-	int GetLengthbymsec() {return LENGTH;}
+	unsigned long GetLengthbymsec() {return LENGTH;}
 	int GetFileSize() {return FILESIZE;}
 	double GetCompressRate() {return COMPRESS;}
 	int GetBitrate() {return BITRATE;}
@@ -65,7 +65,7 @@ private:
 	int		SAMPLERATE;	// samplerate (sps)
 	int		DATALENGTH;	// data length in samples
 	int		FRAMELEN;	// frame length
-	int		LENGTH;		// playback time (msec)
+	unsigned long		LENGTH;		// playback time (msec)
 	int		FILESIZE;	// file size (byte)
 	double	COMPRESS;	// compression ratio
 	int		BITRATE;	// bitrate (kbps)

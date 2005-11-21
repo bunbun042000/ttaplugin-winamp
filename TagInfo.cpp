@@ -59,7 +59,7 @@ bool CTagInfo::GetTagInfo(HWND hMainWindow)
 
 	if(ttatag.ReadTag(hMainWindow, Cache.FileName))
 	{
-		Cache.Length = (int) ttatag.GetLengthbymsec();
+		Cache.Length = (unsigned long) ttatag.GetLengthbymsec();
 		FindTag = true;
 	}
 
@@ -78,10 +78,11 @@ bool CTagInfo::GetTagInfo(HWND hMainWindow)
 			lstrcpyn(Cache.Comment, (LPCTSTR)ttatag.id3v1.GetComment(), MAX_MUSICTEXT - 1);
 			lstrcpyn(Cache.Year, (LPCTSTR)ttatag.id3v1.GetYear(), MAX_MUSICTEXT - 1);
 			lstrcpyn(Cache.Album, (LPCTSTR)ttatag.id3v1.GetAlbum(), MAX_MUSICTEXT - 1);
-			genrenum = (unsigned int)ttatag.id3v1.GetGenre();
+			genrenum = (unsigned char)ttatag.id3v1.GetGenre();
 			if (genrenum < GENRES)
 				lstrcpyn(Cache.Genre, (const char *)genre[genrenum], MAX_MUSICTEXT - 1);
-			lstrcpyn(Cache.Track, (const char *)_itoa((int)ttatag.id3v1.GetTrack(), buf, MAX_MUSICTEXT -1), MAX_MUSICTEXT -1 );
+			_ultoa_s((unsigned long)ttatag.id3v1.GetTrack(), buf, MAX_MUSICTEXT -1, 10);
+			lstrcpyn(Cache.Track, (const char *)buf, MAX_MUSICTEXT -1 );
 		}		
 	}
 //	MessageBox(0, ttatag.id3v1.GetArtist(), 0, 0);
@@ -94,7 +95,7 @@ int CTagInfo::GetExtendedFileInfo(HWND hMainWindow, extendedFileInfoStruct *Exte
 {
 	::EnterCriticalSection(&CriticalSection);
 
-	strncpy(Cache.FileName, ExtendedFileInfo->filename, MAX_PATHLEN);
+	strncpy_s(Cache.FileName, ExtendedFileInfo->filename, MAX_PATHLEN);
 
 	bool FindTag;
 	int RetCode;
@@ -109,7 +110,8 @@ int CTagInfo::GetExtendedFileInfo(HWND hMainWindow, extendedFileInfoStruct *Exte
 		const char *MetaData = ExtendedFileInfo->metadata;
 
 		if(_stricmp(MetaData, "length") == 0) {
-			RetBuff = _ultoa(Cache.Length , Buff, 10);
+			_ultoa_s(Cache.Length , Buff, sizeof(Buff), 10);
+			RetBuff = Buff;
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "title") == 0) {
 			RetBuff = Cache.Title;
@@ -137,7 +139,7 @@ int CTagInfo::GetExtendedFileInfo(HWND hMainWindow, extendedFileInfoStruct *Exte
 		}
 
 		if(RetCode && (ExtendedFileInfo->retlen != 0)) {
-			strncpy(ExtendedFileInfo->ret, RetBuff, ExtendedFileInfo->retlen - 1);
+			lstrcpyn(ExtendedFileInfo->ret, RetBuff, ExtendedFileInfo->retlen - 1);
 		}
 	} else {
 		RetCode = 0;

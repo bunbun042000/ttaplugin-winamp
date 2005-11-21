@@ -33,7 +33,7 @@ bool CID3v1::ReadTag(HWND hMainWindow, const char *filename)
 	has_tag = false;
 	v1tag  tag;
 
-	::strncpy(FileName, filename, MAX_PATHLEN - 1);
+	::strncpy_s(FileName, filename, MAX_PATHLEN - 1);
 
 	HFILE = CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);

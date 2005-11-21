@@ -7,6 +7,7 @@
 #define IDD_ABOUT                       103
 #define IDI_INFO_ICON                   108
 #define IDD_TAGINFO                     112
+#define IDD_DIALOG1                     116
 #define IDC_FILE_LOCATION               1001
 #define IDC_PLUGIN_VERSION              1002
 #define IDC_ID3_ARTIST                  1011

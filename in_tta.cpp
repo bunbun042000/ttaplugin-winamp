@@ -30,9 +30,28 @@
  * information.
  */
 
+#define	STRICT
 
 #include "stdafx.h"
 #include "in_tta.h"
+#include <windows.h>
+#include <mmreg.h>
+#include <process.h>
+
+//#include <time.h>
+
+#include "in2.h"
+#include "id3genre.h"
+#include "resource.h"
+#include "id3tag.h"
+#include "crc32.h"
+#include "ttadec.h"
+#include "wa_ipc.h"
+#include "TagInfo.h"
+#include "TtaTag.h"
+//#include "ID3v1.h"
+#include "Test.h"
+#include "TagProperty.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -58,22 +77,6 @@ CIn_ttaApp::CIn_ttaApp()
 
 CIn_ttaApp theApp;
 
-#include <windows.h>
-#include <mmreg.h>
-//#include <time.h>
-
-#include "in2.h"
-#include "id3genre.h"
-#include "resource.h"
-#include "id3tag.h"
-#include "crc32.h"
-#include "ttadec.h"
-#include "wa_ipc.h"
-#include "TagInfo.h"
-#include "TtaTag.h"
-//#include "ID3v1.h"
-#include "InfoDialog.h"
-#include "About.h"
 
 #define  PLUGIN_VERSION "3.2 (Media Library Extension)"
 #define  PROJECT_URL "<http://www.sourceforge.net>"
@@ -431,7 +434,7 @@ static BOOL CALLBACK info_dialog (HWND dialog, UINT message,
 		SetDlgItemInt(dialog, IDC_TTA_CHANNELS, dlgTag.GetNumberofChannel(), FALSE);
 
 		SetDlgItemInt(dialog, IDC_TTA_FILESIZE, dlgTag.GetFileSize(), FALSE);
-		sprintf(itemtext, "%.2f", dlgTag.GetCompressRate());
+		sprintf_s(itemtext, "%.2f", dlgTag.GetCompressRate());
 		SetDlgItemText(dialog, IDC_TTA_COMPRESSION, itemtext);
 
 		if (dlgTag.id3v2.hasTag()) fill_id3_data(dialog, 2);
@@ -496,12 +499,13 @@ int infodlg (char *filename, HWND parent) {
 //	DialogBoxParam(mod.hDllInstance, MAKEINTRESOURCE(IDD_INFO),
 //		parent, info_dialog, (LPARAM) caption);
 
-	CInfoDialog *infodialog = new CInfoDialog(NULL);
+	CString str;
+	str = caption;
+	CTagProperty *testdialog = new CTagProperty(str, NULL, 0);
+	CTest dlg;
+	testdialog->AddPage(&dlg);
+	testdialog->DoModal();
 
-//	infodialog->ttaTag = &dlgTag;
-	infodialog->DoModal();
-
-	delete infodialog;
 	return 0;
 }
 
@@ -1680,3 +1684,14 @@ static void add_comm_frame (char *id, unsigned char **dest, char *src) {
 
 /* eof */
 
+
+BOOL CIn_ttaApp::InitInstance() 
+{
+	// TODO: この位置に固有の処理を追加するか、または基本クラスを呼び出してください
+	if(!AfxSocketInit()) {
+		AfxMessageBox("Failed to initialize sockets", MB_OK | MB_ICONSTOP);
+		return false;
+	}
+	
+	return CWinApp::InitInstance();
+}

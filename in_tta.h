@@ -32,6 +32,8 @@ public:
 // オーバーライド
 	// ClassWizard は仮想関数のオーバーライドを生成します。
 	//{{AFX_VIRTUAL(CIn_ttaApp)
+	public:
+	virtual BOOL InitInstance();
 	//}}AFX_VIRTUAL
 
 	//{{AFX_MSG(CIn_ttaApp)

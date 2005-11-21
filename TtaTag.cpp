@@ -47,7 +47,7 @@ bool CTtaTag::ReadTag(HWND hMainWindow, const char *filename)
 //	unsigned long result;
 
 	// File open
-	::strncpy(FileName, filename, MAX_PATHLEN);
+	strncpy_s(FileName, filename, MAX_PATHLEN);
 
 	HFILE = CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -117,12 +117,12 @@ int CTtaTag::ReadTTAheader()
 	SAMPLERATE = ttaheader.SampleRate;
 	DATALENGTH = ttaheader.DataLength;
 	FRAMELEN = (long) (FRAME_TIME * ttaheader.SampleRate);
-	LENGTH = ttaheader.DataLength / ttaheader.SampleRate * 1000;
+	LENGTH = (unsigned long)(ttaheader.DataLength / ttaheader.SampleRate * 1000);
 
 	datasize = FILESIZE - id3v2.TagLength();
 	origsize = DATALENGTH * BSIZE * NCH;
 
-	COMPRESS = (float) datasize / origsize;
+	COMPRESS = (double) datasize / origsize;
 	BITRATE = (long) ((COMPRESS * SAMPLERATE * NCH * BPS) / 1000);
 	return 0;
 

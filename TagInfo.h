@@ -24,19 +24,19 @@ extern char *genre[];
 
 struct TagInfo
 {
-	int		Length;
-	char	FileName[MAX_PATHLEN];
-	char	Title[MAX_MUSICTEXT];
-	char	Artist[MAX_MUSICTEXT];
-	char	Comment[MAX_MUSICTEXT];
-	char	Album[MAX_MUSICTEXT];
-	char	Year[MAX_MUSICTEXT];
-	char	Genre[MAX_MUSICTEXT];
-	char	Track[MAX_MUSICTEXT];
-	char	Composer[MAX_MUSICTEXT];
-	char	OrgArtist[MAX_MUSICTEXT];
-	char	Copyright[MAX_MUSICTEXT];
-	char	Encoder[MAX_MUSICTEXT];
+	unsigned long	Length;
+	char			FileName[MAX_PATHLEN];
+	char			Title[MAX_MUSICTEXT];
+	char			Artist[MAX_MUSICTEXT];
+	char			Comment[MAX_MUSICTEXT];
+	char			Album[MAX_MUSICTEXT];
+	char			Year[MAX_MUSICTEXT];
+	char			Genre[MAX_MUSICTEXT];
+	char			Track[MAX_MUSICTEXT];
+	char			Composer[MAX_MUSICTEXT];
+	char			OrgArtist[MAX_MUSICTEXT];
+	char			Copyright[MAX_MUSICTEXT];
+	char			Encoder[MAX_MUSICTEXT];
 };
 
 class CTagInfo  
