@@ -1,8 +1,7 @@
-// stdafx.cpp : 標準インクルードファイルを含むソース ファイル
-//              in_tta.pch : 生成されるプリコンパイル済ヘッダー
-//              stdafx.obj : 生成されるプリコンパイル済タイプ情報
+// stdafx.cpp : source file that includes just the standard includes
+// in_tta.pch will be the pre-compiled header
+// stdafx.obj will contain the pre-compiled type information
 
 #include "stdafx.h"
-
 
 

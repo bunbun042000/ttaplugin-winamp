@@ -33,18 +33,23 @@ bool CID3v1::ReadTag(HWND hMainWindow, const char *filename)
 	has_tag = false;
 	v1tag  tag;
 
-	::strncpy_s(FileName, filename, MAX_PATHLEN - 1);
+	FileName = filename;
 
-	HFILE = CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
+	HFILE = CreateFile((LPCTSTR)FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (HFILE == INVALID_HANDLE_VALUE) {
+	if (HFILE == INVALID_HANDLE_VALUE || HFILE == NULL) {
 		error(hMainWindow, OPEN_ERROR);
+		CloseHandle(HFILE);
 		return false;
 	}
 	SetFilePointer(HFILE, -(int) sizeof(v1tag), NULL, FILE_END);
 	if (ReadFile(HFILE, &tag, sizeof(v1tag), &result, NULL) &&
-		result == sizeof(v1tag) && !memcmp(tag.id, "TAG", 3)) {
+		result == sizeof(v1tag) && (memcmp(tag.id, "TAG", 3) == 0)) {
 		has_tag = true;
+	} else {
+		CloseHandle(HFILE);
+		has_tag = false;
+		return false;
 	}
 
 	Title = tag.title;
@@ -70,6 +75,7 @@ bool CID3v1::SaveTag(HWND hMainWindow)
 	HFILE = CreateFile(FileName, GENERIC_READ|GENERIC_WRITE,
 		FILE_SHARE_READ, NULL,OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (HFILE == INVALID_HANDLE_VALUE) {
+		CloseHandle(HFILE);
 		error(hMainWindow, OPEN_ERROR);
 		return false;
 	}

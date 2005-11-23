@@ -7,7 +7,8 @@
 #include "stdafx.h"
 #include "in_tta.h"
 #include "TtaTag.h"
-//#include "id3genre.h"
+#include "ttadec.h"
+#include <winsock2.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -29,10 +30,17 @@ CTtaTag::~CTtaTag()
 {
 }
 
+char *CTtaTag::GetFileName()
+{
+	char *tempfn = new char[MAX_PATHLEN];
+	strcpy_s(tempfn, FileName.GetLength(), (LPCTSTR)FileName);
+	return tempfn;
+}
+
 void CTtaTag::Flush()
 {
 	HFILE = INVALID_HANDLE_VALUE;
-	FileName[0] = '\0';
+	FileName = "";
 
 }
 
@@ -47,55 +55,52 @@ bool CTtaTag::ReadTag(HWND hMainWindow, const char *filename)
 //	unsigned long result;
 
 	// File open
-	strncpy_s(FileName, filename, MAX_PATHLEN);
+	FileName = filename;
+//	strcpy_s(FileName, sizeof(FileName), filename);
 
-	HFILE = CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
+
+	//Read ID3v1.1
+	id3v1.ReadTag(hMainWindow, filename);
+
+	//Read ID3v2.3
+	id3v2.ReadTag(filename);
+
+	//Read TTA Header
+	HFILE = CreateFile((LPCTSTR)FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (HFILE == INVALID_HANDLE_VALUE) {
+	if (HFILE == INVALID_HANDLE_VALUE || HFILE == NULL) {
 		STATE = OPEN_ERROR;
 		return false;
 	}
 
 	FILESIZE = ::GetFileSize(HFILE, NULL);
 
-	//Read ID3v1.1
-	id3v1.ReadTag(hMainWindow, FileName);
-
-	//Read ID3v2.3
-	id3v2.ReadTag(FileName);
-
-	//Read TTA Header
-	ReadTTAheader();
-
-	return true;
-}
-
-int CTtaTag::ReadTTAheader()
-{
-	int           checksum, datasize, origsize;
+	int           datasize, origsize;
 	unsigned long result;
+	long		  checksum;
 
+	SetFilePointer(HFILE, id3v2.hasTag() ? id3v2.TagLength() : 0, NULL, FILE_BEGIN);
 	// read TTA header
-	if (!ReadFile(HFILE, &ttaheader, sizeof(TTA_header), &result, NULL) ||
+	if (!::ReadFile(HFILE, &ttaheader, sizeof(TTA_header), &result, NULL) ||
 		result != sizeof(TTA_header)) {
 		CloseHandle(HFILE);
 		STATE = READ_ERROR;
-		return -1;
+		return false;
 	}
 
 	// check for TTA3 signature
 	if (ttaheader.TTAid != TTA1_SIGN) {
 		CloseHandle(HFILE);
 		STATE = FORMAT_ERROR;
-		return -1;
+		return false;
 	}
 
 	checksum = crc32((unsigned char *) &ttaheader,
-	sizeof(TTA_header) - sizeof(long));
+	sizeof(TTA_header) - sizeof(unsigned long));
 	if (checksum != ttaheader.CRC32) {
 		CloseHandle(HFILE);
 		STATE = FILE_ERROR;
-		return -1;
+		return false;
 	}
 
 	// check for player supported formats
@@ -106,7 +111,7 @@ int CTtaTag::ReadTTAheader()
 		ttaheader.NumChannels > MAX_NCH) {
 		CloseHandle(HFILE);
 		STATE = PLAYER_ERROR;
-		return -1;
+		return false;
 	}
 
 	// fill the File Info
@@ -122,11 +127,12 @@ int CTtaTag::ReadTTAheader()
 	datasize = FILESIZE - id3v2.TagLength();
 	origsize = DATALENGTH * BSIZE * NCH;
 
-	COMPRESS = (double) datasize / origsize;
+	COMPRESS = ((double)datasize) / origsize;
 	BITRATE = (long) ((COMPRESS * SAMPLERATE * NCH * BPS) / 1000);
-	return 0;
 
+	return true;
 }
+
 
 
 void CTtaTag::SetPlayTitle(char *title) {
@@ -149,7 +155,7 @@ void CTtaTag::SetPlayTitle(char *title) {
 	} else {
 		char p[MAX_PATHLEN];
 		::GetFileTitle(FileName, p, MAX_PATHLEN - 1);
-		lstrcpyn(title, p, _tcsrchr(p, '.') - p);
+		lstrcpyn(title, p, strchr(p, '.') - p);
 	}
 
 }

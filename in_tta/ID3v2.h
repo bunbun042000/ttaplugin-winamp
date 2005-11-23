@@ -60,7 +60,7 @@ public:
 	CString GetAlbum() {return "";}
 private:
 	HANDLE	HFILE;
-	char	FileName[MAX_PATHLEN];	// filename
+	CString	FileName;	// filename
 	int		STATE;		// return code
 
 	v2header	header;

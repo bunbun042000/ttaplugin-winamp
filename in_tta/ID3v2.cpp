@@ -35,7 +35,7 @@ bool CID3v2::AddComment(const char *name, const char *value)
 	_name.MakeUpper();
 	m_frames.insert(pair<CString,CString>(_name,CString(value)));
 	
-	return TRUE;
+	return true;
 }
 
 bool CID3v2::DelComment(const char *name, int index)
@@ -49,13 +49,13 @@ bool CID3v2::DelComment(const char *name, int index)
 		if(i == index)
 		{
 			m_frames.erase(itp.first);
-			return TRUE;
+			return true;
 		}
 		itp.first++;
 		i++;
 	}
 	
-	return FALSE;
+	return true;
 }
 
 bool CID3v2::GetComment(const char *name,int index,CString &strValue)
@@ -70,13 +70,13 @@ bool CID3v2::GetComment(const char *name,int index,CString &strValue)
 		if(i == index)
 		{
 			strValue = (itp.first)->second;
-			return TRUE;
+			return true;
 		}
 		itp.first++;
 		i++;
 	}
 	
-	return FALSE;
+	return false;
 }
 
 void CID3v2::GetCommentNames(CStringArray &strArray)
@@ -98,12 +98,14 @@ void CID3v2::GetCommentNames(CStringArray &strArray)
 
 int CID3v2::ReadTag(const char *filename)
 {
-	::strncpy_s(FileName, filename, MAX_PATHLEN);
+	FileName = filename;
+	has_tag = false;
+	tag_length = 0;
 
-	HFILE = CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
+	HFILE = CreateFile((LPCTSTR)FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (HFILE == INVALID_HANDLE_VALUE) {
-		STATE = OPEN_ERROR;
+//		STATE = OPEN_ERROR;
 		return -1;
 	}
 
@@ -111,9 +113,15 @@ int CID3v2::ReadTag(const char *filename)
 	unsigned char *buffer, *ptr;
 	unsigned long result;
 
-	if (!ReadFile(HFILE, &header, sizeof(v2header), &result, NULL) ||
-		result != sizeof(v2header) || memcmp(header.id, "ID3", 3)) {
+	if (!ReadFile(HFILE, &header, sizeof(v2header), &result, NULL) || result != sizeof(v2header))
+	{
+		CloseHandle(HFILE);
+		return -1;
+	}
+
+	if(memcmp(header.id, "ID3", 3) != 0) {
 		SetFilePointer(HFILE, 0, NULL, FILE_BEGIN);
+		CloseHandle(HFILE);
 		return -1;
 	}
 

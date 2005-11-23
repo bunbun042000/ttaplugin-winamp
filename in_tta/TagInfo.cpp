@@ -95,7 +95,7 @@ int CTagInfo::GetExtendedFileInfo(HWND hMainWindow, extendedFileInfoStruct *Exte
 {
 	::EnterCriticalSection(&CriticalSection);
 
-	strncpy_s(Cache.FileName, ExtendedFileInfo->filename, MAX_PATHLEN);
+	::strncpy_s(Cache.FileName, MAX_PATHLEN - 1, ExtendedFileInfo->filename, MAX_PATHLEN - 1);
 
 	bool FindTag;
 	int RetCode;

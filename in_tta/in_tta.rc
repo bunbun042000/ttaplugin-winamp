@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 日本語 resources
+// Japanese resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
 #ifdef _WIN32
@@ -27,18 +27,18 @@ LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
     "#define _AFX_NO_OLE_RESOURCES\r\n"
@@ -46,12 +46,10 @@ BEGIN
     "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
     "\r\n"
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)\r\n"
-    "#ifdef _WIN32\r\n"
     "LANGUAGE 17, 1\r\n"
     "#pragma code_page(932)\r\n"
-    "#endif //_WIN32\r\n"
-    "#include ""res\\in_tta.rc2""  // Microsoft Visual C++ 以外のツールで編集されたリソース\r\n"
-    "#include ""l.jpn\\afxres.rc""          // 標準のコンポーネント\r\n"
+    "#include ""res\\in_tta.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""     // Standard components\r\n"
     "#endif\r\n"
     "\0"
 END
@@ -59,7 +57,6 @@ END
 #endif    // APSTUDIO_INVOKED
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -80,92 +77,30 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "041104b0"
+        BLOCK "040904e4"
         BEGIN
-            VALUE "Comments", "\0"
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "in_tta DLL\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
-            VALUE "InternalName", "in_tta\0"
-            VALUE "LegalCopyright", "Copyright (C) 2005\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "in_tta.DLL\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "in_tta ﾀﾞｲﾅﾐｯｸ ﾘﾝｸ ﾗｲﾌﾞﾗﾘ\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "CompanyName", "TODO: <Company name>"
+            VALUE "FileDescription", "TODO: <File description>"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "InternalName", "in_tta.dll"
+            VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
+            VALUE "OriginalFilename", "in_tta.dll"
+            VALUE "ProductName", "TODO: <Product name>"
+            VALUE "ProductVersion", "1.0.0.1"
         END
     END
     BLOCK "VarFileInfo"
     BEGIN
-        VALUE "Translation", 0x411, 1200
+        VALUE "Translation", 0x409, 1252
     END
 END
 
-#endif    // !_MAC
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_DIALOG1 DIALOG DISCARDABLE  0, 0, 187, 93
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "ﾀﾞｲｱﾛｸﾞ"
-FONT 9, "ＭＳ Ｐゴシック"
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,130,7,50,14
-    PUSHBUTTON      "ｷｬﾝｾﾙ",IDCANCEL,130,24,50,14
-    LTEXT           "Hellow World!",IDC_STATIC,57,50,40,8
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
-BEGIN
-    IDD_DIALOG1, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 180
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 86
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // 日本語 resources
+#endif    // Japanese resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// ﾛｼｱ語 resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
-#ifdef _WIN32
-LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
-#pragma code_page(1251)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_INFO_ICON           ICON    DISCARDABLE     "info.ico"
-#endif    // ﾛｼｱ語 resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// 英語 (ｱﾒﾘｶ) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -175,109 +110,33 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_INFO_ICON           ICON                    "info.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Dialog
 //
 
-IDD_TAGINFO DIALOG DISCARDABLE  0, 0, 504, 349
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
-CAPTION "TTA FileInfo"
-CLASS "CTagDialog"
-FONT 8, "ＭＳ Ｐゴシック"
-BEGIN
-    EDITTEXT        IDC_FILENAME,4,8,496,12,ES_READONLY
-    CONTROL         "ID3v1 Tag",IDC_CHECK_ID3V1,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,50,39,47,8
-    EDITTEXT        IDC_EDIT_ID3V1_TRACKNO,171,35,15,12,ES_AUTOHSCROLL
-    LTEXT           "Track No. :",IDC_STATIC,132,39,34,8
-    LTEXT           "Title :",IDC_STATIC,32,52,18,8
-    EDITTEXT        IDC_EDIT_ID3V1_TITLE,53,49,133,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_ID3V1_ARTIST,53,65,133,12,ES_AUTOHSCROLL
-    LTEXT           "Artist :",IDC_STATIC,27,68,22,8
-    EDITTEXT        IDC_EDIT_ID3V1_ALBUM,52,83,133,12,ES_AUTOHSCROLL
-    COMBOBOX        IDC_COMBO_ID3V1_GENRE,114,101,71,30,CBS_DROPDOWN | 
-                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Genre :",IDC_STATIC,89,104,24,8
-    LTEXT           "Album :",IDC_STATIC,23,84,23,8
-    EDITTEXT        IDC_EDIT_ID3V1_YEAR,55,100,29,12,ES_AUTOHSCROLL
-    LTEXT           "Year :",IDC_STATIC,28,102,18,8
-    LTEXT           "Comment :",IDC_STATIC,15,124,34,8
-    EDITTEXT        IDC_EDIT_ID3V1_COMMENT,56,119,132,34,ES_AUTOHSCROLL
-    LTEXT           "",IDC_STATIC_FILE_INFORMATION,17,202,169,106
-    DEFPUSHBUTTON   "Update",IDOK,4,329,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,60,329,50,14
-    PUSHBUTTON      "Copy from ID3v2",IDC_BUTTON_COPY_FROM_ID3V2,127,159,62,
-                    14
-    PUSHBUTTON      "Copy From ID3v1",IDC_BUTTON_COPY_FROM_ID3V1,235,319,62,
-                    14
-    CONTROL         "ID3v2 Tag",IDC_CHECK_ID3V2,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,298,38,47,10
-    LTEXT           "Track No. :",IDC_STATIC,404,37,34,8
-    EDITTEXT        IDC_EDIT_ID3V2_TRACKNO,445,34,40,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_ID3V2_TITLE,296,52,191,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_ID3V2_ARTIST,296,72,191,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_ID3V2_ALBUM,296,89,191,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_ID3V2_GENRE,395,105,92,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_ID3V2_YEAR,296,106,70,12,ES_AUTOHSCROLL
-    LISTBOX         IDC_LIST_ID3V2_COMMENT,296,123,191,37,NOT LBS_NOTIFY | 
-                    LBS_SORT | LBS_DISABLENOSCROLL | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_ID3V2_LYRICS,296,165,191,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_ID3V2_ORIGINALARTIST,296,214,191,12,
-                    ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_ID3V2_ARRANGER,296,197,191,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_ID3V2_URL,296,248,191,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_ID3V2_ENCODER,296,265,191,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_ID3V2_ENCODING_ENGINEER,296,282,191,12,
-                    ES_AUTOHSCROLL
-    COMBOBOX        IDC_COMBO_ID3V2_STRING_ENCODING,320,300,48,30,
-                    CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_ID3V2_ID3VERSION,440,300,48,30,CBS_DROPDOWN | 
-                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Unsync",IDC_CHECK_ID3V2_UNSYNC,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,439,323,39,10
-    CONTROL         "Title :",IDC_STATIC,"Static",SS_SIMPLE | SS_CENTERIMAGE | 
-                    WS_GROUP,273,57,18,9
-    CONTROL         "Artist :",IDC_STATIC,"Static",SS_SIMPLE | 
-                    SS_CENTERIMAGE | WS_GROUP,269,74,22,8
-    CONTROL         "Album :",IDC_STATIC,"Static",SS_SIMPLE | SS_CENTERIMAGE | 
-                    WS_GROUP,269,89,22,8
-    CONTROL         "Year :",IDC_STATIC,"Static",SS_SIMPLE | SS_CENTERIMAGE | 
-                    WS_GROUP,273,108,18,8
-    LTEXT           "Genre :",IDC_STATIC,370,107,24,8
-    LTEXT           "Comment :",IDC_STATIC,257,127,34,8
-    LTEXT           "Composer :",IDC_STATIC,255,183,36,8
-    LTEXT           "Orignal Artist :",IDC_STATIC,246,215,45,8
-    LTEXT           "Copyright :",IDC_STATIC,257,233,34,8
-    LTEXT           "URL :",IDC_STATIC,273,252,18,8
-    LTEXT           "Encoder :",IDC_STATIC,261,266,30,8
-    LTEXT           "Encoding Enginier :",IDC_STATIC,232,284,59,8
-    LTEXT           "String Encoding :",IDC_STATIC,260,301,53,8
-    LTEXT           "ID3 Version :",IDC_STATIC,392,305,41,8
-    EDITTEXT        IDC_EDIT_ID3V2_COMPOSER,296,180,191,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_ID3V2_COPYRIGHT,296,230,191,12,ES_AUTOHSCROLL
-    LTEXT           "Arranger :",IDC_STATIC,259,200,32,8
-    LTEXT           "Lyrics :",IDC_STATIC,268,167,23,8
-    GROUPBOX        "ID3v1",IDC_STATIC,14,25,182,153
-    GROUPBOX        "File Information",IDC_STATIC,11,190,186,126
-    GROUPBOX        "ID3v2",IDC_STATIC,220,25,280,318
-END
-
 IDD_ABOUT DIALOGEX 0, 0, 141, 115
-STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "About TTA plug-in"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "TTA input plug-in for Winamp 2",IDC_STATIC,5,2,131,40,
-                    BS_CENTER | WS_GROUP
+    GROUPBOX        "TTA input plug-in for Winamp 2",IDC_STATIC,5,2,131,40,BS_CENTER | WS_GROUP
     GROUPBOX        "Credits",IDC_STATIC,5,43,131,49,WS_GROUP
     PUSHBUTTON      "Close",IDOK,45,97,50,13
-    CTEXT           "Plugin is written by Alexander Djourik, Pavel Zhilin and Anton Gorbunov.\nCopyright (c) 2003 Alexander Djourik.\nAll rights reserved.",
-                    IDC_STATIC,10,53,121,35
+    CTEXT           "Plugin is written by Alexander Djourik, Pavel Zhilin and Anton Gorbunov.\nCopyright (c) 2003 Alexander Djourik.\nAll rights reserved.",IDC_STATIC,10,53,121,35
     CTEXT           "Plugin version",IDC_PLUGIN_VERSION,11,12,120,25
 END
 
 IDD_CONFIG DIALOGEX 0, 0, 127, 62
-STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "TTA Decoder Configuration"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
@@ -288,7 +147,7 @@ BEGIN
 END
 
 IDD_INFO DIALOGEX 0, 0, 208, 204
-STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_ID3_ARTIST,48,81,148,12,ES_AUTOHSCROLL
@@ -296,8 +155,7 @@ BEGIN
     EDITTEXT        IDC_ID3_ALBUM,48,109,148,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_ID3_YEAR,48,123,30,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_ID3_TRACK,164,123,32,12,ES_AUTOHSCROLL | ES_NUMBER
-    COMBOBOX        IDC_ID3_GENRE,48,137,148,90,CBS_DROPDOWNLIST | CBS_SORT | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_ID3_GENRE,48,137,148,90,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Artist:",IDC_STATIC,10,83,18,8,SS_CENTERIMAGE
     LTEXT           "Title:",IDC_STATIC,10,97,16,8,SS_CENTERIMAGE
     LTEXT           "Album:",IDC_STATIC,10,110,22,8,SS_CENTERIMAGE
@@ -305,37 +163,27 @@ BEGIN
     LTEXT           "Track #",IDC_STATIC,132,124,28,10,SS_CENTERIMAGE
     LTEXT           "Genre:",IDC_STATIC,10,138,22,8,SS_CENTERIMAGE
     LTEXT           "Comment:",IDC_STATIC,10,153,31,10,SS_CENTERIMAGE
-    EDITTEXT        IDC_FILE_LOCATION,48,12,148,12,ES_AUTOHSCROLL | 
-                    ES_READONLY
+    EDITTEXT        IDC_FILE_LOCATION,48,12,148,12,ES_AUTOHSCROLL | ES_READONLY
     LTEXT           "Location:",IDC_STATIC,10,13,30,8,SS_CENTERIMAGE
     GROUPBOX        "True Audio",IDC_STATIC,4,0,199,68,WS_GROUP
     LTEXT           "Level:",IDC_STATIC,10,28,20,8
-    LTEXT           "0",IDC_TTA_LEVEL,48,27,30,11,SS_CENTERIMAGE | NOT 
-                    WS_GROUP,WS_EX_STATICEDGE
+    LTEXT           "0",IDC_TTA_LEVEL,48,27,30,11,SS_CENTERIMAGE | NOT WS_GROUP,WS_EX_STATICEDGE
     RTEXT           "Sample Rate:",IDC_STATIC,87,28,44,8
-    LTEXT           "0",IDC_TTA_SAMPLERATE,138,27,58,11,SS_CENTERIMAGE | NOT 
-                    WS_GROUP,WS_EX_STATICEDGE
+    LTEXT           "0",IDC_TTA_SAMPLERATE,138,27,58,11,SS_CENTERIMAGE | NOT WS_GROUP,WS_EX_STATICEDGE
     LTEXT           "Channels:",IDC_STATIC,10,41,32,8
-    LTEXT           "0",IDC_TTA_CHANNELS,48,40,30,11,SS_CENTERIMAGE | NOT 
-                    WS_GROUP,WS_EX_STATICEDGE
+    LTEXT           "0",IDC_TTA_CHANNELS,48,40,30,11,SS_CENTERIMAGE | NOT WS_GROUP,WS_EX_STATICEDGE
     RTEXT           "File Size:",IDC_STATIC,101,41,29,8
-    LTEXT           "0",IDC_TTA_FILESIZE,138,40,58,11,SS_CENTERIMAGE | NOT 
-                    WS_GROUP,WS_EX_STATICEDGE
+    LTEXT           "0",IDC_TTA_FILESIZE,138,40,58,11,SS_CENTERIMAGE | NOT WS_GROUP,WS_EX_STATICEDGE
     GROUPBOX        "ID3v1",IDC_ID3_EDITOR,4,71,199,111,WS_GROUP
     PUSHBUTTON      "Close",IDCANCEL,157,186,45,14,BS_FLAT | WS_GROUP
     LTEXT           "BPS:",IDC_STATIC,10,54,17,8
-    LTEXT           "0",IDC_TTA_BPS,48,53,30,11,SS_CENTERIMAGE | NOT 
-                    WS_GROUP,WS_EX_STATICEDGE
+    LTEXT           "0",IDC_TTA_BPS,48,53,30,11,SS_CENTERIMAGE | NOT WS_GROUP,WS_EX_STATICEDGE
     RTEXT           "Compression:",IDC_STATIC,87,54,43,8
-    LTEXT           "0",IDC_TTA_COMPRESSION,138,53,58,11,SS_CENTERIMAGE | 
-                    NOT WS_GROUP,WS_EX_STATICEDGE
+    LTEXT           "0",IDC_TTA_COMPRESSION,138,53,58,11,SS_CENTERIMAGE | NOT WS_GROUP,WS_EX_STATICEDGE
     PUSHBUTTON      "Save",IDOK,55,186,45,14,BS_FLAT | WS_GROUP
     PUSHBUTTON      "Delete",IDC_ID3_DELETE,106,186,45,14,BS_FLAT | WS_GROUP
-    CONTROL         "ID3v2",IDC_ID3_SWITCH,"Button",BS_AUTOCHECKBOX | 
-                    BS_LEFTTEXT | BS_PUSHLIKE | BS_FLAT | WS_TABSTOP,4,186,
-                    45,14
-    EDITTEXT        IDC_ID3_COMMENT,48,152,148,22,ES_MULTILINE | 
-                    ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    CONTROL         "ID3v2",IDC_ID3_SWITCH,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | BS_PUSHLIKE | BS_FLAT | WS_TABSTOP,4,186,45,14
+    EDITTEXT        IDC_ID3_COMMENT,48,152,148,22,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
 END
 
 
@@ -345,16 +193,8 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
-    IDD_TAGINFO, DIALOG
-    BEGIN
-        LEFTMARGIN, 4
-        RIGHTMARGIN, 500
-        TOPMARGIN, 8
-        BOTTOMMARGIN, 343
-    END
-
     IDD_ABOUT, DIALOG
     BEGIN
         BOTTOMMARGIN, 110
@@ -376,7 +216,7 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // 英語 (ｱﾒﾘｶ) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -392,12 +232,10 @@ END
 #define _AFX_NO_PROPERTY_RESOURCES
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
-#ifdef _WIN32
 LANGUAGE 17, 1
 #pragma code_page(932)
-#endif //_WIN32
-#include "res\in_tta.rc2"  // Microsoft Visual C++ 以外のツールで編集されたリソース
-#include "l.jpn\afxres.rc"          // 標準のコンポーネント
+#include "res\in_tta.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"     // Standard components
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

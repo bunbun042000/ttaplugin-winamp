@@ -16,13 +16,13 @@
 
 struct TTA_header
 {
-    unsigned long TTAid;
-    unsigned short AudioFormat;
-    unsigned short NumChannels;
-    unsigned short BitsPerSample;
-    unsigned long SampleRate;
-    unsigned long DataLength;
-    unsigned long CRC32;
+    unsigned __int32 TTAid;
+    unsigned __int16 AudioFormat;
+    unsigned __int16 NumChannels;
+    unsigned __int16 BitsPerSample;
+    unsigned __int32 SampleRate;
+    unsigned __int32 DataLength;
+    unsigned __int32 CRC32;
 };
 
 class CTtaTag  
@@ -36,7 +36,7 @@ public:
 	void SetPlayTitle(char *title);
 
 	HANDLE GetHFILE() {return HFILE;}
-	char *GetFileName() {return FileName;}
+	char *GetFileName();
 	int GetNumberofChannel() {return NCH;}
 	int GetBitsperSample() {return BPS;}
 	int GetByteSize() {return BSIZE;}
@@ -56,7 +56,8 @@ public:
 
 private:
 	HANDLE	HFILE;
-	char	FileName[MAX_PATHLEN];	// filename
+	CString	FileName;	// filename
+//	char	FileName[MAX_PATHLEN];	// filename
 
 	int		NCH;		// number of channels
 	int		BPS;		// bits per sample
@@ -73,7 +74,6 @@ private:
 
 	TTA_header		ttaheader;
 
-	int ReadTTAheader();
 	
 };
 

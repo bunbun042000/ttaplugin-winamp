@@ -1,65 +1,60 @@
 ========================================================================
-       MICROSOFT FOUNDATION CLASS ライブラリ : in_tta
+    MICROSOFT FOUNDATION CLASS LIBRARY : in_tta Project Overview
 ========================================================================
 
 
-AppWizard が生成した in_tta には、Microsoft Foundation Class の基本的な
-使い方が示されています。DLL 作成のひな型としてお使いください。
+AppWizard has created this in_tta DLL for you.  This DLL not only
+demonstrates the basics of using the Microsoft Foundation classes but
+is also a starting point for writing your DLL.
 
-このファイルには in_tta を構成している各ファイルの概要説明が含まれています。
+This file contains a summary of what you will find in each of the files that
+make up your in_tta DLL.
 
-in_tta.dsp
-    このファイル (プロジェクト ファイル) はプロジェクト レベルの情報を含み、
-    シングル プロジェクトまたはサブ プロジェクトのビルドに使用されます。他の
-    ユーザーとプロジェクト ファイル (.dsp) を共有できますが、メイク ファイル
-    はローカルにエクスポートしてください。
+in_tta.vcproj
+    This is the main project file for VC++ projects generated using an Application Wizard. 
+    It contains information about the version of Visual C++ that generated the file, and 
+    information about the platforms, configurations, and project features selected with the
+    Application Wizard.
 
 in_tta.h
-	このファイルは DLL ファイルのメイン ヘッダー ファイルです。
-	CIn_ttaApp アプリケーションクラスを宣言します。
+    This is the main header file for the DLL.  It declares the
+    Cin_ttaApp class.
 
 in_tta.cpp
-	このファイルは CIn_ttaApp アプリケーションクラスを含むアプリケーション
-	の中心となるソースファイルです。
-
+    This is the main DLL source file.  It contains the class Cin_ttaApp.
 
 in_tta.rc
-    このファイルはプログラムが使用する Microsoft Windows のリソースを列挙しま
-    す。このファイルは RES サブディレクトリに保存されているアイコン、ビットマ
-    ップ、カーソルを含みます。このファイルは Microsoft Visual C++ で直接
-    編集可能です。
-
-in_tta.clw
-    このファイルは ClassWizard  が既存のクラスの編集やクラスを新規作成すると
-    きに使う情報を持っています。またこのファイルは、ClassWizard によるメッセ
-    ージ マップやダイアログ データ マップの編集や生成、プロトタイプ メンバ関
-    数の生成に必要な情報も持っています。
+    This is a listing of all of the Microsoft Windows resources that the
+    program uses.  It includes the icons, bitmaps, and cursors that are stored
+    in the RES subdirectory.  This file can be directly edited in Microsoft
+    Visual C++.
 
 res\in_tta.rc2
-    このファイルは Microsoft Visual C++ によって編集されないリソースを含んでいま
-    す。このファイルにリソース エディタで編集されないすべてのリソースを記述
-    してください。
+    This file contains resources that are not edited by Microsoft 
+    Visual C++.  You should place all resources not editable by
+    the resource editor in this file.
 
 in_tta.def
-    このファイルは DLL が Microsoft Windows 上で実行される時に必要な情報を
-    持っています。例えば DLL の名前や説明、エクスポートされる関数などのパラ
-    メータを定義します。
+    This file contains information about the DLL that must be
+    provided to run with Microsoft Windows.  It defines parameters
+    such as the name and description of the DLL.  It also exports
+    functions from the DLL.
 
 /////////////////////////////////////////////////////////////////////////////
-その他の標準ファイル:
+Other standard files:
 
 StdAfx.h, StdAfx.cpp
-    これらのファイルはプリコンパイル済ヘッダー ファイル (PCH) in_tta.pch 
-    やプリコンパイル済型ファイル StdAfx.obj を構築するために使われるファイルです。
+    These files are used to build a precompiled header (PCH) file
+    named in_tta.pch and a precompiled types file named StdAfx.obj.
 
 Resource.h
-    このファイルは新規リソース ID を定義する標準ヘッダー ファイルです。
-    Microsoft Visual C++ はこのファイルを読み込み更新します。
+    This is the standard header file, which defines new resource IDs.
+    Microsoft Visual C++ reads and updates this file.
 
 /////////////////////////////////////////////////////////////////////////////
-その他の注意:
+Other notes:
 
-"TODO:" で始まるコメントは、ソースコードの追加やカスタマイズの必要な場所を示
-します。
+AppWizard uses "TODO:" to indicate parts of the source code you
+should add to or customize.
 
 /////////////////////////////////////////////////////////////////////////////

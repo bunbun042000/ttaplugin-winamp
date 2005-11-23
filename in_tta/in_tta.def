@@ -1,7 +1,6 @@
-; in_tta.def : DLL 用のモジュール パラメータ宣言
+; in_tta.def : Declares the module parameters for the DLL.
 
 LIBRARY      "in_tta"
-DESCRIPTION  'in_tta Windows Dynamic Link Library'
 
 EXPORTS
-    ; 明示的なエクスポートはここへ記述できます
+    ; Explicit exports can go here

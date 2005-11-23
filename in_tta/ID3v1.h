@@ -73,7 +73,7 @@ public:
 	bool    hasTag() {return has_tag;}
 private:
 	HANDLE	HFILE;
-	char	FileName[MAX_PATHLEN];	// filename
+	CString	FileName;	// filename
 	int		STATE; // filestate
 
 	CString Title;

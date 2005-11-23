@@ -1,7 +1,6 @@
-/*
- * in_tta.cpp
- *
- * Description:	 TTA input plug-in for upper Winamp 2.91
+// in_tta.cpp : Defines the initialization routines for the DLL.
+//
+/* Description:	 TTA input plug-in for upper Winamp 2.91
  *               MediaLibrary Extension version
  * Developed by: Alexander Djourik <ald@true-audio.com>
  *               Pavel Zhilin <pzh@true-audio.com>
@@ -49,35 +48,67 @@
 #include "wa_ipc.h"
 #include "TagInfo.h"
 #include "TtaTag.h"
-//#include "ID3v1.h"
-//#include "Test.h"
-//#include "TagProperty.h"
+//#include "Config.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
 #endif
 
+//
+//TODO: If this DLL is dynamically linked against the MFC DLLs,
+//		any functions exported from this DLL which call into
+//		MFC must have the AFX_MANAGE_STATE macro added at the
+//		very beginning of the function.
+//
+//		For example:
+//
+//		extern "C" BOOL PASCAL EXPORT ExportedFunction()
+//		{
+//			AFX_MANAGE_STATE(AfxGetStaticModuleState());
+//			// normal function body here
+//		}
+//
+//		It is very important that this macro appear in each
+//		function, prior to any calls into MFC.  This means that
+//		it must appear as the first statement within the 
+//		function, even before any object variable declarations
+//		as their constructors may generate calls into the MFC
+//		DLL.
+//
+//		Please see MFC Technical Notes 33 and 58 for additional
+//		details.
+//
 
-BEGIN_MESSAGE_MAP(CIn_ttaApp, CWinApp)
-	//{{AFX_MSG_MAP(CIn_ttaApp)
-	//}}AFX_MSG_MAP
+
+// Cin_ttaApp
+
+BEGIN_MESSAGE_MAP(Cin_ttaApp, CWinApp)
 END_MESSAGE_MAP()
 
-/////////////////////////////////////////////////////////////////////////////
-// CIn_ttaApp の構築
 
-CIn_ttaApp::CIn_ttaApp()
+// Cin_ttaApp construction
+
+Cin_ttaApp::Cin_ttaApp()
 {
+	// TODO: add construction code here,
+	// Place all significant initialization in InitInstance
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// 唯一の CIn_ttaApp オブジェクト
 
-CIn_ttaApp theApp;
+// The one and only Cin_ttaApp object
+
+Cin_ttaApp theApp;
 
 
+// Cin_ttaApp initialization
+
+BOOL Cin_ttaApp::InitInstance()
+{
+	CWinApp::InitInstance();
+
+	return TRUE;
+}
 #define  PLUGIN_VERSION "3.2 (Media Library Extension)"
 #define  PROJECT_URL "<http://www.sourceforge.net>"
 
@@ -115,27 +146,27 @@ unsigned long bit_cache;
 unsigned char *bitpos;
 
 static HANDLE decoder_handle = NULL;
-static DWORD WINAPI DecoderThread (void *p);
+static DWORD WINAPI __stdcall DecoderThread (void *p);
 static volatile int killDecoderThread = 0;
 
-void config(HWND parent);
-void init();
-void about(HWND parent);
-void quit () {}
-void getfileinfo(char *filename, char *title, int *length_in_ms);
-int infodlg(char *filename, HWND parent);
-void pause();
-void unpause();
-int ispaused() { return paused; }
-int isourfile(char *filename) { return 0; } 
-int play(char *filename);
-void stop();
-int  getlength();
-int  getoutputtime();
-void setoutputtime(int time_in_ms);
-void setvolume(int volume);
-void setpan(int pan);
-void eq_set(int on, char data[10], int preamp);
+void __cdecl config(HWND parent);
+void __cdecl init();
+void __cdecl about(HWND parent);
+void __cdecl quit () {}
+void __cdecl getfileinfo(char *filename, char *title, int *length_in_ms);
+int __cdecl infodlg(char *filename, HWND parent);
+void __cdecl pause();
+void __cdecl unpause();
+int __cdecl ispaused() { return paused; }
+int __cdecl isourfile(char *filename) { return 0; } 
+int __cdecl play(char *filename);
+void __cdecl stop();
+int  __cdecl getlength();
+int  __cdecl getoutputtime();
+void __cdecl setoutputtime(int time_in_ms);
+void __cdecl setvolume(int volume);
+void __cdecl setpan(int pan);
+void __cdecl eq_set(int on, char data[10], int preamp);
 
 In_Module mod = {
 	IN_VER,
@@ -177,7 +208,7 @@ int get_samples(BYTE *buffer, long count);
 void pause() { paused = 1; mod.outMod->Pause(1); }
 void unpause() { paused = 0; mod.outMod->Pause(0); }
 
-void init () {
+void __cdecl init () {
 	heap = GetProcessHeap();
 	ttaTag.Flush();
 }
@@ -228,7 +259,7 @@ static BOOL CALLBACK about_dialog (HWND dialog, UINT message,
 	return FALSE;
 }
 
-void about (HWND parent) {
+void __cdecl about (HWND parent) {
 	DialogBox(mod.hDllInstance, MAKEINTRESOURCE(IDD_ABOUT),
 		parent, about_dialog);
 }
@@ -251,10 +282,11 @@ static BOOL CALLBACK config_dialog (HWND dialog, UINT message,
 	return FALSE;
 }
 
-void config (HWND parent) {
+void __cdecl config (HWND parent) {
 	DialogBox(mod.hDllInstance, MAKEINTRESOURCE(IDD_CONFIG),
 		parent, config_dialog);
 }
+
 
 static int fill_id3_data (HWND dialog, int id3version) {
 	int indx;
@@ -434,7 +466,7 @@ static BOOL CALLBACK info_dialog (HWND dialog, UINT message,
 		SetDlgItemInt(dialog, IDC_TTA_CHANNELS, dlgTag.GetNumberofChannel(), FALSE);
 
 		SetDlgItemInt(dialog, IDC_TTA_FILESIZE, dlgTag.GetFileSize(), FALSE);
-		sprintf_s(itemtext, "%.2f", dlgTag.GetCompressRate());
+		sprintf_s(itemtext, "%.2lf", dlgTag.GetCompressRate());
 		SetDlgItemText(dialog, IDC_TTA_COMPRESSION, itemtext);
 
 		if (dlgTag.id3v2.hasTag()) fill_id3_data(dialog, 2);
@@ -472,7 +504,7 @@ static BOOL CALLBACK info_dialog (HWND dialog, UINT message,
 	return FALSE;
 }
 
-int infodlg (char *filename, HWND parent) {
+int __cdecl infodlg (char *filename, HWND parent) {
 	char *p, *fn, *caption;
 
 	// check for required data presented
@@ -503,7 +535,7 @@ int infodlg (char *filename, HWND parent) {
 }
 
 
-void stop () {
+void __cdecl stop () {
 
 	if (decoder_handle) {
 		killDecoderThread = 1;
@@ -529,11 +561,11 @@ void stop () {
 	}
 }
 
-void show_bitrate (int bitrate) {
+void __cdecl show_bitrate (int bitrate) {
 	mod.SetInfo(bitrate, ttaTag.GetSampleRate()/1000, ttaTag.GetNumberofChannel(), 1);
 }
 
-int play (char *filename) {
+int __cdecl play (char *filename) {
 	int maxlatency;
 	unsigned long decoder_thread_id;
 
@@ -581,15 +613,15 @@ int play (char *filename) {
 	return 0;
 }
 
-int  getlength () { return ttaTag.GetLengthbymsec(); }
-int  getoutputtime () { return decode_pos_ms + (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime()); }
-void setoutputtime (int time_in_ms) { seek_needed = time_in_ms; }
-void setvolume (int volume) { mod.outMod->SetVolume(volume); }
-void setpan (int pan) { mod.outMod->SetPan(pan); }
-void eq_set (int on, char data[10], int preamp) {}
+int  __cdecl getlength () { return ttaTag.GetLengthbymsec(); }
+int  __cdecl getoutputtime () { return decode_pos_ms + (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime()); }
+void __cdecl setoutputtime (int time_in_ms) { seek_needed = time_in_ms; }
+void __cdecl setvolume (int volume) { mod.outMod->SetVolume(volume); }
+void __cdecl setpan (int pan) { mod.outMod->SetPan(pan); }
+void __cdecl eq_set (int on, char data[10], int preamp) {}
 
 
-void getfileinfo (char *filename, char *title, int *length_in_ms) {
+void __cdecl getfileinfo (char *filename, char *title, int *length_in_ms) {
 	if (!filename || !*filename) { // currently playing file
 		*length_in_ms = ttaTag.GetLengthbymsec();
 		ttaTag.SetPlayTitle(title);
@@ -618,7 +650,7 @@ static void do_vis(unsigned char *data, int count, int bps, int position) {
 	mod.VSAAddPCMData(data, ttaTag.GetNumberofChannel(), 16, position);
 }
 
-static DWORD WINAPI DecoderThread (void *p) {
+static DWORD WINAPI __stdcall DecoderThread (void *p) {
 	int done = 0;
 	int len;
 
@@ -663,12 +695,12 @@ static DWORD WINAPI DecoderThread (void *p) {
 
 extern "C"
 {
-	__declspec(dllexport) In_Module *winampGetInModule2(void)
+	__declspec(dllexport) In_Module* __cdecl winampGetInModule2(void)
 	{
 		return &mod;
 	}
 
-	__declspec(dllexport) int
+	__declspec(dllexport) int __cdecl
 	winampGetExtendedFileInfo(extendedFileInfoStruct ExtendedFileInfo)
 	{
 		return m_Tag.GetExtendedFileInfo(mod.hMainWindow, &ExtendedFileInfo);
@@ -1676,15 +1708,3 @@ static void add_comm_frame (char *id, unsigned char **dest, char *src) {
 //}
 
 /* eof */
-
-
-BOOL CIn_ttaApp::InitInstance() 
-{
-	// TODO: この位置に固有の処理を追加するか、または基本クラスを呼び出してください
-	if(!AfxSocketInit()) {
-		AfxMessageBox("Failed to initialize sockets", MB_OK | MB_ICONSTOP);
-		return false;
-	}
-	
-	return CWinApp::InitInstance();
-}
