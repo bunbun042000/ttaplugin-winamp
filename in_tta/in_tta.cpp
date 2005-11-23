@@ -37,8 +37,6 @@
 #include <mmreg.h>
 #include <process.h>
 
-//#include <time.h>
-
 #include "in2.h"
 #include "id3genre.h"
 #include "resource.h"
@@ -48,6 +46,7 @@
 #include "wa_ipc.h"
 #include "TagInfo.h"
 #include "TtaTag.h"
+#include "FileInfo.h"
 //#include "Config.h"
 
 
@@ -507,29 +506,29 @@ static BOOL CALLBACK info_dialog (HWND dialog, UINT message,
 int __cdecl infodlg (char *filename, HWND parent) {
 	char *p, *fn, *caption;
 
-	// check for required data presented
-//	if (!filename || !*filename) {
-//		if (!ttaTag.GetFileName() || !*ttaTag.GetFileName()) return 1;
-//		fn = ttaTag.GetFileName();
-//	} else fn = filename;
-
-
+//	AFX_MANAGE_STATE(AfxGetStaticModuleHandle());
 	if (!dlgTag.ReadTag(parent, filename)) {
 		return 1;
 	}
 
-//	if (dlgInfo.HFILE != INVALID_HANDLE_VALUE)
-//		CloseHandle(dlgInfo.HFILE);
 
 	fn = filename;
 	p = fn + lstrlen(fn);
 	while (*p != '\\' && p >= fn) p--;
 	if (*p == '\\') caption = ++p;
 	else caption = fn;
-//	::GetFileTitle(filename, caption, MAX_PATHLEN - 1);
 
-	DialogBoxParam(mod.hDllInstance, MAKEINTRESOURCE(IDD_INFO),
-		parent, info_dialog, (LPARAM) caption);
+//	DialogBoxParam(mod.hDllInstance, MAKEINTRESOURCE(IDD_INFO),
+//		parent, info_dialog, (LPARAM) caption);
+
+//	const HINSTANCE hInstance = AfxGetResourceHandle();
+//	AfxSetResourceHandle(mod.hDllInstance);
+
+	CFileInfo *infodlg = new CFileInfo(NULL);
+	infodlg->Attach(parent);
+	infodlg->DoModal();
+
+//	AfxSetResourceHandle(hInstance);
 
 	return 0;
 }
@@ -707,8 +706,8 @@ extern "C"
 	}
 }
 
-//BOOL WINAPI _DllMainCRTStartup (HANDLE hInst, ULONG ul_reason_for_call,
-//	LPVOID lpReserved) { return TRUE; }
+BOOL WINAPI _DllMainCRTStartup (HANDLE hInst, ULONG ul_reason_for_call,
+	LPVOID lpReserved) { return TRUE; }
 
 ///////////////////////////////////////////////////////////////////////
 // Description:	 TTAv1 lossless audio decoder.                       //
