@@ -50,8 +50,8 @@
 #include "TagInfo.h"
 #include "TtaTag.h"
 //#include "ID3v1.h"
-#include "Test.h"
-#include "TagProperty.h"
+//#include "Test.h"
+//#include "TagProperty.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -496,15 +496,8 @@ int infodlg (char *filename, HWND parent) {
 	else caption = fn;
 //	::GetFileTitle(filename, caption, MAX_PATHLEN - 1);
 
-//	DialogBoxParam(mod.hDllInstance, MAKEINTRESOURCE(IDD_INFO),
-//		parent, info_dialog, (LPARAM) caption);
-
-	CString str;
-	str = caption;
-	CTagProperty *testdialog = new CTagProperty(str, NULL, 0);
-	CTest dlg;
-	testdialog->AddPage(&dlg);
-	testdialog->DoModal();
+	DialogBoxParam(mod.hDllInstance, MAKEINTRESOURCE(IDD_INFO),
+		parent, info_dialog, (LPARAM) caption);
 
 	return 0;
 }
