@@ -95,11 +95,6 @@ Cin_ttaApp::Cin_ttaApp()
 }
 
 
-// The one and only Cin_ttaApp object
-
-Cin_ttaApp theApp;
-
-
 // Cin_ttaApp initialization
 
 BOOL Cin_ttaApp::InitInstance()
@@ -108,6 +103,12 @@ BOOL Cin_ttaApp::InitInstance()
 
 	return TRUE;
 }
+// The one and only Cin_ttaApp object
+
+Cin_ttaApp theApp;
+
+
+
 #define  PLUGIN_VERSION "3.2 (Media Library Extension)"
 #define  PROJECT_URL "<http://www.sourceforge.net>"
 
@@ -521,13 +522,18 @@ int __cdecl infodlg (char *filename, HWND parent) {
 //	DialogBoxParam(mod.hDllInstance, MAKEINTRESOURCE(IDD_INFO),
 //		parent, info_dialog, (LPARAM) caption);
 
-//	const HINSTANCE hInstance = AfxGetResourceHandle();
-//	AfxSetResourceHandle(mod.hDllInstance);
+//	const HINSTANCE hInstance = AfxGetInstanceHandle();
+	AfxSetResourceHandle(mod.hDllInstance);
 
-	CFileInfo *infodlg = new CFileInfo(NULL);
-	infodlg->Attach(parent);
+//	CWnd *tempwind = new CWnd();
+//	tempwind->Attach(parent);
+	CFileInfo *infodlg = new CFileInfo(NULL, filename);
+//	infodlg->Attach(parent);
 	infodlg->DoModal();
 
+//	tempwind->Detach();
+//	delete tempwind;
+	delete infodlg;
 //	AfxSetResourceHandle(hInstance);
 
 	return 0;
@@ -706,8 +712,8 @@ extern "C"
 	}
 }
 
-BOOL WINAPI _DllMainCRTStartup (HANDLE hInst, ULONG ul_reason_for_call,
-	LPVOID lpReserved) { return TRUE; }
+//BOOL WINAPI _DllMainCRTStartup (HANDLE hInst, ULONG ul_reason_for_call,
+//	LPVOID lpReserved) { return TRUE; }
 
 ///////////////////////////////////////////////////////////////////////
 // Description:	 TTAv1 lossless audio decoder.                       //

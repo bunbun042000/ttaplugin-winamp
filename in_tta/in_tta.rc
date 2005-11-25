@@ -95,40 +95,6 @@ BEGIN
     END
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_TAGINFO DIALOGEX 0, 0, 186, 95
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Dialog"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
-    IDD_TAGINFO, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 179
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 88
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
 #endif    // Japanese resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -144,17 +110,33 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_INFO_ICON           ICON                    "info.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // Dialog
 //
+
+IDD_TAGINFO DIALOGEX 0, 0, 528, 253
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,7,232,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,68,232,50,14
+    EDITTEXT        IDC_FILENAME,46,7,475,12,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "FileName:",IDC_STATIC,9,9,32,8
+    EDITTEXT        IDC_ID3V1_NAME,75,45,134,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ID3V1_TRACKNO,181,32,26,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ID3V1_ARTISTS,75,58,134,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ID3V1_COMMENT,75,85,134,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ID3V1_ALBUM,75,71,134,12,ES_AUTOHSCROLL
+    LTEXT           "Title :",IDC_STATIC,21,45,24,12,SS_CENTERIMAGE
+    LTEXT           "Artists :",IDC_STATIC,19,58,26,12,SS_CENTERIMAGE
+    LTEXT           "Album :",IDC_STATIC,15,71,25,12,SS_CENTERIMAGE
+    LTEXT           "Year :",IDC_STATIC,25,98,20,12
+    LTEXT           "Genre :",IDC_STATIC,123,100,25,12
+    LTEXT           "Comment :",IDC_STATIC,10,86,36,12
+    LTEXT           "Track No. :",IDC_STATIC,139,32,36,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_ID3V1_YEAR,75,98,19,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_ID3V1_GENRE,160,100,64,30,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+END
 
 IDD_ABOUT DIALOGEX 0, 0, 141, 115
 STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
@@ -229,6 +211,16 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
+    IDD_TAGINFO, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 521
+        VERTGUIDE, 46
+        VERTGUIDE, 75
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 246
+    END
+
     IDD_ABOUT, DIALOG
     BEGIN
         BOTTOMMARGIN, 110
@@ -250,6 +242,15 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_INFO_ICON           ICON                    "info.ico"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
