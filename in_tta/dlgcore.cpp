@@ -19,56 +19,6 @@
 
 #define new DEBUG_NEW
 
-
-
-BOOL AFXAPI _AfxCompareClassName(HWND hWnd, LPCTSTR lpszClassName)
-{
-	ASSERT(::IsWindow(hWnd));
-	TCHAR szTemp[32];
-	::GetClassName(hWnd, szTemp, _countof(szTemp));
-	return ::AfxInvariantStrICmp(szTemp, lpszClassName) == 0;
-}
-
-
-
-
-// for backward compatibility
-BOOL CDialog::CreateIndirect(HGLOBAL hDialogTemplate, CWnd* pParentWnd)
-{
-	return CreateIndirect(hDialogTemplate, pParentWnd, NULL);
-}
-
-BOOL CDialog::CreateIndirect(HGLOBAL hDialogTemplate, CWnd* pParentWnd,
-	HINSTANCE hInst)
-{
-	ASSERT(hDialogTemplate != NULL);
-
-	LPCDLGTEMPLATE lpDialogTemplate = (LPCDLGTEMPLATE)LockResource(hDialogTemplate);
-	BOOL bResult = CreateIndirect(lpDialogTemplate, pParentWnd, NULL, hInst);
-	UnlockResource(hDialogTemplate);
-
-	return bResult;
-}
-
-// for backward compatibility
-BOOL CDialog::CreateIndirect(LPCDLGTEMPLATE lpDialogTemplate, CWnd* pParentWnd,
-	void* lpDialogInit)
-{
-	return CreateIndirect(lpDialogTemplate, pParentWnd, lpDialogInit, NULL);
-}
-
-BOOL CDialog::CreateIndirect(LPCDLGTEMPLATE lpDialogTemplate, CWnd* pParentWnd,
-	void* lpDialogInit, HINSTANCE hInst)
-{
-	ASSERT(lpDialogTemplate != NULL);
-
-	if (pParentWnd == NULL)
-		pParentWnd = AfxGetMainWnd();
-	m_lpDialogInit = lpDialogInit;
-
-	return CreateDlgIndirect(lpDialogTemplate, pParentWnd, hInst);
-}
-
 BOOL CWnd::CreateDlg(LPCTSTR lpszTemplateName, CWnd* pParentWnd)
 {
 	// load resource

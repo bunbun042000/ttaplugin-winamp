@@ -10,7 +10,6 @@
 #endif // _MSC_VER > 1000
 
 #define	MAX_MUSICTEXT	512
-#define	MAX_GENRE		148
 
 //#include <windows.h>
 #include <mmreg.h>

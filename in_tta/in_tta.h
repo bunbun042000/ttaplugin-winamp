@@ -10,6 +10,7 @@
 #include "resource.h"		// main symbols
 
 #define MAX_PATHLEN		512
+#define GENRES	148
 
 // Cin_ttaApp
 // See in_tta.cpp for the implementation of this class

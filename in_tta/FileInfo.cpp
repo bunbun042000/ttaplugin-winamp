@@ -40,6 +40,7 @@ void CFileInfo::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_ID3V1_COMMENT, m_sID3v1_Comment);
 	DDX_Text(pDX, IDC_ID3V1_YEAR, m_sID3v1_Year);
 	DDX_Text(pDX, IDC_ID3V1_TRACKNO, m_sID3v1_TrackNo);
+	DDX_Control(pDX, IDC_ID3V1_GENRE, m_ID3v1_Genre);
 }
 
 
@@ -68,6 +69,14 @@ BOOL CFileInfo::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	int nCount;
+	for(int i = 0; i < GENRES; i++)
+	{
+		nCount = m_ID3v1_Genre.AddString(genre[i]);
+		if (nCount == CB_ERR)
+			break;
+	}
+
 	char buf[10];
 
 	dlgtag.ReadTag(NULL, (LPCTSTR)m_sFileName);
@@ -80,6 +89,7 @@ BOOL CFileInfo::OnInitDialog()
 		m_sID3v1_Year = dlgtag.id3v1.GetYear();
 		_ultoa_s((unsigned long)dlgtag.id3v1.GetTrack(), buf, sizeof(buf), 10);
 		m_sID3v1_TrackNo = buf;
+		m_ID3v1_Genre.SetCurSel((int)dlgtag.id3v1.GetGenre());
 	}
 
 	UpdateData(FALSE);
