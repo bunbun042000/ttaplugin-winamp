@@ -34,6 +34,7 @@ bool CID3v1::ReadTag(HWND hMainWindow, const char *filename)
 	v1tag  tag;
 
 	FileName = filename;
+	ZeroMemory(&tag, sizeof(v1tag));
 
 	HFILE = CreateFile((LPCTSTR)FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -143,9 +144,12 @@ void CID3v1::SetComment(const char *comment)
 	Comment = comment;
 }
 
-void CID3v1::SetGenre(const char genre)
+void CID3v1::SetGenre(const unsigned char genre)
 {
-	Genre = genre;
+	if (genre >= 0 && genre < GENRES)
+		Genre = genre;
+	else
+		Genre = NULL;
 }
 
 void CID3v1::SetTitle(const char *title)
@@ -153,9 +157,12 @@ void CID3v1::SetTitle(const char *title)
 	Title = title;
 }
 
-void CID3v1::SetTrack(const char track)
+void CID3v1::SetTrack(const unsigned char track)
 {
-	Track = track;
+	if (track >= 0 && track < 255)
+		Track = track;
+	else
+		Track = NULL;
 }
 
 void CID3v1::SetYear(const char *year)

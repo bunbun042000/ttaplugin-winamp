@@ -508,9 +508,9 @@ int __cdecl infodlg (char *filename, HWND parent) {
 	char *p, *fn, *caption;
 
 //	AFX_MANAGE_STATE(AfxGetStaticModuleHandle());
-	if (!dlgTag.ReadTag(parent, filename)) {
-		return 1;
-	}
+//	if (!dlgTag.ReadTag(parent, filename)) {
+//		return 1;
+//	}
 
 
 	fn = filename;

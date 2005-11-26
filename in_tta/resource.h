@@ -28,9 +28,13 @@
 #define IDC_ID3V1_TRACKNO               2002
 #define IDC_ID3V1_ARTISTS               2003
 #define IDC_ID3V1_COMMENT               2004
+#define IDS_TTAFORMAT                   2004
 #define IDC_ID3V1_ALBUM                 2005
 #define IDC_ID3V1_YEAR                  2006
 #define IDC_ID3V1_GENRE                 2008
+#define IDC_ID3V1_SAVE                  2009
+#define IDC_FILEFORMAT                  2011
+#define IDC_GBFILEFORMAT                2012
 #define IDI_INFO_ICON                   10002
 #define IDD_TAGINFO                     10004
 
@@ -38,9 +42,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        2004
+#define _APS_NEXT_RESOURCE_VALUE        2005
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2009
+#define _APS_NEXT_CONTROL_VALUE         2013
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif

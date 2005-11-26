@@ -23,6 +23,7 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual BOOL OnInitDialog();
+	void ShowHideID3v1Column();
 	CString m_sFileName;
 
 // ID3v1
@@ -36,9 +37,18 @@ protected:
 
 	CTtaTag dlgtag;
 
+	CButton m_ID3v1_Check;
+	BOOL m_bID3v1_save;
+	CEdit m_ID3v1_TrackNo;
+	CEdit m_ID3v1_Name;
+	CEdit m_ID3v1_Artist;
+	CEdit m_ID3v1_Album;
+	CEdit m_ID3v1_Comment;
+	CEdit m_ID3v1_Year;
+
 	DECLARE_MESSAGE_MAP()
-public:
 	afx_msg void OnBnClickedOk();
-public:
 	afx_msg void OnBnClickedCancel();
+	afx_msg void OnBnClickedId3v1Save();
+	CString m_sFileFormat;
 };

@@ -40,8 +40,8 @@ struct v1tag
 	char  year[ID3V1_YEARLENGTH];
 	char  comment[ID3V1_COMMENTLENGTH];
 	char  zero;
-	char  track;
-	char  genre;
+	unsigned char  track;
+	unsigned char  genre;
 };
 
 class CID3v1  
@@ -49,26 +49,26 @@ class CID3v1
 public:
 	CID3v1();
 	virtual ~CID3v1();
-	bool    ReadTag(HWND hMainWindow, const char *filename);
-	bool    SaveTag(HWND hMainWindow);
-	void    DeleteTag(HWND hMainWindow);
+	bool			ReadTag(HWND hMainWindow, const char *filename);
+	bool			SaveTag(HWND hMainWindow);
+	void			DeleteTag(HWND hMainWindow);
 
 //	CString GetFileName(){return FileName;}
 //	void    SetFileName(const char *filename);
-	CString GetTitle() {return Title.GetBufferSetLength(ID3V1_TITLELENGTH);}
-	void    SetTitle(const char *title);
-	CString GetArtist(){return Artist.GetBufferSetLength(ID3V1_ARTISTLENGTH);}
-	void    SetArtist(const char *artist);
-	CString GetAlbum() {return Album.GetBufferSetLength(ID3V1_ALBUMLENGTH);}
-	void    SetAlbum(const char *album);
-	CString GetYear() {return Year.GetBufferSetLength(ID3V1_YEARLENGTH);}
-	void    SetYear(const char *year);
-	CString GetComment() {return Comment.GetBufferSetLength(ID3V1_COMMENTLENGTH);}
-	void    SetComment(const char *comment);
-	char    GetTrack() {return Track;}
-	void    SetTrack(const char track);
-	char    GetGenre() {return Genre;}
-	void    SetGenre(const char genre);
+	CString			GetTitle() {return Title.GetBufferSetLength(ID3V1_TITLELENGTH);}
+	void			SetTitle(const char *title);
+	CString			GetArtist(){return Artist.GetBufferSetLength(ID3V1_ARTISTLENGTH);}
+	void			SetArtist(const char *artist);
+	CString			GetAlbum() {return Album.GetBufferSetLength(ID3V1_ALBUMLENGTH);}
+	void			SetAlbum(const char *album);
+	CString			GetYear() {return Year.GetBufferSetLength(ID3V1_YEARLENGTH);}
+	void			SetYear(const char *year);
+	CString			GetComment() {return Comment.GetBufferSetLength(ID3V1_COMMENTLENGTH);}
+	void			SetComment(const char *comment);
+	unsigned char	GetTrack() {return Track;}
+	void			SetTrack(const unsigned char track);
+	unsigned char	GetGenre() {return Genre;}
+	void			SetGenre(const unsigned char genre);
 
 	bool    hasTag() {return has_tag;}
 private:
@@ -81,8 +81,8 @@ private:
 	CString Album;
 	CString Year;
 	CString Comment;
-	char    Track;
-	char    Genre;
+	unsigned char    Track;
+	unsigned char    Genre;
 
 	bool	has_tag;
 
