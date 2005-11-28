@@ -77,8 +77,7 @@ bool CID3v1::SaveTag(HWND hMainWindow)
 		FILE_SHARE_READ, NULL,OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (HFILE == INVALID_HANDLE_VALUE) {
 		CloseHandle(HFILE);
-		error(hMainWindow, OPEN_ERROR);
-		return false;
+		return OPEN_ERROR;
 	}
 	ZeroMemory(&tag, sizeof(v1tag));
 

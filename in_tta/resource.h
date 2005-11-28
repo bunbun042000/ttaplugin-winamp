@@ -35,6 +35,26 @@
 #define IDC_ID3V1_SAVE                  2009
 #define IDC_FILEFORMAT                  2011
 #define IDC_GBFILEFORMAT                2012
+#define IDC_ID3V2_SAVE                  2013
+#define IDC_COPYFROMV2                  2014
+#define IDC_ID3V2_TITLE                 2015
+#define IDC_ID3V2_ARTISTS               2016
+#define IDC_ID3V2_ALBUM                 2017
+#define IDC_COPYFROMV1                  2018
+#define IDC_ID3V2_COMMENT               2020
+#define IDC_ID3V2_COPYRIGHTS            2022
+#define IDC_ID3V2_URI                   2023
+#define IDC_ID3V2_WORDS                 2024
+#define IDC_ID3V2_COMPOSERS             2025
+#define IDC_ID3V2_ARRANGEMENTS          2026
+#define IDC_ID3V2_ORIGINAL_ARTISTS      2027
+#define IDC_EDIT10                      2028
+#define IDC_ID3V2_ENCODING_ENGINEER     2028
+#define IDC_ID3V2_YEAR                  2029
+#define IDC_ID3V2_VERSION               2030
+#define IDC_ID3V2_STRING_ENCODING       2031
+#define IDC_ID3V2_GENRE                 2032
+#define IDC_ID3V2_TRACKNO               2033
 #define IDI_INFO_ICON                   10002
 #define IDD_TAGINFO                     10004
 
@@ -44,7 +64,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        2005
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2013
+#define _APS_NEXT_CONTROL_VALUE         2034
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif

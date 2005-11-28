@@ -288,229 +288,11 @@ void __cdecl config (HWND parent) {
 }
 
 
-static int fill_id3_data (HWND dialog, int id3version) {
-	int indx;
 
-	// set text limits
-	if (id3version == 1) {
-		bool state = dlgTag.id3v1.hasTag();
-
-		SetDlgItemText(dialog, IDC_ID3_EDITOR, "ID3v1");
-		EnableWindow(GetDlgItem(dialog, IDC_ID3_EDITOR), state);
-		EnableWindow(GetDlgItem(dialog, IDC_ID3_DELETE), state);
-
-		if (!state && dlgTag.id3v2.hasTag()) {
-			SendDlgItemMessage(dialog, IDC_ID3_TITLE,	EM_SETSEL, 30, -1);
-			SendDlgItemMessage(dialog, IDC_ID3_TITLE,	EM_REPLACESEL, FALSE, (LPARAM)"");
-			SendDlgItemMessage(dialog, IDC_ID3_TITLE,	EM_SETSEL, 0, 0);
-			SendDlgItemMessage(dialog, IDC_ID3_ARTIST,	EM_SETSEL, 30, -1);
-			SendDlgItemMessage(dialog, IDC_ID3_ARTIST,	EM_REPLACESEL, FALSE, (LPARAM)"");
-			SendDlgItemMessage(dialog, IDC_ID3_ARTIST,	EM_SETSEL, 0, 0);
-			SendDlgItemMessage(dialog, IDC_ID3_ALBUM,	EM_SETSEL, 30, -1);
-			SendDlgItemMessage(dialog, IDC_ID3_ALBUM,	EM_REPLACESEL, FALSE, (LPARAM)"");
-			SendDlgItemMessage(dialog, IDC_ID3_ALBUM,	EM_SETSEL, 0, 0);
-			SendDlgItemMessage(dialog, IDC_ID3_COMMENT,	EM_SETSEL, 28, -1);
-			SendDlgItemMessage(dialog, IDC_ID3_COMMENT,	EM_REPLACESEL, FALSE, (LPARAM)"");
-			SendDlgItemMessage(dialog, IDC_ID3_COMMENT,	EM_SETSEL, 0, 0);
-		}
-
-		SendDlgItemMessage(dialog, IDC_ID3_TITLE,	EM_SETLIMITTEXT, 30, 0);
-		SendDlgItemMessage(dialog, IDC_ID3_ARTIST,	EM_SETLIMITTEXT, 30, 0);
-		SendDlgItemMessage(dialog, IDC_ID3_ALBUM,	EM_SETLIMITTEXT, 30, 0);
-		SendDlgItemMessage(dialog, IDC_ID3_YEAR,	EM_SETLIMITTEXT,  4, 0);
-		SendDlgItemMessage(dialog, IDC_ID3_TRACK,	EM_SETLIMITTEXT,  3, 0);
-		SendDlgItemMessage(dialog, IDC_ID3_COMMENT,	EM_SETLIMITTEXT, 28, 0);
-	} else {
-		bool state = dlgTag.id3v2.hasTag();
-
-		SetDlgItemText(dialog, IDC_ID3_EDITOR, "ID3v2");
-		EnableWindow(GetDlgItem(dialog, IDC_ID3_EDITOR), state);
-		EnableWindow(GetDlgItem(dialog, IDC_ID3_DELETE), state);
-		SendDlgItemMessage(dialog, IDC_ID3_SWITCH,	BM_SETCHECK, BST_CHECKED, 0);
-
-		SendDlgItemMessage(dialog, IDC_ID3_TITLE,	EM_SETLIMITTEXT, MAX_LINE, 0);
-		SendDlgItemMessage(dialog, IDC_ID3_ARTIST,	EM_SETLIMITTEXT, MAX_LINE, 0);
-		SendDlgItemMessage(dialog, IDC_ID3_ALBUM,	EM_SETLIMITTEXT, MAX_LINE, 0);
-		SendDlgItemMessage(dialog, IDC_ID3_YEAR,	EM_SETLIMITTEXT,  4, 0);
-		SendDlgItemMessage(dialog, IDC_ID3_TRACK,	EM_SETLIMITTEXT,  3, 0);
-		SendDlgItemMessage(dialog, IDC_ID3_COMMENT,	EM_SETLIMITTEXT, MAX_LINE, 0);
-	}
-
-	if (id3version == 1 && dlgTag.id3v1.hasTag()) {
-		SetDlgItemText(dialog, IDC_ID3_TITLE, dlgTag.id3v1.GetTitle());
-		SetDlgItemText(dialog, IDC_ID3_ARTIST, dlgTag.id3v1.GetArtist());
-		SetDlgItemText(dialog, IDC_ID3_ALBUM, dlgTag.id3v1.GetAlbum());
-		SetDlgItemText(dialog, IDC_ID3_YEAR, dlgTag.id3v1.GetYear());
-		SetDlgItemText(dialog, IDC_ID3_COMMENT, dlgTag.id3v1.GetComment());
-		if (dlgTag.id3v1.GetTrack() > 0)
-			SetDlgItemInt(dialog, IDC_ID3_TRACK, dlgTag.id3v1.GetTrack(), FALSE);
-		else  {
-			SendDlgItemMessage(dialog, IDC_ID3_TRACK,	EM_SETSEL, 0, -1);
-			SendDlgItemMessage(dialog, IDC_ID3_TRACK,	EM_REPLACESEL, FALSE, (LPARAM)"");
-		}
-		if ((unsigned char)dlgTag.id3v1.GetGenre() >= 0 && dlgTag.id3v1.GetGenre() != 0xFF) {
-			if ((unsigned int) dlgTag.id3v1.GetGenre() > GENRES - 1) dlgTag.id3v1.SetGenre(12); // Other
-			indx = SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_FINDSTRINGEXACT,
-				-1, (LPARAM) genre[(unsigned char)dlgTag.id3v1.GetGenre()]);
-			SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_SETCURSEL, indx, 0);
-		} else SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_SETCURSEL, -1, 0);
-		return 0;
-	} else if (id3version == 2 && dlgTag.id3v2.hasTag()) {
-		SetDlgItemText(dialog, IDC_ID3_TITLE, dlgTag.id3v2.GetTitle());
-		SetDlgItemText(dialog, IDC_ID3_ARTIST, dlgTag.id3v2.GetArtist());
-		SetDlgItemText(dialog, IDC_ID3_ALBUM, dlgTag.id3v2.GetAlbum());
-//		SetDlgItemText(dialog, IDC_ID3_YEAR, dlgInfo.id3v2.year);
-//		SetDlgItemText(dialog, IDC_ID3_COMMENT, dlgInfo.id3v2.comment);
-//		SetDlgItemText(dialog, IDC_ID3_TRACK, dlgInfo.id3v2.track);
-//		if (*dlgInfo.id3v2.genre && dlgInfo.id3v2.genre[0] != 0x20) {
-//			for (indx = 0, genre_indx = 12; indx < GENRES; indx++) {
-//				if (lstrcmp(dlgInfo.id3v2.genre, genre[indx]) == 0) {
-//					genre_indx = indx;
-//					break;
-//				}
-//			}
-//			indx = SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_FINDSTRINGEXACT,
-//				-1, (LPARAM) genre[genre_indx]);
-//			SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_SETCURSEL, indx, 0);
-//		}
-		return 0;
-	}
-
-	return 1;
-}
-
-static void update_id3_data (HWND dialog, int id3version) {
-	char itemtext[64];
-	char tempchar[MAX_MUSICTEXT];
-	int indx;
-
-	if (id3version == 1) {
-
-		// title, artist, album, year, comment, track
-		GetDlgItemText(dialog, IDC_ID3_TITLE, tempchar,	sizeof(tempchar));
-		dlgTag.id3v1.SetTitle(tempchar);
-		GetDlgItemText(dialog, IDC_ID3_ARTIST, tempchar, sizeof(tempchar));
-		dlgTag.id3v1.SetArtist(tempchar);
-		GetDlgItemText(dialog, IDC_ID3_ALBUM, tempchar,	sizeof(tempchar));
-		dlgTag.id3v1.SetAlbum(tempchar);
-		GetDlgItemText(dialog, IDC_ID3_YEAR, tempchar, sizeof(tempchar));
-		dlgTag.id3v1.SetYear(tempchar);
-		GetDlgItemText(dialog, IDC_ID3_COMMENT, tempchar, sizeof(tempchar));
-		dlgTag.id3v1.SetComment(tempchar);
-		dlgTag.id3v1.SetTrack(GetDlgItemInt(dialog, IDC_ID3_TRACK, 0, FALSE));
-
-		// genre
-		GetDlgItemText(dialog, IDC_ID3_GENRE, itemtext, sizeof(itemtext));
-		for (indx = 0, dlgTag.id3v1.SetGenre((char)0xFF); indx < GENRES; indx++) {
-			if (!*itemtext && itemtext[0] == 0x20) break;
-			if (lstrcmp(itemtext, genre[indx]) == 0) {
-				dlgTag.id3v1.SetGenre(indx);
-				break;
-			}
-		}
-
-		dlgTag.id3v1.SaveTag(mod.hMainWindow);
-		EnableWindow(GetDlgItem(dialog, IDC_ID3_EDITOR), TRUE);
-
-		fill_id3_data(dialog,1);
-		return;
-//	} else {
-//
-//		// title, artist, album, year, comment, track
-//		GetDlgItemText(dialog, IDC_ID3_TITLE, dlgInfo.id3v2.title,
-//			sizeof(dlgInfo.id3v2.title));
-//		GetDlgItemText(dialog, IDC_ID3_ARTIST, dlgInfo.id3v2.artist,
-//			sizeof(dlgInfo.id3v2.artist));
-//		GetDlgItemText(dialog, IDC_ID3_ALBUM, dlgInfo.id3v2.album,
-//			sizeof(dlgInfo.id3v2.album));
-//		GetDlgItemText(dialog, IDC_ID3_YEAR, dlgInfo.id3v2.year,
-//			sizeof(dlgInfo.id3v2.year));
-//		GetDlgItemText(dialog, IDC_ID3_COMMENT, dlgInfo.id3v2.comment,
-//			sizeof(dlgInfo.id3v2.comment));
-//		GetDlgItemText(dialog, IDC_ID3_TRACK, dlgInfo.id3v2.track,
-//			sizeof(dlgInfo.id3v2.track));
-//		GetDlgItemText(dialog, IDC_ID3_GENRE, dlgInfo.id3v2.genre,
-//			sizeof(dlgInfo.id3v2.genre));
-//		if (*dlgInfo.id3v2.genre == 0x20) *dlgInfo.id3v2.genre = 0;
-//
-//		save_id3v2_tag(&dlgInfo);
-//		EnableWindow(GetDlgItem(dialog, IDC_ID3_EDITOR), TRUE);
-	}
-}
-
-static BOOL CALLBACK info_dialog (HWND dialog, UINT message,
-	WPARAM wparam, LPARAM lparam) {
-	char itemtext[64];
-	int indx;
-
-	switch (message) {
-		HICON hicon;
-
-	case WM_INITDIALOG:
-		SetWindowText(dialog, (char *) lparam);
-
-		// Set new icon
-		hicon = LoadIcon (mod.hDllInstance, MAKEINTRESOURCE(IDI_INFO_ICON));
-		SendMessage (dialog, WM_SETICON, (WPARAM)ICON_SMALL, (LPARAM)hicon);
-
-		// initialize genre combobox
-		for (indx = 0; indx < GENRES; indx++)
-			SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_ADDSTRING, 0, (LPARAM) genre[indx]);
-		indx = SendDlgItemMessage(dialog, IDC_ID3_GENRE, CB_ADDSTRING, 0, (LPARAM) " ");
-
-		// load data
-		SetDlgItemText(dialog, IDC_FILE_LOCATION, dlgTag.GetFileName());
-		SetDlgItemInt(dialog, IDC_TTA_LEVEL, TTA_LEVEL, FALSE);
-		SetDlgItemInt(dialog, IDC_TTA_BPS, dlgTag.GetBitsperSample(), FALSE);
-		SetDlgItemInt(dialog, IDC_TTA_SAMPLERATE, dlgTag.GetSampleRate(), FALSE);
-		SetDlgItemInt(dialog, IDC_TTA_CHANNELS, dlgTag.GetNumberofChannel(), FALSE);
-
-		SetDlgItemInt(dialog, IDC_TTA_FILESIZE, dlgTag.GetFileSize(), FALSE);
-		sprintf_s(itemtext, "%.2lf", dlgTag.GetCompressRate());
-		SetDlgItemText(dialog, IDC_TTA_COMPRESSION, itemtext);
-
-		if (dlgTag.id3v2.hasTag()) fill_id3_data(dialog, 2);
-		else fill_id3_data(dialog, 1); 
-
-		return TRUE;
-	case WM_COMMAND:
-		switch (LOWORD(wparam)) {
-			int id3version;
-
-		case IDC_ID3_SWITCH:
-			if (IsDlgButtonChecked(dialog, IDC_ID3_SWITCH) == BST_CHECKED)
-				 fill_id3_data(dialog, 2);
-			else fill_id3_data(dialog, 1);
-			return TRUE;
-		case IDC_ID3_DELETE:
-			if (IsDlgButtonChecked(dialog, IDC_ID3_SWITCH) == BST_CHECKED)
-//				 del_id3v2_tag(&dlgInfo);
-				int i;
-			else dlgTag.id3v1.DeleteTag(mod.hMainWindow);
-			EnableWindow(GetDlgItem(dialog, IDC_ID3_EDITOR), FALSE);
-			EnableWindow(GetDlgItem(dialog, IDC_ID3_DELETE), FALSE);
-			return TRUE;
-		case IDOK:
-			id3version = (IsDlgButtonChecked(dialog, IDC_ID3_SWITCH) == BST_CHECKED)? 2:1;
-			update_id3_data(dialog, id3version);
-			EndDialog(dialog, wparam);
-			return TRUE;
-		case IDCANCEL:
-			EndDialog(dialog, wparam);
-			return TRUE;
-		}
-		break;
-	}
-	return FALSE;
-}
 
 int __cdecl infodlg (char *filename, HWND parent) {
 	char *p, *fn, *caption;
 
-//	AFX_MANAGE_STATE(AfxGetStaticModuleHandle());
-//	if (!dlgTag.ReadTag(parent, filename)) {
-//		return 1;
-//	}
 
 
 	fn = filename;
@@ -519,22 +301,12 @@ int __cdecl infodlg (char *filename, HWND parent) {
 	if (*p == '\\') caption = ++p;
 	else caption = fn;
 
-//	DialogBoxParam(mod.hDllInstance, MAKEINTRESOURCE(IDD_INFO),
-//		parent, info_dialog, (LPARAM) caption);
+//	AfxSetResourceHandle(mod.hDllInstance);
 
-//	const HINSTANCE hInstance = AfxGetInstanceHandle();
-	AfxSetResourceHandle(mod.hDllInstance);
-
-//	CWnd *tempwind = new CWnd();
-//	tempwind->Attach(parent);
 	CFileInfo *infodlg = new CFileInfo(NULL, filename);
-//	infodlg->Attach(parent);
 	infodlg->DoModal();
 
-//	tempwind->Detach();
-//	delete tempwind;
 	delete infodlg;
-//	AfxSetResourceHandle(hInstance);
 
 	return 0;
 }
@@ -552,10 +324,6 @@ void __cdecl stop () {
 		decoder_handle = NULL;
 	}
 
-//	if (info.HFILE != INVALID_HANDLE_VALUE) {
-//		CloseHandle(info.HFILE);
-//		info.HFILE = INVALID_HANDLE_VALUE;
-//	}
 
 	mod.outMod->Close();
 	mod.SAVSADeInit();

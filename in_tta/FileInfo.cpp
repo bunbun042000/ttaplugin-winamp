@@ -21,6 +21,21 @@ CFileInfo::CFileInfo(CWnd* pParent /*=NULL*/, const char *filename)
 , m_sID3v1_TrackNo(_T(""))
 , m_bID3v1_save(FALSE)
 , m_sFileFormat(_T(""))
+, m_bID3v2_save(FALSE)
+, m_sID3v2_Title(_T(""))
+, m_sID3v2_Artists(_T(""))
+, m_sID3v2_Album(_T(""))
+, m_sID3v2_Year(_T(""))
+, m_sID3v2_Genre(_T(""))
+, m_sID3v2_Comment(_T(""))
+, m_sID3v2_TrackNo(_T(""))
+, m_sID3v2_Copyrights(_T(""))
+, m_sID3v2_URI(_T(""))
+, m_sID3v2_Words(_T(""))
+, m_sID3v2_Composers(_T(""))
+, m_sID3v2_Arrangements(_T(""))
+, m_sID3v2_Original_Artists(_T(""))
+, m_sID3v2_Encoding_Engineer(_T(""))
 {
 //	AFX_MANAGE_STATE(AfxGetStaticModuleHandle());
 	m_sFileName = filename;
@@ -52,6 +67,39 @@ void CFileInfo::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_ID3V1_COMMENT, m_ID3v1_Comment);
 	DDX_Control(pDX, IDC_ID3V1_YEAR, m_ID3v1_Year);
 	DDX_Text(pDX, IDC_FILEFORMAT, m_sFileFormat);
+	DDX_Check(pDX, IDC_ID3V2_SAVE, m_bID3v2_save);
+	DDX_Control(pDX, IDC_ID3V2_TITLE, m_ID3v2_Title);
+	DDX_Text(pDX, IDC_ID3V2_TITLE, m_sID3v2_Title);
+	DDX_Control(pDX, IDC_ID3V2_ARTISTS, m_ID3v2_Artists);
+	DDX_Text(pDX, IDC_ID3V2_ARTISTS, m_sID3v2_Artists);
+	DDX_Control(pDX, IDC_ID3V2_ALBUM, m_ID3v2_Album);
+	DDX_Text(pDX, IDC_ID3V2_ALBUM, m_sID3v2_Album);
+	DDX_Text(pDX, IDC_ID3V2_YEAR, m_sID3v2_Year);
+	DDX_Control(pDX, IDC_ID3V2_YEAR, m_ID3v2_Year);
+	DDX_Control(pDX, IDC_ID3V2_GENRE, m_ID3v2_Genre);
+	DDX_Text(pDX, IDC_ID3V2_GENRE, m_sID3v2_Genre);
+	DDX_Control(pDX, IDC_ID3V2_COMMENT, m_ID3v2_Comment);
+	DDX_Text(pDX, IDC_ID3V2_COMMENT, m_sID3v2_Comment);
+	DDX_Control(pDX, IDC_ID3V2_TRACKNO, m_ID3v2_TrackNo);
+	DDX_Text(pDX, IDC_ID3V2_TRACKNO, m_sID3v2_TrackNo);
+	DDX_Control(pDX, IDC_ID3V2_COPYRIGHTS, m_ID3v2_Copyrights);
+	DDX_Text(pDX, IDC_ID3V2_COPYRIGHTS, m_sID3v2_Copyrights);
+	DDX_Control(pDX, IDC_ID3V2_URI, m_ID3v2_URI);
+	DDX_Text(pDX, IDC_ID3V2_URI, m_sID3v2_URI);
+	DDX_Text(pDX, IDC_ID3V2_WORDS, m_sID3v2_Words);
+	DDX_Control(pDX, IDC_ID3V2_WORDS, m_ID3v2_Words);
+	DDX_Control(pDX, IDC_ID3V2_COMPOSERS, m_ID3v2_Composers);
+	DDX_Text(pDX, IDC_ID3V2_COMPOSERS, m_sID3v2_Composers);
+	DDX_Control(pDX, IDC_ID3V2_ARRANGEMENTS, m_ID3v2_Arrangements);
+	DDX_Text(pDX, IDC_ID3V2_ARRANGEMENTS, m_sID3v2_Arrangements);
+	DDX_Control(pDX, IDC_ID3V2_ORIGINAL_ARTISTS, m_ID3v2_Original_Artists);
+	DDX_Text(pDX, IDC_ID3V2_ORIGINAL_ARTISTS, m_sID3v2_Original_Artists);
+	DDX_Control(pDX, IDC_ID3V2_ENCODING_ENGINEER, m_ID3v2_Encoding_Engineer);
+	DDX_Text(pDX, IDC_ID3V2_ENCODING_ENGINEER, m_sID3v2_Encoding_Engineer);
+	DDX_Control(pDX, IDC_ID3V2_VERSION, m_ID3v2_Version);
+	DDX_Control(pDX, IDC_ID3V2_STRING_ENCODING, m_ID3v2_String_Encoding);
+	DDX_Control(pDX, IDC_COPYFROMV2, m_ID3v1_CopyFromV2);
+	DDX_Control(pDX, IDC_COPYFROMV1, m_ID3v2_CopyFromV1);
 }
 
 
@@ -59,6 +107,7 @@ BEGIN_MESSAGE_MAP(CFileInfo, CDialog)
 	ON_BN_CLICKED(IDOK, &CFileInfo::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CFileInfo::OnBnClickedCancel)
 	ON_BN_CLICKED(IDC_ID3V1_SAVE, &CFileInfo::OnBnClickedId3v1Save)
+	ON_BN_CLICKED(IDC_ID3V2_SAVE, &CFileInfo::OnBnClickedId3v2Save)
 END_MESSAGE_MAP()
 
 
@@ -118,6 +167,7 @@ BOOL CFileInfo::OnInitDialog()
 	dlgtag.ReadTag(NULL, (LPCTSTR)m_sFileName);
 
 
+	// File Information (TTA)
 	int Lengthbysec = dlgtag.GetLengthbymsec() / 1000;
 	int hour = Lengthbysec / 3600;
 	int min  = Lengthbysec / 60;
@@ -137,6 +187,7 @@ BOOL CFileInfo::OnInitDialog()
 		(dlgtag.GetNumberofChannel() == 2) ? "Stereo" : "Monoral",
 		dlgtag.GetLengthbyFrame(), second);
 
+	// ID3v1 Tag
 	if(dlgtag.id3v1.hasTag()){
 		m_bID3v1_save = TRUE;
 		ShowHideID3v1Column();
@@ -155,6 +206,17 @@ BOOL CFileInfo::OnInitDialog()
 		ShowHideID3v1Column();
 	}
 
+	// ID3v2 Tag
+	if(dlgtag.id3v2.hasTag()){
+		m_bID3v2_save = TRUE;
+		ShowHideID3v2Column();
+	}
+	else
+	{
+		m_bID3v2_save = FALSE;
+		ShowHideID3v2Column();
+	}
+
 
 	UpdateData(FALSE);
 	return TRUE;
@@ -164,26 +226,16 @@ BOOL CFileInfo::OnInitDialog()
 
 void CFileInfo::ShowHideID3v1Column()
 {
-	if(m_bID3v1_save)
-	{
-		m_ID3v1_Album.EnableWindow(true);
-		m_ID3v1_Artist.EnableWindow(true);
-		m_ID3v1_Comment.EnableWindow(true);
-		m_ID3v1_Genre.EnableWindow(true);
-		m_ID3v1_Name.EnableWindow(true);
-		m_ID3v1_TrackNo.EnableWindow(true);
-		m_ID3v1_Year.EnableWindow(true);
-	}
-	else
-	{
-		m_ID3v1_Album.EnableWindow(false);
-		m_ID3v1_Artist.EnableWindow(false);
-		m_ID3v1_Comment.EnableWindow(false);
-		m_ID3v1_Genre.EnableWindow(false);
-		m_ID3v1_Name.EnableWindow(false);
-		m_ID3v1_TrackNo.EnableWindow(false);
-		m_ID3v1_Year.EnableWindow(false);
-	}
+	m_ID3v1_Album.EnableWindow(m_bID3v1_save);
+	m_ID3v1_Artist.EnableWindow(m_bID3v1_save);
+	m_ID3v1_Comment.EnableWindow(m_bID3v1_save);
+	m_ID3v1_Genre.EnableWindow(m_bID3v1_save);
+	m_ID3v1_Name.EnableWindow(m_bID3v1_save);
+	m_ID3v1_TrackNo.EnableWindow(m_bID3v1_save);
+	m_ID3v1_Year.EnableWindow(m_bID3v1_save);
+	m_ID3v2_CopyFromV1.EnableWindow(m_bID3v1_save && m_bID3v2_save);
+	m_ID3v1_CopyFromV2.EnableWindow(m_bID3v1_save && m_bID3v2_save);
+
 	return;
 }
 
@@ -200,6 +252,47 @@ void CFileInfo::OnBnClickedId3v1Save()
 		UpdateData(TRUE);
 		m_bID3v1_save = FALSE;
 		ShowHideID3v1Column();
+	}
+
+}
+
+
+void CFileInfo::ShowHideID3v2Column()
+{
+	m_ID3v2_Album.EnableWindow(m_bID3v2_save);
+	m_ID3v2_Artists.EnableWindow(m_bID3v2_save);
+	m_ID3v2_Comment.EnableWindow(m_bID3v2_save);
+	m_ID3v2_Genre.EnableWindow(m_bID3v2_save);
+	m_ID3v2_Title.EnableWindow(m_bID3v2_save);
+	m_ID3v2_TrackNo.EnableWindow(m_bID3v2_save);
+	m_ID3v2_Year.EnableWindow(m_bID3v2_save);
+	m_ID3v2_URI.EnableWindow(m_bID3v2_save);
+	m_ID3v2_Words.EnableWindow(m_bID3v2_save);
+	m_ID3v2_Composers.EnableWindow(m_bID3v2_save);
+	m_ID3v2_Arrangements.EnableWindow(m_bID3v2_save);
+	m_ID3v2_Copyrights.EnableWindow(m_bID3v2_save);
+	m_ID3v2_Original_Artists.EnableWindow(m_bID3v2_save);
+	m_ID3v2_Version.EnableWindow(m_bID3v2_save);
+	m_ID3v2_Encoding_Engineer.EnableWindow(m_bID3v2_save);
+	m_ID3v2_String_Encoding.EnableWindow(m_bID3v2_save);
+	m_ID3v2_CopyFromV1.EnableWindow(m_bID3v1_save && m_bID3v2_save);
+	m_ID3v1_CopyFromV2.EnableWindow(m_bID3v1_save && m_bID3v2_save);
+	
+	return;
+}
+void CFileInfo::OnBnClickedId3v2Save()
+{
+	// TODO: Add your control notification handler code here
+	if(!m_bID3v2_save)
+	{
+		m_bID3v2_save = TRUE;
+		ShowHideID3v2Column();
+	}
+	else
+	{
+		UpdateData(TRUE);
+		m_bID3v2_save = FALSE;
+		ShowHideID3v2Column();
 	}
 
 }

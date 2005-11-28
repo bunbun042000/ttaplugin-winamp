@@ -32,17 +32,31 @@ using namespace std;
 #define FIELD_TEXT_UTF_16BE		0x02
 #define FIELD_TEXT_UTF_8		0x03
 
+#ifndef TTADEC_H_
+
+// return codes
+#define OPEN_ERROR		1		// Can't open file
+#define FORMAT_ERROR	2		// Unknown TTA format version
+#define PLAYER_ERROR	3		// Not supported file format
+#define FILE_ERROR		4		// File is corrupted
+#define READ_ERROR		5		// Can't read from file
+#define WRITE_ERROR		6		// Can't write to file
+#define MEMORY_ERROR	7		// Memory allocation error
+#define THREAD_ERROR	8		// Error killing thread
+
+#endif
+
 struct v2header
 {
 	char  id[3];
-	short version;
-	char  flags;
+	unsigned short version;
+	unsigned char  flags;
 	char  size[4];
 };
 
 struct frame{
 	char  id[4];
-	char  size[4];
+	unsigned char  size[4];
 	short flags;
 };
 
@@ -54,6 +68,7 @@ public:
 	int ReadTag(const char *filename);
 	bool hasTag() {return false;}
 	int  TagLength() {return tag_length;}
+	int SaveTag();
 
 	CString GetArtist() {return "";}
 	CString GetTitle() {return "";}
@@ -63,7 +78,6 @@ private:
 	CString	FileName;	// filename
 	int		STATE;		// return code
 
-	v2header	header;
 	multimap<CString, CString>m_frames;
 	bool	has_tag;
 
