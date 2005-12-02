@@ -974,12 +974,12 @@ int get_samples (BYTE *buffer, long count) {
  *
  **********************************************************************/
 
-static void pack_sint28 (unsigned int value, char *ptr) {
-	ptr[0] = (value >> 21) & 0x7f;
-	ptr[1] = (value >> 14) & 0x7f;
-	ptr[2] = (value >>  7) & 0x7f;
-	ptr[3] = (value & 0x7f);
-}
+//static void pack_sint28 (unsigned int value, char *ptr) {
+//	ptr[0] = (value >> 21) & 0x7f;
+//	ptr[1] = (value >> 14) & 0x7f;
+//	ptr[2] = (value >>  7) & 0x7f;
+//	ptr[3] = (value & 0x7f);
+//}
 
 static unsigned int unpack_sint28 (const char *ptr) {
 	unsigned int value = 0;
@@ -1025,24 +1025,6 @@ static int get_frame_id (const char *id) {
 	return 0;
 }
 
-//void get_id3v1_tag (tta_info *ttainfo) {
-//	id3v1_tag id3v1;
-//	unsigned long result;
-//
-//	SetFilePointer(ttainfo->HFILE, -(int) sizeof(id3v1_tag), NULL, FILE_END);
-//	if (ReadFile(ttainfo->HFILE, &id3v1, sizeof(id3v1_tag), &result, NULL) &&
-//		result == sizeof(id3v1_tag) && !memcmp(id3v1.id, "TAG", 3)) {
-//		CopyMemory(ttainfo->id3v1.title, id3v1.title, 30);
-//		CopyMemory(ttainfo->id3v1.artist, id3v1.artist, 30);
-//		CopyMemory(ttainfo->id3v1.album, id3v1.album, 30);
-//		CopyMemory(ttainfo->id3v1.year, id3v1.year, 4);
-//		CopyMemory(ttainfo->id3v1.comment, id3v1.comment, 28);
-//		ttainfo->id3v1.track = id3v1.track;
-//		ttainfo->id3v1.genre = id3v1.genre;
-//		ttainfo->id3v1.id3has = 1;
-//	}
-//	SetFilePointer(ttainfo->HFILE, 0, NULL, FILE_BEGIN);
-//}
 
 static char *unwrap (char *str, int length) {
 	char *ptr = str, *e = str + length;
@@ -1055,64 +1037,6 @@ static char *unwrap (char *str, int length) {
 	return str;
 }
 
-//static void save_id3v1_tag (tta_info *ttainfo) {
-//	HANDLE hFile;
-//	id3v1_tag tag;
-//	int offset;
-//	unsigned long result;
-//
-//	ZeroMemory(&tag, sizeof(id3v1_tag));
-//	CopyMemory(tag.id, "TAG", 3);
-//
-//	CopyMemory(tag.title, ttainfo->id3v1.title, sizeof(tag.title));
-//	CopyMemory(tag.artist, ttainfo->id3v1.artist, sizeof(tag.artist));
-//	CopyMemory(tag.album, ttainfo->id3v1.album, sizeof(tag.album));
-//	CopyMemory(tag.year, ttainfo->id3v1.year, sizeof(tag.year));
-//	CopyMemory(tag.comment, unwrap(ttainfo->id3v1.comment,
-//		sizeof(tag.comment)), sizeof(tag.comment));
-//	tag.track = ttainfo->id3v1.track;
-//	tag.genre = ttainfo->id3v1.genre;
-//
-//	// update ID3V1 tag
-//	hFile = CreateFile(ttainfo->filename, GENERIC_READ|GENERIC_WRITE,
-//		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
-//	if (hFile == INVALID_HANDLE_VALUE) {
-//		tta_error(OPEN_ERROR, ttainfo->filename);
-//		return;
-//	}
-//
-//	offset = (ttainfo->id3v1.id3has)? -(int) sizeof(id3v1_tag):0;
-//	SetFilePointer(hFile, offset, NULL, FILE_END);
-//	if (!WriteFile(hFile, &tag, sizeof(id3v1_tag), &result, 0) ||
-//		result != sizeof(id3v1_tag)) {
-//		CloseHandle(hFile);
-//		tta_error(WRITE_ERROR, ttainfo->filename);
-//		return;
-//	}
-//	CloseHandle(hFile);
-//
-//	ttainfo->id3v1.id3has = 1;
-//}
-
-//static void del_id3v1_tag (tta_info *ttainfo) {
-//	HANDLE hFile;
-//
-//	if (!ttainfo->id3v1.id3has) return;
-//
-//	// delete ID3V1 tag
-//	hFile = CreateFile(ttainfo->filename, GENERIC_READ|GENERIC_WRITE,
-//		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
-//	if (hFile == INVALID_HANDLE_VALUE) {
-//		tta_error(OPEN_ERROR, ttainfo->filename);
-//		return;
-//	}
-//
-//	SetFilePointer(hFile, -(int) sizeof(id3v1_tag), NULL, FILE_END);
-//	SetEndOfFile(hFile);
-//	CloseHandle(hFile);
-//
-//	ttainfo->id3v1.id3has = 0;
-//}
 
 void get_id3v2_tag (tta_info *ttainfo) {
 	HANDLE hMap;

@@ -12,77 +12,107 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+/* ID3 tag checked flags */
+
+const unsigned __int8 ID3_UNSYNCHRONISATION_FLAG	= 0x80;
+const unsigned __int8 ID3_EXTENDEDHEADER_FLAG		= 0x40;
+const unsigned __int8 ID3_EXPERIMENTALTAG_FLAG		= 0x20;
+const unsigned __int8 ID3_FOOTERPRESENT_FLAG		= 0x10;
+
+/* ID3 frame checked flags */
+
+const unsigned __int8 FRAME_COMPRESSION_FLAG       = 0x08;
+const unsigned __int8 FRAME_ENCRYPTION_FLAG        = 0x04;
+const unsigned __int8 FRAME_UNSYNCHRONISATION_FLAG = 0x02;
+
+/* ID3 field text encoding */
+
+const unsigned __int8 FIELD_TEXT_ISO_8859_1	= 0x00;
+const unsigned __int8 FIELD_TEXT_UTF_16		= 0x01;
+const unsigned __int8 FIELD_TEXT_UTF_16BE	= 0x02;
+const unsigned __int8 FIELD_TEXT_UTF_8		= 0x03;
+
+
 //////////////////////////////////////////////////////////////////////
 // 構築/消滅
 //////////////////////////////////////////////////////////////////////
 
 CID3v2::CID3v2()
 {
-	has_tag = false;
+	m_bHastag = false;
 	m_frames.clear();
 
 }
 
 CID3v2::~CID3v2()
 {
+	m_bHastag = false;
 	m_frames.clear();
 
 }
 
-bool CID3v2::AddComment(const char *name, const char *value)
+bool CID3v2::AddFrame(CID3v2Frame &frame)
 {
-	CString _name(name);
+	map<CString, CID3v2Frame>::iterator itp;
+	CString _name(frame.GetFrameID());
 	_name.MakeUpper();
-	m_frames.insert(pair<CString,CString>(_name,CString(value)));
-	
+	itp = m_frames.find(_name);
+	if((itp == m_frames.end()) || !itp->second.GetSize())
+	{
+		m_frames.insert(pair<CString, CID3v2Frame>(_name, frame));
+	}
+	else
+	{
+		itp->second.SetComment(frame.GetComment());
+		itp->second.SetSize(frame.GetSize());
+	}
 	return true;
 }
 
-bool CID3v2::DelComment(const char *name, int index)
+bool CID3v2::DelFrame(const char *name, int index)
 {
 	//nameのなかからdwIndexの値を取得
-    pair<multimap<CString,CString>::iterator, multimap<CString,CString>::iterator> itp = m_frames.equal_range(CString(name));
+    map<CString, CID3v2Frame>::iterator itp = m_frames.find(CString(name));
 	
-	int i = 0;
-	while(itp.first != itp.second)
+	if(itp != m_frames.end())
 	{
-		if(i == index)
-		{
-			m_frames.erase(itp.first);
-			return true;
-		}
-		itp.first++;
-		i++;
+		m_frames.erase(itp->first);
+		return true;
 	}
-	
-	return true;
+	return false;
 }
 
 bool CID3v2::GetComment(const char *name,int index,CString &strValue)
 {
 	strValue = "";
 	//nameのなかからdwIndexの値を取得
-    pair<multimap<CString,CString>::iterator,multimap<CString,CString>::iterator> itp = m_frames.equal_range(CString(name));
+    map<CString, CID3v2Frame>::iterator itp = m_frames.find(CString(name));
 	
-	int i = 0;
-	while(itp.first != itp.second)
+	if(itp != m_frames.end())
 	{
-		if(i == index)
-		{
-			strValue = (itp.first)->second;
-			return true;
-		}
-		itp.first++;
-		i++;
+		strValue = itp->second.GetComment();
+		return true;
 	}
-	
+
 	return false;
 }
 
-void CID3v2::GetCommentNames(CStringArray &strArray)
+bool CID3v2::GetFrame(const char *name, int index, CID3v2Frame &strFrame)
+{
+	map<CString, CID3v2Frame>::iterator itp = m_frames.find(CString(name));
+	if(itp != m_frames.end()) {
+		strFrame = itp->second;
+		return true;
+	}
+
+	return false;
+}
+
+
+void CID3v2::GetFrameNames(CStringArray &strArray)
 {
 	//nameリストを返す
-	multimap<CString,CString>::iterator it = m_frames.begin();
+	map<CString, CID3v2Frame>::iterator it = m_frames.begin();
 	
 	CString strName;
 	while(it != m_frames.end())
@@ -96,26 +126,49 @@ void CID3v2::GetCommentNames(CStringArray &strArray)
 	}
 }
 
-int CID3v2::ReadTag(const char *filename)
+
+
+CString CID3v2::GetAlbum()
+{
+	CString Album;
+	GetComment("TALB", 0, Album);
+	return Album;
+}
+
+CString CID3v2::GetTitle()
+{
+	CString Title;
+	GetComment("TIT2", 0, Title);
+	return Title;
+}
+
+CString CID3v2::GetArtist()
+{
+	CString Artist;
+	GetComment("TPE1", 0, Artist);
+	return Artist;
+}
+
+
+__int32 CID3v2::ReadTag(const char *filename)
 {
 	FileName = filename;
 	v2header	header;
-	has_tag = false;
+	m_bHastag = false;
 	tag_length = 0;
+	__int32 dwWin32errorCode = ERROR_SUCCESS;
 
 	HFILE = CreateFile((LPCTSTR)FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (HFILE == INVALID_HANDLE_VALUE) {
-		STATE = OPEN_ERROR;
-		return -1;
+		dwWin32errorCode = GetLastError();
+		return dwWin32errorCode;
 	}
 
-	HANDLE hMap;
-	unsigned char *buffer, *ptr;
+	unsigned char *buffer;
 	unsigned long result;
 
-	if (!ReadFile(HFILE, &header, sizeof(v2header), &result, NULL) || result != sizeof(v2header))
-	{
+	if (!ReadFile(HFILE, &header, sizeof(v2header), &result, NULL) || result != sizeof(v2header)) {
 		CloseHandle(HFILE);
 		return -1;
 	}
@@ -126,98 +179,112 @@ int CID3v2::ReadTag(const char *filename)
 		return -1;
 	}
 
+	m_ver = header.version;
+	if((m_ver != 0x03) && (m_ver != 0x04)) {
+		CloseHandle(HFILE);
+		return -1;
+	}
+
 	tag_length = unpack_sint28(header.size) + 10; // size + headersize(10byte)
 
-	if ((header.flags & ID3_UNSYNCHRONISATION_FLAG) ||
-		(header.flags & ID3_EXPERIMENTALTAG_FLAG) ||
-		(header.version < 3)) goto done;
+	buffer = new unsigned char[tag_length];
 
-	hMap = CreateFileMapping(HFILE, NULL, PAGE_READONLY, 0, tag_length, NULL);
-	if (!hMap) goto done;
-
-	buffer = (unsigned char *)MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, tag_length);
 	if (!buffer) {
-		CloseHandle(hMap);
-		goto done;
+		CloseHandle(HFILE);
+		return -1;
 	}
 
-	ptr = buffer + 10;
-
-	// skip extended header if present
-	if (header.flags & ID3_EXTENDEDHEADER_FLAG) {
-		int offset = (int) 0;//ntohl((u_long)*ptr);
-		ptr += offset;
+	if(!ReadFile(HFILE, &buffer, tag_length, &result, NULL) || result != tag_length) {
+		delete buffer;
+		CloseHandle(HFILE);
+		return -1;
 	}
+
+	__int32 dwRemainSize;
+	if(header.flags & ID3_UNSYNCHRONISATION_FLAG) {
+		dwRemainSize = DecodeUnSynchronization(buffer, tag_length);
+		m_bUnSynchronization = true;
+	} else {
+		dwRemainSize = tag_length;
+		m_bUnSynchronization = false;
+	}
+
+	__int32 dwID3v2Size = dwRemainSize;
+
+	if(header.flags & ID3_EXTENDEDHEADER_FLAG)
+		dwRemainSize -= unpack_sint28(buffer) + 4;
+	header.flags &= ~ID3_EXTENDEDHEADER_FLAG;
 
 	// read id3v2 frames
-	while (ptr - buffer < tag_length) {
-		int data_size;
+	while (dwRemainSize) {
 		int comments = 0;
-		frame temp_frame;
-		char *data;
+		CID3v2Frame frame;
 
 		// get frame header
-		CopyMemory(&temp_frame, ptr, sizeof(frame));
-		ptr += sizeof(frame);
-		data_size = (int) 0;//::ntohl((u_long)*(temp_frame.size));
+		__int32 dwReadSize = 
+			frame.LoadFrame(buffer + (dwID3v2Size - dwRemainSize), dwRemainSize, m_ver);
 
-		if (!*temp_frame.id) break;
-
-		// skip unsupported frames
-		// ToDo: support UTF-16/UTF-8 ?
-		if (temp_frame.flags & FRAME_COMPRESSION_FLAG ||
-			temp_frame.flags & FRAME_ENCRYPTION_FLAG ||
-			temp_frame.flags & FRAME_UNSYNCHRONISATION_FLAG ||
-			*ptr != FIELD_TEXT_ISO_8859_1) {
-			ptr += data_size;
-			continue;
+		if(!dwReadSize)
+			break;
+		unsigned char *data = frame.GetComment();
+		if (frame.GetSize() && data) {
+			switch(data[0]) {
+				case FIELD_TEXT_ISO_8859_1:
+				default:
+					break;
+				case FIELD_TEXT_UTF_16:
+					{
+					m_Encoding = FIELD_TEXT_UTF_16;
+					break;
+					}
+				case FIELD_TEXT_UTF_16BE:
+					{
+					m_Encoding = FIELD_TEXT_UTF_16BE;
+					break;
+					}
+				case FIELD_TEXT_UTF_8:
+					{
+					m_Encoding = FIELD_TEXT_UTF_8;
+					break;
+					}
+			}
 		}
 
-		ptr++; data_size--;
-		// Comment 
-		if (memcmp(temp_frame.id, "COMM", 4)) {
-			ptr += 5; data_size -= 5;
-		}
-
-		CopyMemory(data, ptr, data_size);
-		AddComment(temp_frame.id, data);
-		ptr += data_size;
+		AddFrame(frame);
+		dwRemainSize -= dwReadSize;
 	}
-
-	UnmapViewOfFile((LPCVOID *) buffer);
-	CloseHandle(hMap);
-
-done:
-	if (header.flags & ID3_FOOTERPRESENT_FLAG) tag_length += 10;
-	SetFilePointer(HFILE, tag_length, NULL, FILE_BEGIN);
-
-	has_tag = false; // for debug
+	delete buffer;
 	CloseHandle(HFILE);
-	return 0;
+	m_bHastag = false; // for debug
+	return dwWin32errorCode;
 }
 
-int CID3v2::SaveTag()
+__int32 CID3v2::SaveTag()
 {
-	HANDLE hFile, hMap;
-	v2header header;
-	unsigned char *buffer, *ptr;
-	unsigned char *tag_data, *tptr;
-	DWORD new_size, id3v2_size;
-	int indx, offset;
-	DWORD result;
-	BOOL copy_data = TRUE;
-	BOOL safe_mode = FALSE;
+	HANDLE HFILE;
+	__int32 dwWin32errorCode = ERROR_SUCCESS;
 
-	hFile = CreateFile(FileName, GENERIC_READ|GENERIC_WRITE,
+	v2header header;
+	DWORD  result;
+	__int32  id3v2_size;
+//	unsigned char *buffer, *ptr;
+//	unsigned char *tag_data, *tptr;
+//	DWORD new_size, id3v2_size;
+//	int indx, offset;
+//	BOOL copy_data = TRUE;
+//	BOOL safe_mode = FALSE;
+
+	HFILE = CreateFile(FileName, GENERIC_READ|GENERIC_WRITE,
 		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
-	if (hFile == INVALID_HANDLE_VALUE) {
-		return OPEN_ERROR;
+	if (HFILE == INVALID_HANDLE_VALUE) {
+		dwWin32errorCode = GetLastError();
+		return dwWin32errorCode;
 	}
 
-	if (!ReadFile(hFile, &header, sizeof(v2header), &result, NULL) ||
-		result != (DWORD) sizeof(v2header)) {
-		CloseHandle(hFile);
-		return READ_ERROR;
+	if (!ReadFile(HFILE, &header, sizeof(v2header), &result, NULL) ||
+		result != sizeof(v2header)) {
+		CloseHandle(HFILE);
+		return -1;
 	}
 
 	if (!memcmp(header.id, "ID3", 3)) {
@@ -229,34 +296,34 @@ int CID3v2::SaveTag()
 		id3v2_size = 0;
 	}
 
-	tag_data = (unsigned char *)HeapAlloc(heap, HEAP_ZERO_MEMORY,
-		id3v2_size + sizeof(id3v2_data));
-	tptr = tag_data + 10;
-
-	if (!(header.flags & ID3_UNSYNCHRONISATION_FLAG) &&
-		!(header.flags & ID3_EXPERIMENTALTAG_FLAG) &&
-		(header.version >= ID3_VERSION) && id3v2_size) {
-
-		hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, id3v2_size, NULL);
-		if (!hMap) goto done;
-
-		buffer = (unsigned char *)MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, id3v2_size);
-		if (!buffer) {
-			CloseHandle(hMap);
-			goto done;
-		}
-
-		ptr = buffer + 10;
-
-		// copy extended header if present
-		if ((header.flags & ID3_EXTENDEDHEADER_FLAG)) {
-			int ext_size = (int) unpack_sint32(ptr);
-			CopyMemory(tptr, ptr, ext_size);
-			ptr += ext_size; tptr += ext_size;
-		}
-	} else copy_data = FALSE;
-
-	// add updated id3v2 frames
+//	tag_data = (unsigned char *)HeapAlloc(heap, HEAP_ZERO_MEMORY,
+//		id3v2_size + sizeof(id3v2_data));
+//	tptr = tag_data + 10;
+//
+//	if (!(header.flags & ID3_UNSYNCHRONISATION_FLAG) &&
+//		!(header.flags & ID3_EXPERIMENTALTAG_FLAG) &&
+//		(header.version >= ID3_VERSION) && id3v2_size) {
+//
+//		hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, id3v2_size, NULL);
+//		if (!hMap) goto done;
+//
+//		buffer = (unsigned char *)MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, id3v2_size);
+//		if (!buffer) {
+//			CloseHandle(hMap);
+//			goto done;
+//		}
+//
+//		ptr = buffer + 10;
+//
+//		// copy extended header if present
+//		if ((header.flags & ID3_EXTENDEDHEADER_FLAG)) {
+//			int ext_size = (int) unpack_sint32(ptr);
+//			CopyMemory(tptr, ptr, ext_size);
+//			ptr += ext_size; tptr += ext_size;
+//		}
+//	} else copy_data = FALSE;
+//
+//	// add updated id3v2 frames
 //	add_text_frame("TIT2", &tptr, ttainfo->id3v2.title);
 //	add_text_frame("TPE1", &tptr, ttainfo->id3v2.artist);
 //	add_text_frame("TALB", &tptr, ttainfo->id3v2.album);
@@ -264,110 +331,112 @@ int CID3v2::SaveTag()
 //	add_text_frame("TYER", &tptr, ttainfo->id3v2.year);
 //	add_text_frame("TCON", &tptr, ttainfo->id3v2.genre);
 //	add_comm_frame("COMM", &tptr, ttainfo->id3v2.comment);
+//
+//	if (!copy_data) goto save;
+//
+//	// copy unchanged frames
+//	while ((unsigned long)abs(ptr - buffer) < id3v2_size) {
+//		int data_size, frame_size;
+//		int frame_id, comments = 0;
+//		frame frame_header;
+//
+//		// get frame header
+//		CopyMemory(&frame_header, ptr, sizeof(frame));
+//		data_size = unpack_sint32(frame_header.size);
+//		frame_size = sizeof(frame) + data_size;
+//
+//		if (!*frame_header.id) break;
+//
+//		if ((frame_id = get_frame_id(frame_header.id)))
+//			if (frame_id != COMM || !comments++) {
+//				ptr += frame_size; continue;
+//			}
+//
+//		// copy frame
+//		CopyMemory(tptr, ptr, frame_size);
+//		tptr += frame_size; ptr += frame_size;
+//	}
+//
+//	// copy footer if present
+//	if (id3v2.flags & ID3_FOOTERPRESENT_FLAG) {
+//		CopyMemory(tptr, ptr, 10);
+//		tptr += 10; ptr += 10;
+//	}
+//
+//save:
+//	if (copy_data) {
+//		UnmapViewOfFile((LPCVOID *) buffer);
+//		CloseHandle(hMap);
+//	}
+//
+//	new_size = tptr - tag_data;
+//
+//	// fill ID3v2 header
+//	id3v2.flags &= ~ID3_UNSYNCHRONISATION_FLAG;
+//	id3v2.flags &= ~ID3_EXPERIMENTALTAG_FLAG;
+//	id3v2.version = ID3_VERSION;
+//
+//	// write data
+//	if (new_size <= id3v2_size) {
+//		pack_sint28(id3v2_size - 10, id3v2.size);
+//		CopyMemory(tag_data, &id3v2, sizeof(id3v2_tag));
+//
+//		SetFilePointer(hFile, 0, NULL, FILE_BEGIN);
+//		if (!WriteFile(hFile, tag_data, id3v2_size, &result, 0) ||
+//			result != id3v2_size) {
+//			CloseHandle(hFile);
+//			tta_error(WRITE_ERROR, ttainfo->filename);
+//			return;
+//		}
+//		goto done;
+//	}
+//
+//	pack_sint28(new_size - 10, id3v2.size);
+//	CopyMemory(tag_data, &id3v2, sizeof(id3v2_tag));
+//	offset = (int) new_size - id3v2_size;
+//
+//	hMap = CreateFileMapping(hFile, NULL, PAGE_READWRITE, 0,
+//		ttainfo->FILESIZE + offset, NULL);
+//	if (!hMap) goto done;
+//
+//	buffer = (unsigned char *)MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0,
+//		ttainfo->FILESIZE + offset);
+//	if (!buffer) {
+//		CloseHandle(hMap);
+//		goto done;
+//	}
+//
+//	if (safe_mode) pause();
+//
+//	MoveMemory(buffer + ((int)id3v2_size + offset),
+//		buffer + id3v2_size, ttainfo->FILESIZE);
+//	CopyMemory(buffer, tag_data, new_size);
+//
+//	if (safe_mode) FlushViewOfFile((LPCVOID *) buffer, 0);
+//	UnmapViewOfFile((LPCVOID *) buffer);
+//	CloseHandle(hMap);
+//
+//	ttainfo->FILESIZE += offset;
+//	ttainfo->id3v2.size = new_size;
+//
+//	if (safe_mode) {
+//		info.FILESIZE = ttainfo->FILESIZE;
+//		info.id3v2.size = ttainfo->id3v2.size;
+//		seek_needed = decode_pos_ms;
+//		unpause();
+//	}
+//
+//done:
+//	CloseHandle(hFile);
+//	HeapFree(heap, 0, tag_data);
+//
+//	ttainfo->id3v2.id3has = 1;
 
-	if (!copy_data) goto save;
-
-	// copy unchanged frames
-	while ((unsigned long)abs(ptr - buffer) < id3v2_size) {
-		int data_size, frame_size;
-		int frame_id, comments = 0;
-		frame frame_header;
-
-		// get frame header
-		CopyMemory(&frame_header, ptr, sizeof(frame));
-		data_size = unpack_sint32(frame_header.size);
-		frame_size = sizeof(frame) + data_size;
-
-		if (!*frame_header.id) break;
-
-		if ((frame_id = get_frame_id(frame_header.id)))
-			if (frame_id != COMM || !comments++) {
-				ptr += frame_size; continue;
-			}
-
-		// copy frame
-		CopyMemory(tptr, ptr, frame_size);
-		tptr += frame_size; ptr += frame_size;
-	}
-
-	// copy footer if present
-	if (id3v2.flags & ID3_FOOTERPRESENT_FLAG) {
-		CopyMemory(tptr, ptr, 10);
-		tptr += 10; ptr += 10;
-	}
-
-save:
-	if (copy_data) {
-		UnmapViewOfFile((LPCVOID *) buffer);
-		CloseHandle(hMap);
-	}
-
-	new_size = tptr - tag_data;
-
-	// fill ID3v2 header
-	id3v2.flags &= ~ID3_UNSYNCHRONISATION_FLAG;
-	id3v2.flags &= ~ID3_EXPERIMENTALTAG_FLAG;
-	id3v2.version = ID3_VERSION;
-
-	// write data
-	if (new_size <= id3v2_size) {
-		pack_sint28(id3v2_size - 10, id3v2.size);
-		CopyMemory(tag_data, &id3v2, sizeof(id3v2_tag));
-
-		SetFilePointer(hFile, 0, NULL, FILE_BEGIN);
-		if (!WriteFile(hFile, tag_data, id3v2_size, &result, 0) ||
-			result != id3v2_size) {
-			CloseHandle(hFile);
-			tta_error(WRITE_ERROR, ttainfo->filename);
-			return;
-		}
-		goto done;
-	}
-
-	pack_sint28(new_size - 10, id3v2.size);
-	CopyMemory(tag_data, &id3v2, sizeof(id3v2_tag));
-	offset = (int) new_size - id3v2_size;
-
-	hMap = CreateFileMapping(hFile, NULL, PAGE_READWRITE, 0,
-		ttainfo->FILESIZE + offset, NULL);
-	if (!hMap) goto done;
-
-	buffer = (unsigned char *)MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0,
-		ttainfo->FILESIZE + offset);
-	if (!buffer) {
-		CloseHandle(hMap);
-		goto done;
-	}
-
-	if (safe_mode) pause();
-
-	MoveMemory(buffer + ((int)id3v2_size + offset),
-		buffer + id3v2_size, ttainfo->FILESIZE);
-	CopyMemory(buffer, tag_data, new_size);
-
-	if (safe_mode) FlushViewOfFile((LPCVOID *) buffer, 0);
-	UnmapViewOfFile((LPCVOID *) buffer);
-	CloseHandle(hMap);
-
-	ttainfo->FILESIZE += offset;
-	ttainfo->id3v2.size = new_size;
-
-	if (safe_mode) {
-		info.FILESIZE = ttainfo->FILESIZE;
-		info.id3v2.size = ttainfo->id3v2.size;
-		seek_needed = decode_pos_ms;
-		unpause();
-	}
-
-done:
-	CloseHandle(hFile);
-	HeapFree(heap, 0, tag_data);
-
-	ttainfo->id3v2.id3has = 1;
+	return dwWin32errorCode;
 }
 
 //static void del_id3v2_tag (tta_info *ttainfo) {
-//	HANDLE hFile, hMap;
+///	HANDLE hFile, hMap;
 //	unsigned char *buffer;
 //	int indx, result;
 //	BOOL safe_mode = FALSE;
@@ -423,3 +492,111 @@ done:
 //
 //	ttainfo->id3v2.id3has = 0;
 //}
+
+__int32 CID3v2::DecodeUnSynchronization(unsigned char *data, __int32 dwSize)
+{
+	__int32 dwDecodeSize = 0;
+	unsigned char *writePtr = data;
+	bool bHitFF = false;
+
+	for (__int32 i = 0; i < dwSize; i++)
+	{
+		if(data[i] == 0xff)
+			bHitFF = true;
+		else {
+			if(bHitFF && (data[i] == 0x00))
+			{
+				bHitFF = false;
+				continue;
+			}
+			bHitFF = false;
+		}
+		writePtr[dwDecodeSize] = data[i];
+		dwDecodeSize++;
+	}
+	return dwDecodeSize;
+}
+
+__int32 CID3v2::EncodeUnSynchronization(unsigned char *srcData, __int32 dwSize, unsigned char *dstData)
+{
+	__int32 dwDecodeSize = 0;
+	unsigned char *writePtr = dstData;
+	bool bHitFF = false;
+
+	for(__int32 i = 0; i < dwSize; i++)	{
+		if(bHitFF && (((srcData[i]&0xe0) == 0xe0) || (srcData[i] == 0x00))) {
+			writePtr[dwDecodeSize] = 0x00;
+			dwDecodeSize++;
+		}
+		if(srcData[i] == 0xff)
+			bHitFF = true;
+		else
+			bHitFF = false;
+		writePtr[dwDecodeSize] = srcData[i];
+		dwDecodeSize++;
+	}
+	return dwDecodeSize;
+}
+
+
+
+// CID3v2Frame
+
+CID3v2Frame::CID3v2Frame()
+{
+	Release();
+}
+
+CID3v2Frame::CID3v2Frame(const CID3v2Frame &obj)
+{
+	m_Comment = new unsigned char[sizeof(obj.m_Comment)];
+	memcpy(m_Comment, obj.m_Comment, sizeof(obj.m_Comment));
+	m_ID = new char[IDv2FrameIDLength];
+	memcpy(m_ID, obj.m_ID, IDv2FrameIDLength);
+	m_dwSize = obj.m_dwSize;
+	m_Encoding = obj.m_Encoding;
+	m_wFlags = obj.m_wFlags;
+}
+
+CID3v2Frame::~CID3v2Frame()
+{
+	Release();
+}
+
+void CID3v2Frame::Release()
+{
+	memset(&head, 0, sizeof(frameheader));
+	m_Encoding = FIELD_TEXT_ISO_8859_1;
+	m_dwSize = 0;
+	m_ID =0;
+	m_wFlags = 0;
+	if (m_Comment != NULL)
+		delete m_Comment;
+}
+
+__int32 CID3v2Frame::LoadFrame(unsigned char *pData, __int32 dwSize, unsigned __int8 version)
+{
+	Release();
+	if(dwSize < 10)
+		return 0;
+	__int32 size;
+	if(version == 0x03)
+		size = ::GetLength32(pData + 4);
+	else if(version == 0x04)
+		size = ::unpack_sint28(pData + 4);
+
+	if((size + 10) > dwSize)
+		return 0;
+
+	memcpy(&m_ID, pData, sizeof(m_ID));
+	if(!m_ID)
+		return 0;
+	m_Comment = new unsigned char[size];
+	if (!m_Comment)
+		return 0;
+	m_dwSize = size;
+	m_wFlags = Extract16(pData + 8);
+	memcpy(m_Comment, pData + 10, size);
+	return (size + 10);
+}
+

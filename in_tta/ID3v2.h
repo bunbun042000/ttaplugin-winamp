@@ -12,25 +12,8 @@
 #include <list>
 using namespace std;
 
-/* ID3 tag checked flags */
 
-#define ID3_UNSYNCHRONISATION_FLAG		0x80
-#define ID3_EXTENDEDHEADER_FLAG			0x40
-#define ID3_EXPERIMENTALTAG_FLAG		0x20
-#define ID3_FOOTERPRESENT_FLAG			0x10
-
-/* ID3 frame checked flags */
-
-#define FRAME_COMPRESSION_FLAG			0x0008
-#define FRAME_ENCRYPTION_FLAG			0x0004
-#define FRAME_UNSYNCHRONISATION_FLAG	0x0002
-
-/* ID3 field text encoding */
-
-#define FIELD_TEXT_ISO_8859_1	0x00
-#define FIELD_TEXT_UTF_16		0x01
-#define FIELD_TEXT_UTF_16BE		0x02
-#define FIELD_TEXT_UTF_8		0x03
+const __int32 IDv2FrameIDLength = 4;
 
 #ifndef TTADEC_H_
 
@@ -46,18 +29,82 @@ using namespace std;
 
 #endif
 
+
+__inline static void pack_sint28(unsigned __int32 value, char *ptr) {
+	ptr[0] = (value >> 21);
+	ptr[1] = (value >> 14);
+	ptr[2] = (value >>  7);
+	ptr[3] = (value);
+}
+
+__inline static unsigned __int32 unpack_sint28 (unsigned const char *ptr) {
+	unsigned int value = 0;
+
+//	if (ptr[0] & 0x80) return 0;
+
+	value =  value       | ptr[0];
+	value = (value << 7) | ptr[1];
+	value = (value << 7) | ptr[2];
+	value = (value << 7) | ptr[3];
+	return value;
+}
+
+__inline static void SetLength32 (unsigned __int32 value, char *ptr) {
+	ptr[3] = value >> 24;
+	ptr[2] = value >> 16;
+	ptr[1] = value >> 8;
+	ptr[0] = value;
+}
+
+__inline static unsigned __int32 GetLength32(const unsigned char *ptr) {
+	return (((unsigned __int32)ptr[3]<<24) | ((unsigned __int32)ptr[2]<<16) | 
+		((unsigned __int32)ptr[1]<<8) | ((unsigned __int32)ptr[0]));
+}
+
+__inline static __int16 Extract16(unsigned char buf[2]) {
+	return ((__int16)buf[0] << 8) | (buf[1]);
+}
 struct v2header
 {
 	char  id[3];
-	unsigned short version;
-	unsigned char  flags;
-	char  size[4];
+	unsigned __int8 version;
+	unsigned __int8 subversion;
+	unsigned __int8 flags;
+	unsigned __int8 size[4];
 };
 
-struct frame{
-	char  id[4];
-	unsigned char  size[4];
+struct frameheader
+{
+	char  id[IDv2FrameIDLength];
+	unsigned __int8  size[4];
 	short flags;
+};
+
+class CID3v2Frame
+{
+public:
+	CID3v2Frame();
+	virtual ~CID3v2Frame();
+	CID3v2Frame(const CID3v2Frame &obj);
+	char *GetFrameID() {return m_ID;}
+	unsigned char *GetComment() {return m_Comment;}
+	void  SetComment(unsigned char *str) {m_Comment = str;}
+	__int32 GetSize() {return m_dwSize;}
+	void  SetSize(DWORD Size) {m_dwSize = Size;}
+	void  SetEncoding(unsigned char enc) {m_Encoding = enc;}
+	__int32 LoadFrame(unsigned char *pData, __int32 dwSize, unsigned __int8 version);
+
+private:
+	frameheader head;
+	__int32 m_dwSize;
+	unsigned char m_Encoding;
+	unsigned char *m_Comment;
+	char *m_ID;
+	__int16 m_wFlags;
+	void Release();
+
+protected:
+
 };
 
 class CID3v2  
@@ -65,48 +112,38 @@ class CID3v2
 public:
 	CID3v2();
 	virtual ~CID3v2();
-	int ReadTag(const char *filename);
-	bool hasTag() {return false;}
-	int  TagLength() {return tag_length;}
-	int SaveTag();
+	__int32 ReadTag(const char *filename);
+	bool    hasTag() {return m_bHastag;}
+	__int32 TagLength() {return tag_length;}
+	__int32 SaveTag();
 
-	CString GetArtist() {return "";}
-	CString GetTitle() {return "";}
-	CString GetAlbum() {return "";}
+
+	CString GetArtist();
+
+	CString GetTitle();
+	CString GetAlbum();
 private:
 	HANDLE	HFILE;
 	CString	FileName;	// filename
 	int		STATE;		// return code
 
-	multimap<CString, CString>m_frames;
-	bool	has_tag;
+	unsigned __int8 m_Encoding; // Strings Encoding;
+	unsigned __int8 m_ver;
+	map<CString, CID3v2Frame>m_frames;
+	bool	m_bHastag;
+	bool    m_bUnSynchronization;
 
-	int  tag_length; // include header+frame+etcetera
+	__int32 tag_length; // include header+frame+etcetera
 
-	bool AddComment(const char *name, const char *value);
-	bool DelComment(const char *name, int index);
+	bool AddFrame(CID3v2Frame &frame);
+	bool DelFrame(const char *name, int index);
+	bool GetFrame(const char *name, int index, CID3v2Frame &strFrame);
 	bool GetComment(const char *name, int index, CString &strValue);
-	void GetCommentNames(CStringArray &strArray);
-	
-	__inline static void pack_sint28 (unsigned int value, char *ptr) {
-		ptr[0] = (value >> 21) & 0x7f;
-		ptr[1] = (value >> 14) & 0x7f;
-		ptr[2] = (value >>  7) & 0x7f;
-		ptr[3] = (value & 0x7f);
-	}
+	void GetFrameNames(CStringArray &strArray);
+	__int32 GetTotalFrameLength();
+	__int32 DecodeUnSynchronization(unsigned char *data, __int32 dwSize);
+	__int32 EncodeUnSynchronization(unsigned char *srcData, __int32 dwSize, unsigned char *dstData);
 
-	__inline static unsigned int unpack_sint28 (const char *ptr) {
-		unsigned int value = 0;
-	
-		if (ptr[0] & 0x80) return 0;
-	
-		value =  value       | (ptr[0] & 0x7f);
-		value = (value << 7) | (ptr[1] & 0x7f);
-		value = (value << 7) | (ptr[2] & 0x7f);
-		value = (value << 7) | (ptr[3] & 0x7f);
-
-		return value;
-	}
 
 };
 
