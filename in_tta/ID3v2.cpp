@@ -31,6 +31,10 @@ const unsigned __int8 FIELD_TEXT_ISO_8859_1	= 0x00;
 const unsigned __int8 FIELD_TEXT_UTF_16		= 0x01;
 const unsigned __int8 FIELD_TEXT_UTF_16BE	= 0x02;
 const unsigned __int8 FIELD_TEXT_UTF_8		= 0x03;
+const unsigned __int8 FIELD_TEXT_MAX        = FIELD_TEXT_UTF_8;
+
+const unsigned __int8 UTF16_LE[] = {0xfe, 0xff};
+const unsigned __int8 UTF16_BE[] = {0xff, 0xfe};
 
 
 //////////////////////////////////////////////////////////////////////
@@ -60,11 +64,6 @@ bool CID3v2::AddFrame(CID3v2Frame &frame)
 	if((itp == m_frames.end()) || !itp->second.GetSize())
 	{
 		m_frames.insert(pair<CString, CID3v2Frame>(_name, frame));
-	}
-	else
-	{
-		itp->second.SetComment(frame.GetComment());
-		itp->second.SetSize(frame.GetSize());
 	}
 	return true;
 }
@@ -153,6 +152,7 @@ CString CID3v2::GetArtist()
 __int32 CID3v2::ReadTag(const char *filename)
 {
 	FileName = filename;
+	HANDLE	    HFILE;
 	v2header	header;
 	m_bHastag = false;
 	tag_length = 0;
@@ -215,40 +215,18 @@ __int32 CID3v2::ReadTag(const char *filename)
 		dwRemainSize -= unpack_sint28(buffer) + 4;
 	header.flags &= ~ID3_EXTENDEDHEADER_FLAG;
 
+	__int32 dwReadSize; 
+	CID3v2Frame frame;
 	// read id3v2 frames
 	while (dwRemainSize) {
 		int comments = 0;
-		CID3v2Frame frame;
 
 		// get frame header
-		__int32 dwReadSize = 
-			frame.LoadFrame(buffer + (dwID3v2Size - dwRemainSize), dwRemainSize, m_ver);
+		dwReadSize = 
+			frame.GetFrame(buffer + (dwID3v2Size - dwRemainSize), dwRemainSize, m_ver);
 
 		if(!dwReadSize)
 			break;
-		unsigned char *data = frame.GetComment();
-		if (frame.GetSize() && data) {
-			switch(data[0]) {
-				case FIELD_TEXT_ISO_8859_1:
-				default:
-					break;
-				case FIELD_TEXT_UTF_16:
-					{
-					m_Encoding = FIELD_TEXT_UTF_16;
-					break;
-					}
-				case FIELD_TEXT_UTF_16BE:
-					{
-					m_Encoding = FIELD_TEXT_UTF_16BE;
-					break;
-					}
-				case FIELD_TEXT_UTF_8:
-					{
-					m_Encoding = FIELD_TEXT_UTF_8;
-					break;
-					}
-			}
-		}
 
 		AddFrame(frame);
 		dwRemainSize -= dwReadSize;
@@ -549,13 +527,18 @@ CID3v2Frame::CID3v2Frame()
 
 CID3v2Frame::CID3v2Frame(const CID3v2Frame &obj)
 {
-	m_Comment = new unsigned char[sizeof(obj.m_Comment)];
-	memcpy(m_Comment, obj.m_Comment, sizeof(obj.m_Comment));
-	m_ID = new char[IDv2FrameIDLength];
-	memcpy(m_ID, obj.m_ID, IDv2FrameIDLength);
+	m_Comment = obj.m_Comment;
+	m_ID = new char[ID3v2FrameIDLength];
+	memcpy(m_ID, obj.m_ID, ID3v2FrameIDLength);
 	m_dwSize = obj.m_dwSize;
 	m_Encoding = obj.m_Encoding;
 	m_wFlags = obj.m_wFlags;
+}
+
+CID3v2Frame::CID3v2Frame(const char *ID)
+{
+	Release();
+	memcpy(m_ID, ID, ID3v2FrameIDLength);
 }
 
 CID3v2Frame::~CID3v2Frame()
@@ -565,38 +548,172 @@ CID3v2Frame::~CID3v2Frame()
 
 void CID3v2Frame::Release()
 {
-	memset(&head, 0, sizeof(frameheader));
 	m_Encoding = FIELD_TEXT_ISO_8859_1;
 	m_dwSize = 0;
-	m_ID =0;
+	m_ID = NULL;
 	m_wFlags = 0;
-	if (m_Comment != NULL)
-		delete m_Comment;
+	if (m_ID != NULL)
+		delete m_ID;
 }
 
-__int32 CID3v2Frame::LoadFrame(unsigned char *pData, __int32 dwSize, unsigned __int8 version)
+__int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __int8 version)
 {
 	Release();
 	if(dwSize < 10)
 		return 0;
+	m_ID = new char[ID3v2FrameIDLength];
+	memcpy(&m_ID, pData, ID3v2FrameIDLength);
+	if(!m_ID)
+		return 0;
+
 	__int32 size;
-	if(version == 0x03)
+	m_Version = version;
+	if(m_Version == 0x03)
 		size = ::GetLength32(pData + 4);
-	else if(version == 0x04)
+	else if(m_Version == 0x04)
 		size = ::unpack_sint28(pData + 4);
 
 	if((size + 10) > dwSize)
 		return 0;
 
-	memcpy(&m_ID, pData, sizeof(m_ID));
-	if(!m_ID)
-		return 0;
-	m_Comment = new unsigned char[size];
-	if (!m_Comment)
-		return 0;
+	pData += 4;
+	memcpy(&m_Encoding, pData, sizeof(m_Encoding));
+	pData++;
+
+	switch(m_Encoding) {
+		case FIELD_TEXT_ISO_8859_1:
+		default: {
+			char *tempchar = new char[size];
+			if(!tempchar) break;
+			strncpy_s(tempchar, size, (char *)pData, size - 2);
+			tempchar[size - 1] = '\0';
+			m_Comment = tempchar;
+			delete tempchar;
+			break;
+		}
+		case FIELD_TEXT_UTF_16:	{
+			if(!(memcmp(pData, UTF16_LE, 2))) 
+				UTF16toUTF16BE((WCHAR *)(pData + 3), (size - 3) / 2);
+
+			size = ::WideCharToMultiByte(CP_ACP, 0, 
+				(const WCHAR *)(pData + 3), (size - 3) / 2, 0, 0, NULL, NULL);
+			size ++;
+			char *tempchar = new char[size];
+			if(!tempchar) break;
+			::WideCharToMultiByte(CP_ACP, 0,
+				(const WCHAR *)(pData + 3), (size - 3) / 2, tempchar, size, NULL, NULL);
+			tempchar[size - 1] = '\0';
+			m_Comment = tempchar;
+			delete tempchar;
+			break;
+		}
+		case FIELD_TEXT_UTF_16BE: {
+			UTF16toUTF16BE((WCHAR *)(pData + 1), (size - 1) / 2);
+			size = ::WideCharToMultiByte(CP_ACP, 0, (const WCHAR *)(pData + 1), (size - 1) / 2, 0, 0, NULL, NULL);
+			size++;
+			char *tempchar = new char[size];
+			if(!tempchar) break;
+			::WideCharToMultiByte(CP_ACP, 0, (const WCHAR *)(pData + 1), (size - 1) / 2, tempchar, size, NULL, NULL);
+			tempchar[size - 1] = '\0';
+			m_Comment = tempchar;
+			delete tempchar;
+			break;
+		}
+		case FIELD_TEXT_UTF_8: {
+			int size = ::MultiByteToWideChar(CP_UTF8, 0, (char *)(pData + 1), m_dwSize - 1, NULL, 0);
+			size++;
+			WCHAR *tempchar = new WCHAR[size];
+			if(!tempchar) break;
+			::MultiByteToWideChar(CP_UTF8, 0, (char *)(pData + 1), m_dwSize - 1, tempchar, size - 1);
+			tempchar[size - 1] = L'\0';
+
+			size = ::WideCharToMultiByte(CP_UTF8, 0, tempchar, -1, 0, 0, NULL, NULL);
+			char *tempchar2 = new char[size];
+			if(!tempchar2) {
+				delete tempchar;
+				break;
+			}
+			::WideCharToMultiByte(CP_UTF8, 0, tempchar, -1, tempchar2, size, NULL, NULL);
+			m_Comment = tempchar2;
+			delete tempchar2;
+			delete tempchar;
+			break;
+		}
+	}
+
 	m_dwSize = size;
 	m_wFlags = Extract16(pData + 8);
-	memcpy(m_Comment, pData + 10, size);
 	return (size + 10);
+}
+
+char *CID3v2Frame::SetFrame(unsigned __int8 enc, unsigned __int8 version)
+{
+	__int32 size;
+	unsigned char *tempchar;
+
+	switch(enc) {
+		case FIELD_TEXT_ISO_8859_1:
+		default: {
+			m_Encoding = FIELD_TEXT_ISO_8859_1;
+			size = m_Comment.GetLength() + 2;
+			tempchar = new unsigned char[size];
+			tempchar[0] = m_Encoding;
+			strcpy_s((char *)tempchar + 1, size - 1, (LPCTSTR)m_Comment);
+			break;
+		}
+		case FIELD_TEXT_UTF_16:	{
+			m_Encoding = FIELD_TEXT_UTF_16;
+			size = ::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, 0, 0);
+			size = size * sizeof(WCHAR) + 3;
+			tempchar = new unsigned char[size];
+			if(!tempchar) break;
+			tempchar[0] = m_Encoding;
+			memcpy(tempchar + 1, UTF16_BE, 2);
+			::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, (WCHAR *)(tempchar + 3),
+				(size - 3) / sizeof(WCHAR));
+			break;
+		}
+		case FIELD_TEXT_UTF_16BE: {
+			m_Encoding = FIELD_TEXT_UTF_16BE;
+			size = ::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, 0, 0);
+			size = size * sizeof(WCHAR) + 1;
+			tempchar = new unsigned char[size];
+			if(!tempchar) break;
+			tempchar[0] = m_Encoding;
+			::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, (WCHAR *)(tempchar + 1), (size - 1) / sizeof(WCHAR));
+			UTF16toUTF16BE((WCHAR *)(tempchar + 1), (size - 1) / sizeof(WCHAR));
+			break;
+		}
+		case FIELD_TEXT_UTF_8: {
+			m_Encoding = FIELD_TEXT_UTF_8;
+			size = m_Comment.GetLength() + 2;
+			tempchar = new unsigned char[size + 2];
+			tempchar[0] = m_Encoding;
+			wcscpy((WCHAR *)(tempchar + 1), (LPCTSTR)m_Comment);
+			break;
+		}
+	}
+
+	char *frame = new char[size + 10];
+
+	strncpy_s(frame, ID3v2FrameIDLength, m_ID, ID3v2FrameIDLength);
+	if(version == 0x03)
+		::SetLength32(size, frame + 4);
+	else if(version == 0x04)
+		::pack_sint28(size, frame + 4);
+	Compress16((unsigned char *)(frame + 8), m_wFlags);
+	_tcsncpy_s((frame + 10), size, (const char *)tempchar, size);
+	delete tempchar;
+
+	return frame;
+}
+
+
+
+
+void CID3v2Frame::UTF16toUTF16BE(WCHAR *str, int len)
+{
+	for(int i = 0; i < len; i++)
+		str[i] = (str[i] << 8) | (str[i] >> 8);
 }
 

@@ -13,8 +13,6 @@
 using namespace std;
 
 
-const __int32 IDv2FrameIDLength = 4;
-
 #ifndef TTADEC_H_
 
 // return codes
@@ -64,6 +62,14 @@ __inline static unsigned __int32 GetLength32(const unsigned char *ptr) {
 __inline static __int16 Extract16(unsigned char buf[2]) {
 	return ((__int16)buf[0] << 8) | (buf[1]);
 }
+
+__inline static void Compress16(unsigned char buf[2], __int16 value) {
+	buf[0] = (unsigned char)value;
+	buf[1] = (unsigned char)(value << 8);
+}
+
+static const __int32 ID3v2FrameIDLength = 4;
+
 struct v2header
 {
 	char  id[3];
@@ -73,12 +79,6 @@ struct v2header
 	unsigned __int8 size[4];
 };
 
-struct frameheader
-{
-	char  id[IDv2FrameIDLength];
-	unsigned __int8  size[4];
-	short flags;
-};
 
 class CID3v2Frame
 {
@@ -86,24 +86,32 @@ public:
 	CID3v2Frame();
 	virtual ~CID3v2Frame();
 	CID3v2Frame(const CID3v2Frame &obj);
-	char *GetFrameID() {return m_ID;}
-	unsigned char *GetComment() {return m_Comment;}
-	void  SetComment(unsigned char *str) {m_Comment = str;}
+	CID3v2Frame(const char *ID);
+	char   *GetFrameID() {return m_ID;}
+	CString GetComment() {return m_Comment;}
+	void    SetComment(CString str) {m_Comment = str;}
 	__int32 GetSize() {return m_dwSize;}
-	void  SetSize(DWORD Size) {m_dwSize = Size;}
-	void  SetEncoding(unsigned char enc) {m_Encoding = enc;}
-	__int32 LoadFrame(unsigned char *pData, __int32 dwSize, unsigned __int8 version);
+	__int32 GetFrame(unsigned char *pData, __int32 dwSize, unsigned __int8 version);
+	char   *SetFrame(unsigned __int8 enc, unsigned __int8 version);
+	void    UTF16toUTF16BE(WCHAR *str, int len);
 
 private:
-	frameheader head;
+
+	struct frameheader
+	{
+		char  id[ID3v2FrameIDLength];
+		unsigned __int8  size[4];
+		short flags;
+	};
+
 	__int32 m_dwSize;
-	unsigned char m_Encoding;
-	unsigned char *m_Comment;
+	unsigned __int8 m_Encoding;
+	CString m_Comment;
 	char *m_ID;
 	__int16 m_wFlags;
+	unsigned __int8 m_Version;
 	void Release();
 
-protected:
 
 };
 
@@ -123,7 +131,6 @@ public:
 	CString GetTitle();
 	CString GetAlbum();
 private:
-	HANDLE	HFILE;
 	CString	FileName;	// filename
 	int		STATE;		// return code
 
