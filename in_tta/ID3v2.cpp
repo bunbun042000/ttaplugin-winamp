@@ -35,6 +35,10 @@ const unsigned __int8 FIELD_TEXT_MAX        = FIELD_TEXT_UTF_8;
 
 const unsigned __int8 UTF16_LE[] = {0xfe, 0xff};
 const unsigned __int8 UTF16_BE[] = {0xff, 0xfe};
+const unsigned __int32 HEADER_LENGTH = 10;
+const unsigned __int32 FRAME_HEADER_LENGTH = 10;
+
+const unsigned __int32 MAX_BUFFER_SIZE = 1000000;
 
 
 //////////////////////////////////////////////////////////////////////
@@ -45,6 +49,11 @@ CID3v2::CID3v2()
 {
 	m_bHastag = false;
 	m_frames.clear();
+	m_Encoding = FIELD_TEXT_ISO_8859_1;
+	m_ver = 0x04;
+	m_subver = 0x00;
+	m_Flags = 0x00;
+	m_dwSize = 0;
 
 }
 
@@ -52,6 +61,11 @@ CID3v2::~CID3v2()
 {
 	m_bHastag = false;
 	m_frames.clear();
+	m_Encoding = FIELD_TEXT_ISO_8859_1;
+	m_ver = 0x04;
+	m_subver = 0x00;
+	m_Flags = 0x00;
+	m_dwSize = 0;
 
 }
 
@@ -68,7 +82,7 @@ bool CID3v2::AddFrame(CID3v2Frame &frame)
 	return true;
 }
 
-bool CID3v2::DelFrame(const char *name, int index)
+bool CID3v2::DelFrame(const char *name)
 {
 	//name‚Ì‚È‚©‚©‚çdwIndex‚Ì’l‚ðŽæ“¾
     map<CString, CID3v2Frame>::iterator itp = m_frames.find(CString(name));
@@ -81,7 +95,7 @@ bool CID3v2::DelFrame(const char *name, int index)
 	return false;
 }
 
-bool CID3v2::GetComment(const char *name,int index,CString &strValue)
+bool CID3v2::GetComment(const char *name, CString &strValue)
 {
 	strValue = "";
 	//name‚Ì‚È‚©‚©‚çdwIndex‚Ì’l‚ðŽæ“¾
@@ -96,7 +110,7 @@ bool CID3v2::GetComment(const char *name,int index,CString &strValue)
 	return false;
 }
 
-bool CID3v2::GetFrame(const char *name, int index, CID3v2Frame &strFrame)
+bool CID3v2::GetFrame(const char *name, CID3v2Frame &strFrame)
 {
 	map<CString, CID3v2Frame>::iterator itp = m_frames.find(CString(name));
 	if(itp != m_frames.end()) {
@@ -125,28 +139,47 @@ void CID3v2::GetFrameNames(CStringArray &strArray)
 	}
 }
 
+__int32 CID3v2::SetComment(char *ID, CString &Comment)
+{
+	map<CString, CID3v2Frame>::iterator it = m_frames.find(CString(ID));
+	if(it != m_frames.end()){
+		it->second.SetComment(Comment, m_Encoding, m_ver);
+		m_dwSize = it->second.GetSize();
+	} else {
+		CID3v2Frame frame(ID);
+		frame.SetComment(Comment, m_Encoding, m_ver);
+		m_frames.insert(pair<CString, CID3v2Frame>(CString(ID), frame));
 
+	}
+	return m_dwSize;
+}
 
 CString CID3v2::GetAlbum()
 {
 	CString Album;
-	GetComment("TALB", 0, Album);
+	GetComment("TALB", Album);
 	return Album;
 }
 
 CString CID3v2::GetTitle()
 {
 	CString Title;
-	GetComment("TIT2", 0, Title);
+	GetComment("TIT2", Title);
 	return Title;
 }
 
 CString CID3v2::GetArtist()
 {
 	CString Artist;
-	GetComment("TPE1", 0, Artist);
+	GetComment("TPE1", Artist);
 	return Artist;
 }
+
+void CID3v2::SetArtist(CString &Artist)
+{
+	SetComment("TPE1", Artist);
+}
+
 
 
 __int32 CID3v2::ReadTag(const char *filename)
@@ -155,7 +188,6 @@ __int32 CID3v2::ReadTag(const char *filename)
 	HANDLE	    HFILE;
 	v2header	header;
 	m_bHastag = false;
-	tag_length = 0;
 	__int32 dwWin32errorCode = ERROR_SUCCESS;
 
 	HFILE = CreateFile((LPCTSTR)FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
@@ -185,16 +217,16 @@ __int32 CID3v2::ReadTag(const char *filename)
 		return -1;
 	}
 
-	tag_length = unpack_sint28(header.size) + 10; // size + headersize(10byte)
+	m_dwSize = unpack_sint28(header.size); // size (extended header + frames + padding + footer)
 
-	buffer = new unsigned char[tag_length];
+	buffer = new unsigned char[m_dwSize + HEADER_LENGTH];
 
 	if (!buffer) {
 		CloseHandle(HFILE);
 		return -1;
 	}
 
-	if(!ReadFile(HFILE, &buffer, tag_length, &result, NULL) || result != tag_length) {
+	if(!ReadFile(HFILE, &buffer, m_dwSize + HEADER_LENGTH, &result, NULL) || result != m_dwSize + HEADER_LENGTH) {
 		delete buffer;
 		CloseHandle(HFILE);
 		return -1;
@@ -202,10 +234,10 @@ __int32 CID3v2::ReadTag(const char *filename)
 
 	__int32 dwRemainSize;
 	if(header.flags & ID3_UNSYNCHRONISATION_FLAG) {
-		dwRemainSize = DecodeUnSynchronization(buffer, tag_length);
+		dwRemainSize = DecodeUnSynchronization(buffer, m_dwSize + HEADER_LENGTH);
 		m_bUnSynchronization = true;
 	} else {
-		dwRemainSize = tag_length;
+		dwRemainSize = m_dwSize + HEADER_LENGTH;
 		m_bUnSynchronization = false;
 	}
 
@@ -242,9 +274,8 @@ __int32 CID3v2::SaveTag()
 	HANDLE HFILE;
 	__int32 dwWin32errorCode = ERROR_SUCCESS;
 
-	v2header header;
 	DWORD  result;
-	__int32  id3v2_size;
+	bool bTempFile = false;
 //	unsigned char *buffer, *ptr;
 //	unsigned char *tag_data, *tptr;
 //	DWORD new_size, id3v2_size;
@@ -252,165 +283,208 @@ __int32 CID3v2::SaveTag()
 //	BOOL copy_data = TRUE;
 //	BOOL safe_mode = FALSE;
 
-	HFILE = CreateFile(FileName, GENERIC_READ|GENERIC_WRITE,
-		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
-	if (HFILE == INVALID_HANDLE_VALUE) {
+	__int32 size = m_frames.size();
+	map<CString,CID3v2Frame>::iterator it = m_frames.begin();
+	__int32 totalLength = 0;
+	unsigned __int32 EncLength = 0;
+	char **tempframes = new char*[size];
+	if(!*tempframes) return NULL;
+	__int32 i = 0;
+	while(it != m_frames.end()){
+		tempframes[i++] = it->second.SetFrame();
+		it++;
+	}
+	__int32 NumOfFrames = i;
+	i = 0;
+	char *frames = new char[totalLength];
+
+	it = m_frames.begin();
+	while(it != m_frames.end()){
+		totalLength += it->second.GetSize() + 10;
+		memcpy((frames + totalLength), tempframes[i++], it->second.GetSize() + 10);
+		it++;
+	}
+	delete tempframes;
+
+	char *tempData;
+	if(m_bUnSynchronization) {
+		tempData = new char[totalLength * 2];
+		EncLength = EncodeUnSynchronization((unsigned char *)frames, totalLength, (unsigned char *)tempData);
+		m_Flags |= ID3_UNSYNCHRONISATION_FLAG;
+		delete frames;
+	} else {
+		tempData = frames;
+		EncLength = totalLength;
+		m_Flags &= ~ID3_UNSYNCHRONISATION_FLAG;
+	}
+
+	char *header = new char[EncLength + HEADER_LENGTH];
+	if (!header) return NULL;
+
+	memcpy(header, "ID3", 3);
+	header[3] = m_ver;
+	header[4] = m_subver;
+	header[5] = m_Flags;
+	memcpy((header + 10), tempData, EncLength);
+	delete tempData;
+
+	char TempPath[MAX_PATHLEN];
+	char szTempFile[MAX_PATHLEN];
+
+	if(EncLength > m_dwSize) {
+		::pack_sint28(EncLength, (header + 6));
+		HANDLE HFILE2;
+		HFILE2 = CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ, 
+			NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		if(HFILE2 == INVALID_HANDLE_VALUE) {
+			dwWin32errorCode = GetLastError();
+			delete header;
+			return dwWin32errorCode;
+		}
+		DWORD dwDataSize = GetFileSize(HFILE2, NULL);
+		if (m_dwSize != 0) dwDataSize -= m_dwSize + HEADER_LENGTH;
+		char *pRawData = new char[dwDataSize];
+		if(!pRawData) {
+			dwWin32errorCode = GetLastError();
+			CloseHandle(HFILE2);
+			delete header;
+			return dwWin32errorCode;
+		}
+		// Create Temporary File
+		GetTempPath(MAX_PATHLEN, TempPath);
+		if(!GetTempFileName(TempPath, "wat", 0, szTempFile)) {
+			dwWin32errorCode = GetLastError();
+			delete header;
+			delete pRawData;
+			CloseHandle(HFILE2);
+			DeleteFile(szTempFile);
+			return dwWin32errorCode;
+		}
+		if(SetFilePointer(HFILE2, m_dwSize == 0 ? 0 : m_dwSize + HEADER_LENGTH, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
+			dwWin32errorCode = GetLastError();
+			delete header;
+			delete pRawData;
+			CloseHandle(HFILE2);
+			DeleteFile(szTempFile);
+			return dwWin32errorCode;
+		}
+
+		HFILE = CreateFile(szTempFile, GENERIC_WRITE | GENERIC_READ, FILE_SHARE_READ, NULL,
+			CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		if(HFILE == INVALID_HANDLE_VALUE) {
+			dwWin32errorCode = GetLastError();
+			delete header;
+			delete pRawData;
+			DeleteFile(szTempFile);
+			CloseHandle(HFILE2);
+			return dwWin32errorCode;
+		}
+
+		if(SetFilePointer(HFILE, 0, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
+			dwWin32errorCode = GetLastError();
+			delete header;
+			delete pRawData;
+			CloseHandle(HFILE);
+			CloseHandle(HFILE2);
+			DeleteFile(szTempFile);
+			return dwWin32errorCode;
+		}
+		if(SetFilePointer(HFILE, EncLength + HEADER_LENGTH, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
+			dwWin32errorCode = GetLastError();
+			delete header;
+			delete pRawData;
+			CloseHandle(HFILE);
+			CloseHandle(HFILE2);
+			DeleteFile(szTempFile);
+			return dwWin32errorCode;
+		}
+
+
+		if(!ReadFile(HFILE2, pRawData, dwDataSize, &result, NULL) || dwDataSize != result) {
+			dwWin32errorCode = GetLastError();
+			CloseHandle(HFILE2);
+			CloseHandle(HFILE);
+			delete header;
+			delete pRawData;
+			return dwWin32errorCode;
+		}
+		if(!WriteFile(HFILE, pRawData, dwDataSize, &result, NULL) || dwDataSize != result) {
+			dwWin32errorCode = GetLastError();
+			CloseHandle(HFILE2);
+			CloseHandle(HFILE);
+			delete header;
+			delete pRawData;
+			return dwWin32errorCode;
+		}
+		delete pRawData;
+		CloseHandle(HFILE2);
+		bTempFile = true;
+
+	} else {
+		HFILE = CreateFile(FileName, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+			FILE_ATTRIBUTE_NORMAL, NULL);
+		if(HFILE == INVALID_HANDLE_VALUE) {
+			dwWin32errorCode = GetLastError();
+			delete header;
+			return dwWin32errorCode;
+		}
+		::pack_sint28(m_dwSize, (header + 6));
+	}
+
+	if(SetFilePointer(HFILE, 0, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
 		dwWin32errorCode = GetLastError();
+		CloseHandle(HFILE);
+		if(bTempFile)
+			DeleteFile(szTempFile);
+		delete header;
 		return dwWin32errorCode;
 	}
 
-	if (!ReadFile(HFILE, &header, sizeof(v2header), &result, NULL) ||
-		result != sizeof(v2header)) {
+	if(!WriteFile(HFILE, header, ::unpack_sint28((unsigned char *)(header + 6)) + HEADER_LENGTH, &result, NULL)){
+		dwWin32errorCode = GetLastError();
 		CloseHandle(HFILE);
-		return -1;
+		if(bTempFile)
+			DeleteFile(szTempFile);
+		delete header;
+		return dwWin32errorCode;
 	}
 
-	if (!memcmp(header.id, "ID3", 3)) {
-		id3v2_size = unpack_sint28(header.size) + 10;
-		if (header.flags & ID3_FOOTERPRESENT_FLAG) id3v2_size += 10;
-	} else {
-		ZeroMemory(&header, sizeof(v2header));
-		CopyMemory(header.id, "ID3", 3);
-		id3v2_size = 0;
+	for(__int32 i = 0; i < ((__int32)m_dwSize - (__int32)EncLength) ; i++) {
+		unsigned char pad = 0x00;
+		if(!WriteFile(HFILE, &pad, 1, &result, NULL)) {
+			dwWin32errorCode = GetLastError();
+			CloseHandle(HFILE);
+			if(bTempFile)
+				DeleteFile(szTempFile);
+			return dwWin32errorCode;
+		}
 	}
 
-//	tag_data = (unsigned char *)HeapAlloc(heap, HEAP_ZERO_MEMORY,
-//		id3v2_size + sizeof(id3v2_data));
-//	tptr = tag_data + 10;
-//
-//	if (!(header.flags & ID3_UNSYNCHRONISATION_FLAG) &&
-//		!(header.flags & ID3_EXPERIMENTALTAG_FLAG) &&
-//		(header.version >= ID3_VERSION) && id3v2_size) {
-//
-//		hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, id3v2_size, NULL);
-//		if (!hMap) goto done;
-//
-//		buffer = (unsigned char *)MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, id3v2_size);
-//		if (!buffer) {
-//			CloseHandle(hMap);
-//			goto done;
-//		}
-//
-//		ptr = buffer + 10;
-//
-//		// copy extended header if present
-//		if ((header.flags & ID3_EXTENDEDHEADER_FLAG)) {
-//			int ext_size = (int) unpack_sint32(ptr);
-//			CopyMemory(tptr, ptr, ext_size);
-//			ptr += ext_size; tptr += ext_size;
-//		}
-//	} else copy_data = FALSE;
-//
-//	// add updated id3v2 frames
-//	add_text_frame("TIT2", &tptr, ttainfo->id3v2.title);
-//	add_text_frame("TPE1", &tptr, ttainfo->id3v2.artist);
-//	add_text_frame("TALB", &tptr, ttainfo->id3v2.album);
-//	add_text_frame("TRCK", &tptr, ttainfo->id3v2.track);
-//	add_text_frame("TYER", &tptr, ttainfo->id3v2.year);
-//	add_text_frame("TCON", &tptr, ttainfo->id3v2.genre);
-//	add_comm_frame("COMM", &tptr, ttainfo->id3v2.comment);
-//
-//	if (!copy_data) goto save;
-//
-//	// copy unchanged frames
-//	while ((unsigned long)abs(ptr - buffer) < id3v2_size) {
-//		int data_size, frame_size;
-//		int frame_id, comments = 0;
-//		frame frame_header;
-//
-//		// get frame header
-//		CopyMemory(&frame_header, ptr, sizeof(frame));
-//		data_size = unpack_sint32(frame_header.size);
-//		frame_size = sizeof(frame) + data_size;
-//
-//		if (!*frame_header.id) break;
-//
-//		if ((frame_id = get_frame_id(frame_header.id)))
-//			if (frame_id != COMM || !comments++) {
-//				ptr += frame_size; continue;
-//			}
-//
-//		// copy frame
-//		CopyMemory(tptr, ptr, frame_size);
-//		tptr += frame_size; ptr += frame_size;
-//	}
-//
-//	// copy footer if present
-//	if (id3v2.flags & ID3_FOOTERPRESENT_FLAG) {
-//		CopyMemory(tptr, ptr, 10);
-//		tptr += 10; ptr += 10;
-//	}
-//
-//save:
-//	if (copy_data) {
-//		UnmapViewOfFile((LPCVOID *) buffer);
-//		CloseHandle(hMap);
-//	}
-//
-//	new_size = tptr - tag_data;
-//
-//	// fill ID3v2 header
-//	id3v2.flags &= ~ID3_UNSYNCHRONISATION_FLAG;
-//	id3v2.flags &= ~ID3_EXPERIMENTALTAG_FLAG;
-//	id3v2.version = ID3_VERSION;
-//
-//	// write data
-//	if (new_size <= id3v2_size) {
-//		pack_sint28(id3v2_size - 10, id3v2.size);
-//		CopyMemory(tag_data, &id3v2, sizeof(id3v2_tag));
-//
-//		SetFilePointer(hFile, 0, NULL, FILE_BEGIN);
-//		if (!WriteFile(hFile, tag_data, id3v2_size, &result, 0) ||
-//			result != id3v2_size) {
-//			CloseHandle(hFile);
-//			tta_error(WRITE_ERROR, ttainfo->filename);
-//			return;
-//		}
-//		goto done;
-//	}
-//
-//	pack_sint28(new_size - 10, id3v2.size);
-//	CopyMemory(tag_data, &id3v2, sizeof(id3v2_tag));
-//	offset = (int) new_size - id3v2_size;
-//
-//	hMap = CreateFileMapping(hFile, NULL, PAGE_READWRITE, 0,
-//		ttainfo->FILESIZE + offset, NULL);
-//	if (!hMap) goto done;
-//
-//	buffer = (unsigned char *)MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0,
-//		ttainfo->FILESIZE + offset);
-//	if (!buffer) {
-//		CloseHandle(hMap);
-//		goto done;
-//	}
-//
-//	if (safe_mode) pause();
-//
-//	MoveMemory(buffer + ((int)id3v2_size + offset),
-//		buffer + id3v2_size, ttainfo->FILESIZE);
-//	CopyMemory(buffer, tag_data, new_size);
-//
-//	if (safe_mode) FlushViewOfFile((LPCVOID *) buffer, 0);
-//	UnmapViewOfFile((LPCVOID *) buffer);
-//	CloseHandle(hMap);
-//
-//	ttainfo->FILESIZE += offset;
-//	ttainfo->id3v2.size = new_size;
-//
-//	if (safe_mode) {
-//		info.FILESIZE = ttainfo->FILESIZE;
-//		info.id3v2.size = ttainfo->id3v2.size;
-//		seek_needed = decode_pos_ms;
-//		unpause();
-//	}
-//
-//done:
-//	CloseHandle(hFile);
-//	HeapFree(heap, 0, tag_data);
-//
-//	ttainfo->id3v2.id3has = 1;
+	CloseHandle(HFILE);
+	if (bTempFile){
+		char szPreFile[MAX_PATHLEN];
+		if(!GetTempFileName(TempPath, "wat", 0, szPreFile)) {
+			dwWin32errorCode = GetLastError();
+			DeleteFile(szTempFile);
+			return dwWin32errorCode;
+		}
+		DeleteFile(szPreFile);
+		if(!MoveFileEx(FileName, szPreFile, MOVEFILE_COPY_ALLOWED)) {
+			dwWin32errorCode = GetLastError();
+			DeleteFile(szTempFile);
+			return dwWin32errorCode;
+		}
+		if(!MoveFileEx(szTempFile, FileName, MOVEFILE_COPY_ALLOWED)) {
+			dwWin32errorCode = GetLastError();
+			MoveFile(szPreFile, FileName);
+			DeleteFile(szTempFile);
+			return dwWin32errorCode;
+		}
+		DeleteFile(szPreFile);
+	}
 
 	return dwWin32errorCode;
+
 }
 
 //static void del_id3v2_tag (tta_info *ttainfo) {
@@ -528,17 +602,21 @@ CID3v2Frame::CID3v2Frame()
 CID3v2Frame::CID3v2Frame(const CID3v2Frame &obj)
 {
 	m_Comment = obj.m_Comment;
-	m_ID = new char[ID3v2FrameIDLength];
+	m_ID = new char[ID3v2FrameIDLength + 1];
 	memcpy(m_ID, obj.m_ID, ID3v2FrameIDLength);
+	m_ID[ID3v2FrameIDLength] = '\0';
 	m_dwSize = obj.m_dwSize;
 	m_Encoding = obj.m_Encoding;
 	m_wFlags = obj.m_wFlags;
+	m_Version = obj.m_Version;
 }
 
 CID3v2Frame::CID3v2Frame(const char *ID)
 {
 	Release();
-	memcpy(m_ID, ID, ID3v2FrameIDLength);
+	if(m_ID == NULL)
+		m_ID = new char[ID3v2FrameIDLength + 1];
+	strcpy_s(m_ID, ID3v2FrameIDLength + 1, ID);
 }
 
 CID3v2Frame::~CID3v2Frame()
@@ -552,6 +630,7 @@ void CID3v2Frame::Release()
 	m_dwSize = 0;
 	m_ID = NULL;
 	m_wFlags = 0;
+	m_Version = 0x04;
 	if (m_ID != NULL)
 		delete m_ID;
 }
@@ -561,10 +640,11 @@ __int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __i
 	Release();
 	if(dwSize < 10)
 		return 0;
-	m_ID = new char[ID3v2FrameIDLength];
-	memcpy(&m_ID, pData, ID3v2FrameIDLength);
+	m_ID = new char[ID3v2FrameIDLength + 1];
 	if(!m_ID)
 		return 0;
+	memcpy(&m_ID, pData, ID3v2FrameIDLength);
+	m_ID[ID3v2FrameIDLength] = '\0';
 
 	__int32 size;
 	m_Version = version;
@@ -646,70 +726,91 @@ __int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __i
 	return (size + 10);
 }
 
-char *CID3v2Frame::SetFrame(unsigned __int8 enc, unsigned __int8 version)
+char *CID3v2Frame::SetFrame()
 {
-	__int32 size;
 	unsigned char *tempchar;
 
-	switch(enc) {
+	switch(m_Encoding) {
 		case FIELD_TEXT_ISO_8859_1:
 		default: {
-			m_Encoding = FIELD_TEXT_ISO_8859_1;
-			size = m_Comment.GetLength() + 2;
-			tempchar = new unsigned char[size];
+			tempchar = new unsigned char[m_dwSize];
+			if(!tempchar) return NULL;
 			tempchar[0] = m_Encoding;
-			strcpy_s((char *)tempchar + 1, size - 1, (LPCTSTR)m_Comment);
+			strcpy_s((char *)tempchar + 1, m_dwSize - 1, (LPCTSTR)m_Comment);
 			break;
 		}
 		case FIELD_TEXT_UTF_16:	{
-			m_Encoding = FIELD_TEXT_UTF_16;
-			size = ::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, 0, 0);
-			size = size * sizeof(WCHAR) + 3;
-			tempchar = new unsigned char[size];
-			if(!tempchar) break;
+			tempchar = new unsigned char[m_dwSize];
+			if(!tempchar) return NULL;
 			tempchar[0] = m_Encoding;
 			memcpy(tempchar + 1, UTF16_BE, 2);
 			::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, (WCHAR *)(tempchar + 3),
-				(size - 3) / sizeof(WCHAR));
+				(m_dwSize - 3) / sizeof(WCHAR));
 			break;
 		}
 		case FIELD_TEXT_UTF_16BE: {
-			m_Encoding = FIELD_TEXT_UTF_16BE;
-			size = ::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, 0, 0);
-			size = size * sizeof(WCHAR) + 1;
-			tempchar = new unsigned char[size];
-			if(!tempchar) break;
+			tempchar = new unsigned char[m_dwSize];
+			if(!tempchar) return NULL;
 			tempchar[0] = m_Encoding;
-			::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, (WCHAR *)(tempchar + 1), (size - 1) / sizeof(WCHAR));
-			UTF16toUTF16BE((WCHAR *)(tempchar + 1), (size - 1) / sizeof(WCHAR));
+			::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, (WCHAR *)(tempchar + 1), (m_dwSize - 1) / sizeof(WCHAR));
+			UTF16toUTF16BE((WCHAR *)(tempchar + 1), (m_dwSize - 1) / sizeof(WCHAR));
 			break;
 		}
 		case FIELD_TEXT_UTF_8: {
-			m_Encoding = FIELD_TEXT_UTF_8;
-			size = m_Comment.GetLength() + 2;
-			tempchar = new unsigned char[size + 2];
+			tempchar = new unsigned char[m_dwSize];
+			if(!tempchar) return NULL;
 			tempchar[0] = m_Encoding;
-			wcscpy((WCHAR *)(tempchar + 1), (LPCTSTR)m_Comment);
+			_tcscpy_s((char *)(tempchar + 1), m_dwSize + 1, m_Comment.GetBuffer());
 			break;
 		}
 	}
 
-	char *frame = new char[size + 10];
+	char *frame = new char[m_dwSize + 10];
 
-	strncpy_s(frame, ID3v2FrameIDLength, m_ID, ID3v2FrameIDLength);
-	if(version == 0x03)
-		::SetLength32(size, frame + 4);
-	else if(version == 0x04)
-		::pack_sint28(size, frame + 4);
+	memcpy(frame, m_ID, ID3v2FrameIDLength);
+	if(m_Version == 0x03)
+		::SetLength32(m_dwSize, frame + 4);
+	else if(m_Version == 0x04)
+		::pack_sint28(m_dwSize, frame + 4);
 	Compress16((unsigned char *)(frame + 8), m_wFlags);
-	_tcsncpy_s((frame + 10), size, (const char *)tempchar, size);
+	_tcscpy_s((frame + 10), m_dwSize, (const char *)tempchar);
 	delete tempchar;
 
 	return frame;
 }
 
+void CID3v2Frame::SetComment(CString str, unsigned __int8 Encoding, unsigned __int8 version)
+{
+	if((Encoding > FIELD_TEXT_MAX) || (version != 0x03 && version != 0x04)) return;
 
+	m_Encoding = Encoding;
+	m_Comment = str;
+	m_Version = version;
+	__int32 size;
+	switch(m_Encoding) {
+		case FIELD_TEXT_ISO_8859_1:
+		default: {
+			size = m_Comment.GetLength() + 2;
+			break;
+		}
+		case FIELD_TEXT_UTF_16:	{
+			size = ::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, 0, 0);
+			size = size * sizeof(WCHAR) + 3;
+			break;
+		}
+		case FIELD_TEXT_UTF_16BE: {
+			size = ::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, 0, 0);
+			size = size * sizeof(WCHAR) + 1;
+			break;
+		}
+		case FIELD_TEXT_UTF_8: {
+			size = m_Comment.GetLength() + 2;
+			break;
+		}
+	}
+	m_dwSize = size;
 
+}
 
 void CID3v2Frame::UTF16toUTF16BE(WCHAR *str, int len)
 {

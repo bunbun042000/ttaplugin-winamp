@@ -128,7 +128,7 @@ void CFileInfo::OnBnClickedOk()
 		if(m_sID3v1_TrackNo != "")
 			dlgtag.id3v1.SetTrack((unsigned char)atoi((LPCTSTR)m_sID3v1_TrackNo));
 		else
-			dlgtag.id3v1.SetTrack(NULL);
+			dlgtag.id3v1.SetTrack(0xff);
 
 		dlgtag.id3v1.SetGenre((unsigned char)m_ID3v1_Genre.GetCurSel());
 		dlgtag.id3v1.SaveTag(NULL);
@@ -139,6 +139,11 @@ void CFileInfo::OnBnClickedOk()
 			dlgtag.id3v1.DeleteTag(NULL);
 	}
 
+	if (m_bID3v2_save)
+	{
+		dlgtag.id3v2.SetArtist(m_sID3v2_Artists);
+		dlgtag.id3v2.SaveTag();
+	}
 
 	OnOK();
 }

@@ -89,10 +89,10 @@ public:
 	CID3v2Frame(const char *ID);
 	char   *GetFrameID() {return m_ID;}
 	CString GetComment() {return m_Comment;}
-	void    SetComment(CString str) {m_Comment = str;}
+	void    SetComment(CString str, unsigned __int8 Encoding, unsigned __int8 version);
 	__int32 GetSize() {return m_dwSize;}
 	__int32 GetFrame(unsigned char *pData, __int32 dwSize, unsigned __int8 version);
-	char   *SetFrame(unsigned __int8 enc, unsigned __int8 version);
+	char   *SetFrame();
 	void    UTF16toUTF16BE(WCHAR *str, int len);
 
 private:
@@ -104,11 +104,11 @@ private:
 		short flags;
 	};
 
-	__int32 m_dwSize;
+	__int32 m_dwSize;			// Comment size (without header)
 	unsigned __int8 m_Encoding;
 	CString m_Comment;
 	char *m_ID;
-	__int16 m_wFlags;
+	unsigned __int16 m_wFlags;
 	unsigned __int8 m_Version;
 	void Release();
 
@@ -122,11 +122,12 @@ public:
 	virtual ~CID3v2();
 	__int32 ReadTag(const char *filename);
 	bool    hasTag() {return m_bHastag;}
-	__int32 TagLength() {return tag_length;}
+	__int32 TagLength() {return m_dwSize;}
 	__int32 SaveTag();
 
 
 	CString GetArtist();
+	void SetArtist(CString &Artist);
 
 	CString GetTitle();
 	CString GetAlbum();
@@ -136,18 +137,22 @@ private:
 
 	unsigned __int8 m_Encoding; // Strings Encoding;
 	unsigned __int8 m_ver;
+	unsigned __int8 m_subver;
+	unsigned __int8 m_Flags;
+	unsigned __int32 m_dwSize; // extended header + frame + padding + footer
 	map<CString, CID3v2Frame>m_frames;
 	bool	m_bHastag;
 	bool    m_bUnSynchronization;
 
-	__int32 tag_length; // include header+frame+etcetera
+//	unsigned __int32 tag_length; // include header+frame+etcetera
+
 
 	bool AddFrame(CID3v2Frame &frame);
-	bool DelFrame(const char *name, int index);
-	bool GetFrame(const char *name, int index, CID3v2Frame &strFrame);
-	bool GetComment(const char *name, int index, CString &strValue);
+	bool DelFrame(const char *name);
+	bool GetFrame(const char *name, CID3v2Frame &strFrame);
+	bool GetComment(const char *name, CString &strValue);
 	void GetFrameNames(CStringArray &strArray);
-	__int32 GetTotalFrameLength();
+	__int32 SetComment(char *ID, CString &Comment); 
 	__int32 DecodeUnSynchronization(unsigned char *data, __int32 dwSize);
 	__int32 EncodeUnSynchronization(unsigned char *srcData, __int32 dwSize, unsigned char *dstData);
 
