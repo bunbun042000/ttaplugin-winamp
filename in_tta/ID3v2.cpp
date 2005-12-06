@@ -47,17 +47,15 @@ const unsigned __int32 MAX_BUFFER_SIZE = 1000000;
 
 CID3v2::CID3v2()
 {
-	m_bHastag = false;
-	m_frames.clear();
-	m_Encoding = FIELD_TEXT_ISO_8859_1;
-	m_ver = 0x04;
-	m_subver = 0x00;
-	m_Flags = 0x00;
-	m_dwSize = 0;
-
+	Release();
 }
 
 CID3v2::~CID3v2()
+{
+	Release();
+}
+
+void CID3v2::Release()
 {
 	m_bHastag = false;
 	m_frames.clear();
@@ -66,7 +64,6 @@ CID3v2::~CID3v2()
 	m_subver = 0x00;
 	m_Flags = 0x00;
 	m_dwSize = 0;
-
 }
 
 bool CID3v2::AddFrame(CID3v2Frame &frame)
@@ -110,41 +107,14 @@ bool CID3v2::GetComment(const char *name, CString &strValue)
 	return false;
 }
 
-bool CID3v2::GetFrame(const char *name, CID3v2Frame &strFrame)
-{
-	map<CString, CID3v2Frame>::iterator itp = m_frames.find(CString(name));
-	if(itp != m_frames.end()) {
-		strFrame = itp->second;
-		return true;
-	}
 
-	return false;
-}
-
-
-void CID3v2::GetFrameNames(CStringArray &strArray)
-{
-	//nameƒŠƒXƒg‚ð•Ô‚·
-	map<CString, CID3v2Frame>::iterator it = m_frames.begin();
-	
-	CString strName;
-	while(it != m_frames.end())
-	{
-		if(strName.Compare(it->first))
-		{
-			strArray.Add(it->first);
-		}
-		strName = it->first;
-		it++;
-	}
-}
 
 __int32 CID3v2::SetComment(char *ID, CString &Comment)
 {
 	map<CString, CID3v2Frame>::iterator it = m_frames.find(CString(ID));
 	if(it != m_frames.end()){
 		it->second.SetComment(Comment, m_Encoding, m_ver);
-		m_dwSize = it->second.GetSize();
+//		m_dwSize = it->second.GetSize();
 	} else {
 		CID3v2Frame frame(ID);
 		frame.SetComment(Comment, m_Encoding, m_ver);
@@ -154,6 +124,34 @@ __int32 CID3v2::SetComment(char *ID, CString &Comment)
 	return m_dwSize;
 }
 
+__int32 CID3v2::GetTotalFrameLength()
+{
+	__int32 length = 0;
+	map<CString, CID3v2Frame>::iterator it = m_frames.begin();
+	while(it != m_frames.end()) {
+		length += it->second.GetSize() + FRAME_HEADER_LENGTH;
+		it++;
+	}
+	return length;
+}
+
+
+void CID3v2::SetVersion(unsigned __int8 ver)
+{
+	if (ver != 0x03 && ver != 0x04)
+		return;
+	m_ver = ver;
+}
+
+bool CID3v2::SetEncoding(unsigned __int8 enc)
+{
+	if ((m_ver ==0x03 && enc > 0x02) || (m_ver == 0x04 && enc > 0x04) 
+		|| (m_ver != 0x03 && m_ver != 0x04))
+		return false;
+	m_Encoding = enc;
+	return true;
+}
+
 CString CID3v2::GetAlbum()
 {
 	CString Album;
@@ -161,11 +159,21 @@ CString CID3v2::GetAlbum()
 	return Album;
 }
 
+void CID3v2::SetAlbum(CString &Album)
+{
+	SetComment("TALB", Album);
+}
+
 CString CID3v2::GetTitle()
 {
 	CString Title;
 	GetComment("TIT2", Title);
 	return Title;
+}
+
+void CID3v2::SetTitle(CString &Title)
+{
+	SetComment("TIT2", Title);
 }
 
 CString CID3v2::GetArtist()
@@ -180,10 +188,153 @@ void CID3v2::SetArtist(CString &Artist)
 	SetComment("TPE1", Artist);
 }
 
+CString CID3v2::GetTrackNo()
+{
+	CString TrackNo;
+	GetComment("TRCK", TrackNo);
+	return TrackNo;
+}
+
+void CID3v2::SetTrackNo(CString &TrackNo)
+{
+	SetComment("TRCK", TrackNo);
+}
+
+CString CID3v2::GetYear()
+{
+	CString Year;
+	if(m_ver == 0x03) {
+		GetComment("TYER", Year);
+	} else if (m_ver == 0x04){
+		GetComment("TDRL", Year);
+	}
+	return Year;
+}
+
+void CID3v2::SetYear(CString &Year)
+{
+	if(m_ver == 0x03) {
+		SetComment("TYER", Year);
+		SetComment("TDRL", CString(""));
+	} else if(m_ver == 0x04) {
+		SetComment("TYER", CString(""));
+		SetComment("TDRL", Year);
+	}
+}
+
+CString CID3v2::GetGenre()
+{
+	CString Genre;
+	GetComment("TCON", Genre);
+	return Genre;
+}
+
+void CID3v2::SetGenre(CString &Genre)
+{
+	SetComment("TCON", Genre);
+}
+
+CString CID3v2::GetComment()
+{
+	CString Comment;
+	GetComment("COMM", Comment);
+	return Comment;
+}
+
+void CID3v2::SetComment(CString &Comment)
+{
+	SetComment("COMM", Comment);
+}
+
+CString CID3v2::GetCopyright()
+{
+	CString Copyright;
+	GetComment("TCOP", Copyright);
+	return Copyright;
+}
+
+void CID3v2::SetCopyright(CString &Copyright)
+{
+	SetComment("TCOP", Copyright);
+}
+
+CString CID3v2::GetURI()
+{
+	CString URI;
+	GetComment("WXXX", URI);
+	return URI;
+}
+
+void CID3v2::SetURI(CString &URI)
+{
+	SetComment("WXXX", URI);
+}
+
+CString CID3v2::GetWords()
+{
+	CString Words;
+	GetComment("TEXT", Words);
+	return Words;
+}
+
+void CID3v2::SetWords(CString &Words)
+{
+	SetComment("TEXT", Words);
+}
+
+CString CID3v2::GetComposers()
+{
+	CString Composers;
+	GetComment("TCOM", Composers);
+	return Composers;
+}
+
+void CID3v2::SetComposers(CString &Composers)
+{
+	SetComment("TCOM", Composers);
+}
+
+CString CID3v2::GetArrangements()
+{
+	CString Arrangements;
+	GetComment("TPE4", Arrangements);
+	return Arrangements;
+}
+
+void CID3v2::SetArrangements(CString &Arrangements)
+{
+	SetComment("TPE4", Arrangements);
+}
+
+CString CID3v2::GetOrigArtist()
+{
+	CString OrigArtist;
+	GetComment("TOPE", OrigArtist);
+	return OrigArtist;
+}
+
+void CID3v2::SetOrigArtist(CString &OrigArtist)
+{
+	SetComment("TOPE", OrigArtist);
+}
+
+CString CID3v2::GetEncEngineer()
+{
+	CString EncEngineer;
+	GetComment("TENC", EncEngineer);
+	return EncEngineer;
+}
+
+void CID3v2::SetEncEngineer(CString &EncEngineer)
+{
+	SetComment("TENC", EncEngineer);
+}
 
 
 __int32 CID3v2::ReadTag(const char *filename)
 {
+	Release();
+
 	FileName = filename;
 	HANDLE	    HFILE;
 	v2header	header;
@@ -219,14 +370,16 @@ __int32 CID3v2::ReadTag(const char *filename)
 
 	m_dwSize = unpack_sint28(header.size); // size (extended header + frames + padding + footer)
 
-	buffer = new unsigned char[m_dwSize + HEADER_LENGTH];
+	buffer = new unsigned char[m_dwSize];
 
 	if (!buffer) {
 		CloseHandle(HFILE);
 		return -1;
 	}
 
-	if(!ReadFile(HFILE, &buffer, m_dwSize + HEADER_LENGTH, &result, NULL) || result != m_dwSize + HEADER_LENGTH) {
+	SetFilePointer(HFILE, HEADER_LENGTH, NULL, FILE_BEGIN);
+
+	if(!ReadFile(HFILE, buffer, m_dwSize, &result, NULL) || result != m_dwSize) {
 		delete buffer;
 		CloseHandle(HFILE);
 		return -1;
@@ -234,10 +387,10 @@ __int32 CID3v2::ReadTag(const char *filename)
 
 	__int32 dwRemainSize;
 	if(header.flags & ID3_UNSYNCHRONISATION_FLAG) {
-		dwRemainSize = DecodeUnSynchronization(buffer, m_dwSize + HEADER_LENGTH);
+		dwRemainSize = DecodeUnSynchronization(buffer, m_dwSize);
 		m_bUnSynchronization = true;
 	} else {
-		dwRemainSize = m_dwSize + HEADER_LENGTH;
+		dwRemainSize = m_dwSize;
 		m_bUnSynchronization = false;
 	}
 
@@ -261,11 +414,12 @@ __int32 CID3v2::ReadTag(const char *filename)
 			break;
 
 		AddFrame(frame);
+		m_Encoding = frame.GetEncoding();
 		dwRemainSize -= dwReadSize;
 	}
 	delete buffer;
 	CloseHandle(HFILE);
-	m_bHastag = false; // for debug
+	m_bHastag = true; // for debug
 	return dwWin32errorCode;
 }
 
@@ -283,28 +437,21 @@ __int32 CID3v2::SaveTag()
 //	BOOL copy_data = TRUE;
 //	BOOL safe_mode = FALSE;
 
-	__int32 size = m_frames.size();
 	map<CString,CID3v2Frame>::iterator it = m_frames.begin();
 	__int32 totalLength = 0;
 	unsigned __int32 EncLength = 0;
-	char **tempframes = new char*[size];
-	if(!*tempframes) return NULL;
-	__int32 i = 0;
-	while(it != m_frames.end()){
-		tempframes[i++] = it->second.SetFrame();
-		it++;
-	}
-	__int32 NumOfFrames = i;
-	i = 0;
+
+	totalLength = GetTotalFrameLength();
+
 	char *frames = new char[totalLength];
 
 	it = m_frames.begin();
+	__int32 dwOffset = 0;
 	while(it != m_frames.end()){
-		totalLength += it->second.GetSize() + 10;
-		memcpy((frames + totalLength), tempframes[i++], it->second.GetSize() + 10);
+		memcpy((frames + dwOffset), it->second.SetFrame(), it->second.GetSize() + FRAME_HEADER_LENGTH);
+		dwOffset += it->second.GetSize() + FRAME_HEADER_LENGTH;
 		it++;
 	}
-	delete tempframes;
 
 	char *tempData;
 	if(m_bUnSynchronization) {
@@ -360,7 +507,7 @@ __int32 CID3v2::SaveTag()
 			DeleteFile(szTempFile);
 			return dwWin32errorCode;
 		}
-		if(SetFilePointer(HFILE2, m_dwSize == 0 ? 0 : m_dwSize + HEADER_LENGTH, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
+		if(SetFilePointer(HFILE2, GetTagLength(), NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
 			dwWin32errorCode = GetLastError();
 			delete header;
 			delete pRawData;
@@ -469,18 +616,19 @@ __int32 CID3v2::SaveTag()
 			return dwWin32errorCode;
 		}
 		DeleteFile(szPreFile);
-		if(!MoveFileEx(FileName, szPreFile, MOVEFILE_COPY_ALLOWED)) {
+		if(!CopyFileEx(FileName, szPreFile, NULL, NULL, false, COPY_FILE_RESTARTABLE)) {
 			dwWin32errorCode = GetLastError();
 			DeleteFile(szTempFile);
 			return dwWin32errorCode;
 		}
-		if(!MoveFileEx(szTempFile, FileName, MOVEFILE_COPY_ALLOWED)) {
+		if(!CopyFileEx(szTempFile, FileName, NULL, NULL, false, COPY_FILE_RESTARTABLE)) {
 			dwWin32errorCode = GetLastError();
 			MoveFile(szPreFile, FileName);
 			DeleteFile(szTempFile);
 			return dwWin32errorCode;
 		}
 		DeleteFile(szPreFile);
+		DeleteFile(szTempFile);
 	}
 
 	return dwWin32errorCode;
@@ -643,7 +791,7 @@ __int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __i
 	m_ID = new char[ID3v2FrameIDLength + 1];
 	if(!m_ID)
 		return 0;
-	memcpy(&m_ID, pData, ID3v2FrameIDLength);
+	memcpy(m_ID, pData, ID3v2FrameIDLength);
 	m_ID[ID3v2FrameIDLength] = '\0';
 
 	__int32 size;
@@ -656,7 +804,9 @@ __int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __i
 	if((size + 10) > dwSize)
 		return 0;
 
-	pData += 4;
+	pData += 8;
+	m_wFlags = Extract16(pData);
+	pData += 2;
 	memcpy(&m_Encoding, pData, sizeof(m_Encoding));
 	pData++;
 
@@ -665,7 +815,7 @@ __int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __i
 		default: {
 			char *tempchar = new char[size];
 			if(!tempchar) break;
-			strncpy_s(tempchar, size, (char *)pData, size - 2);
+			memcpy(tempchar, (char *)pData, size - 1);
 			tempchar[size - 1] = '\0';
 			m_Comment = tempchar;
 			delete tempchar;
@@ -722,8 +872,7 @@ __int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __i
 	}
 
 	m_dwSize = size;
-	m_wFlags = Extract16(pData + 8);
-	return (size + 10);
+	return (size + FRAME_HEADER_LENGTH);
 }
 
 char *CID3v2Frame::SetFrame()
@@ -736,7 +885,7 @@ char *CID3v2Frame::SetFrame()
 			tempchar = new unsigned char[m_dwSize];
 			if(!tempchar) return NULL;
 			tempchar[0] = m_Encoding;
-			strcpy_s((char *)tempchar + 1, m_dwSize - 1, (LPCTSTR)m_Comment);
+			memcpy((char *)tempchar + 1, (LPCTSTR)m_Comment, m_dwSize - 1);
 			break;
 		}
 		case FIELD_TEXT_UTF_16:	{
@@ -765,7 +914,7 @@ char *CID3v2Frame::SetFrame()
 		}
 	}
 
-	char *frame = new char[m_dwSize + 10];
+	char *frame = new char[m_dwSize + FRAME_HEADER_LENGTH];
 
 	memcpy(frame, m_ID, ID3v2FrameIDLength);
 	if(m_Version == 0x03)
@@ -773,7 +922,7 @@ char *CID3v2Frame::SetFrame()
 	else if(m_Version == 0x04)
 		::pack_sint28(m_dwSize, frame + 4);
 	Compress16((unsigned char *)(frame + 8), m_wFlags);
-	_tcscpy_s((frame + 10), m_dwSize, (const char *)tempchar);
+	memcpy((frame + 10), (const char *)tempchar, m_dwSize);
 	delete tempchar;
 
 	return frame;

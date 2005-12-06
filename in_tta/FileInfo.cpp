@@ -36,6 +36,7 @@ CFileInfo::CFileInfo(CWnd* pParent /*=NULL*/, const char *filename)
 , m_sID3v2_Arrangements(_T(""))
 , m_sID3v2_Original_Artists(_T(""))
 , m_sID3v2_Encoding_Engineer(_T(""))
+, m_bID3v2_UnSynchronization(FALSE)
 {
 //	AFX_MANAGE_STATE(AfxGetStaticModuleHandle());
 	m_sFileName = filename;
@@ -100,6 +101,8 @@ void CFileInfo::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_ID3V2_STRING_ENCODING, m_ID3v2_String_Encoding);
 	DDX_Control(pDX, IDC_COPYFROMV2, m_ID3v1_CopyFromV2);
 	DDX_Control(pDX, IDC_COPYFROMV1, m_ID3v2_CopyFromV1);
+	DDX_Control(pDX, IDC_ID3V2_SYNCHRONIZATIOn, m_ID3v2_UnSynchronization);
+	DDX_Check(pDX, IDC_ID3V2_SYNCHRONIZATIOn, m_bID3v2_UnSynchronization);
 }
 
 
@@ -115,11 +118,9 @@ END_MESSAGE_MAP()
 
 void CFileInfo::OnBnClickedOk()
 {
-	char buf[MAX_PATHLEN];
 	// TODO: Add your control notification handler code here
 	UpdateData(TRUE);
-	if (m_bID3v1_save)
-	{
+	if (m_bID3v1_save) {
 		dlgtag.id3v1.SetTitle(m_sID3v1_Name.GetBuffer());
 		dlgtag.id3v1.SetArtist(m_sID3v1_Artists.GetBuffer());
 		dlgtag.id3v1.SetAlbum(m_sID3v1_Album.GetBuffer());
@@ -132,16 +133,26 @@ void CFileInfo::OnBnClickedOk()
 
 		dlgtag.id3v1.SetGenre((unsigned char)m_ID3v1_Genre.GetCurSel());
 		dlgtag.id3v1.SaveTag(NULL);
-	} 
-	else
-	{
+	} else {
 		if(dlgtag.id3v1.hasTag())
 			dlgtag.id3v1.DeleteTag(NULL);
 	}
 
-	if (m_bID3v2_save)
-	{
+	if (m_bID3v2_save) {
 		dlgtag.id3v2.SetArtist(m_sID3v2_Artists);
+		dlgtag.id3v2.SetTitle(m_sID3v2_Title);
+		dlgtag.id3v2.SetAlbum(m_sID3v2_Album);
+		dlgtag.id3v2.SetTrackNo(m_sID3v2_TrackNo);
+		dlgtag.id3v2.SetYear(m_sID3v2_Year);
+		dlgtag.id3v2.SetGenre(m_sID3v2_Genre);
+		dlgtag.id3v2.SetComment(m_sID3v2_Comment);
+		dlgtag.id3v2.SetCopyright(m_sID3v2_Copyrights);
+		dlgtag.id3v2.SetURI(m_sID3v2_URI);
+		dlgtag.id3v2.SetWords(m_sID3v2_Words);
+		dlgtag.id3v2.SetComposers(m_sID3v2_Composers);
+		dlgtag.id3v2.SetArrangements(m_sID3v2_Arrangements);
+		dlgtag.id3v2.SetOrigArtist(m_sID3v2_Original_Artists);
+		dlgtag.id3v2.SetEncEngineer(m_sID3v2_Encoding_Engineer);
 		dlgtag.id3v2.SaveTag();
 	}
 
@@ -160,7 +171,8 @@ BOOL CFileInfo::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	int nCount;
-	for(int i = 0; i < GENRES; i++)
+	__int32 i = 0;
+	for(i = 0; i < GENRES; i++)
 	{
 		nCount = m_ID3v1_Genre.AddString(genre[i]);
 		if (nCount == CB_ERR)
@@ -201,8 +213,11 @@ BOOL CFileInfo::OnInitDialog()
 		m_sID3v1_Album = dlgtag.id3v1.GetAlbum();
 		m_sID3v1_Comment = dlgtag.id3v1.GetComment();
 		m_sID3v1_Year = dlgtag.id3v1.GetYear();
-		_ultoa_s((unsigned long)dlgtag.id3v1.GetTrack(), buf, sizeof(buf), 10);
-		m_sID3v1_TrackNo = buf;
+		if(dlgtag.id3v1.GetTrack() != 0xff) {
+			_ultoa_s((unsigned long)dlgtag.id3v1.GetTrack(), buf, sizeof(buf), 10);
+			m_sID3v1_TrackNo = buf;
+		} else
+			m_sID3v1_TrackNo = "";
 		m_ID3v1_Genre.SetCurSel(dlgtag.id3v1.GetGenre());
 	}
 	else
@@ -212,9 +227,46 @@ BOOL CFileInfo::OnInitDialog()
 	}
 
 	// ID3v2 Tag
+	i = 0;
+	while(ID3v2Version[i].ver != NULL)
+	{
+		nCount = m_ID3v2_Version.AddString(ID3v2Version[i].ver);
+		if (nCount == CB_ERR)
+			break;
+		i++;
+	}
+
 	if(dlgtag.id3v2.hasTag()){
 		m_bID3v2_save = TRUE;
 		ShowHideID3v2Column();
+		m_sID3v2_Artists = dlgtag.id3v2.GetArtist();
+		m_sID3v2_Title = dlgtag.id3v2.GetTitle();
+		m_sID3v2_Album = dlgtag.id3v2.GetAlbum();
+		m_sID3v2_TrackNo = dlgtag.id3v2.GetTrackNo();
+		m_sID3v2_Year = dlgtag.id3v2.GetYear();
+		m_sID3v2_Genre = dlgtag.id3v2.GetGenre();
+		m_sID3v2_Comment = dlgtag.id3v2.GetComment();
+		m_sID3v2_Copyrights = dlgtag.id3v2.GetCopyright();
+		m_sID3v2_URI = dlgtag.id3v2.GetURI();
+		m_sID3v2_Words = dlgtag.id3v2.GetWords();
+		m_sID3v2_Composers = dlgtag.id3v2.GetComposers();
+		m_sID3v2_Arrangements = dlgtag.id3v2.GetArrangements();
+		m_sID3v2_Original_Artists = dlgtag.id3v2.GetOrigArtist();
+		m_sID3v2_Encoding_Engineer = dlgtag.id3v2.GetEncEngineer();
+
+		m_bID3v2_UnSynchronization = dlgtag.id3v2.GetUnSynchronization();
+		m_ID3v2_Version.SetCurSel((int)(dlgtag.id3v2.GetVersion() - ID3v2Version[0].flag));
+		i = 0;
+		m_ID3v2_String_Encoding.ResetContent();
+		while(ID3v2Version[dlgtag.id3v2.GetVersion() - ID3v2Version[0].flag].Str_Enc[i] != NULL) {
+			nCount = m_ID3v2_String_Encoding.AddString(ID3v2Version[dlgtag.id3v2.GetVersion() 
+				- ID3v2Version[0].flag].Str_Enc[i]);
+			if (nCount == CB_ERR)
+				break;
+			i++;
+		}
+		m_ID3v2_String_Encoding.SetCurSel((int)(dlgtag.id3v2.GetEncoding()));
+
 	}
 	else
 	{
@@ -282,7 +334,8 @@ void CFileInfo::ShowHideID3v2Column()
 	m_ID3v2_String_Encoding.EnableWindow(m_bID3v2_save);
 	m_ID3v2_CopyFromV1.EnableWindow(m_bID3v1_save && m_bID3v2_save);
 	m_ID3v1_CopyFromV2.EnableWindow(m_bID3v1_save && m_bID3v2_save);
-	
+	m_ID3v2_UnSynchronization.EnableWindow(m_bID3v2_save);
+
 	return;
 }
 void CFileInfo::OnBnClickedId3v2Save()

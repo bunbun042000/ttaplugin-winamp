@@ -79,7 +79,7 @@ bool CTtaTag::ReadTag(HWND hMainWindow, const char *filename)
 	unsigned long result;
 	long		  checksum;
 
-	SetFilePointer(HFILE, id3v2.hasTag() ? id3v2.TagLength() : 0, NULL, FILE_BEGIN);
+	SetFilePointer(HFILE, id3v2.GetTagLength(), NULL, FILE_BEGIN);
 	// read TTA header
 	if (!::ReadFile(HFILE, &ttaheader, sizeof(TTA_header), &result, NULL) ||
 		result != sizeof(TTA_header)) {
@@ -124,7 +124,7 @@ bool CTtaTag::ReadTag(HWND hMainWindow, const char *filename)
 	FRAMELEN = (long) (FRAME_TIME * ttaheader.SampleRate);
 	LENGTH = (unsigned long)(ttaheader.DataLength / ttaheader.SampleRate * 1000);
 
-	datasize = FILESIZE - id3v2.TagLength();
+	datasize = FILESIZE - id3v2.GetTagLength();
 	origsize = DATALENGTH * BSIZE * NCH;
 
 	COMPRESS = ((double)datasize) / origsize;

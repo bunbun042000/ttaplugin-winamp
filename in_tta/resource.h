@@ -48,13 +48,14 @@
 #define IDC_ID3V2_COMPOSERS             2025
 #define IDC_ID3V2_ARRANGEMENTS          2026
 #define IDC_ID3V2_ORIGINAL_ARTISTS      2027
-#define IDC_EDIT10                      2028
 #define IDC_ID3V2_ENCODING_ENGINEER     2028
 #define IDC_ID3V2_YEAR                  2029
 #define IDC_ID3V2_VERSION               2030
 #define IDC_ID3V2_STRING_ENCODING       2031
 #define IDC_ID3V2_GENRE                 2032
 #define IDC_ID3V2_TRACKNO               2033
+#define IDC_CHECK1                      2034
+#define IDC_ID3V2_SYNCHRONIZATIOn       2034
 #define IDI_INFO_ICON                   10002
 #define IDD_TAGINFO                     10004
 
@@ -64,7 +65,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        2005
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2034
+#define _APS_NEXT_CONTROL_VALUE         2035
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif

@@ -65,13 +65,13 @@ bool CTagInfo::GetTagInfo(HWND hMainWindow)
 
 	if(FindTag) {
 		if(ttatag.id3v2.hasTag()) {
-//			strncpy(Cache.Title, (const char *)ttainfo.id3v2.title, MAX_MUSICTEXT - 1);
-//			strncpy(Cache.Artist, (const char *)ttainfo.id3v2.artist, MAX_MUSICTEXT - 1);
-//			strncpy(Cache.Comment, (const char *)ttainfo.id3v2.comment, MAX_MUSICTEXT -1);
-//			strncpy(Cache.Album, (const char *)ttainfo.id3v2.album, MAX_MUSICTEXT - 1);
-//			strncpy(Cache.Year, (const char *)ttainfo.id3v2.year, MAX_MUSICTEXT - 1);
-//			strncpy(Cache.Genre, (const char *)ttainfo.id3v2.genre, MAX_MUSICTEXT - 1);
-//			strncpy(Cache.Track, (const char *)ttainfo.id3v2.track, MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Title, (LPCTSTR)ttatag.id3v2.GetTitle(), MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Artist, (LPCTSTR)ttatag.id3v2.GetArtist(), MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Comment, (LPCTSTR)ttatag.id3v2.GetComment(), MAX_MUSICTEXT -1);
+			lstrcpyn(Cache.Album, (LPCTSTR)ttatag.id3v2.GetAlbum(), MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Year, (LPCTSTR)ttatag.id3v2.GetYear(), MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Genre, (LPCTSTR)ttatag.id3v2.GetGenre(), MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Track, (LPCTSTR)ttatag.id3v2.GetTrackNo(), MAX_MUSICTEXT - 1);
 		} else if (ttatag.id3v1.hasTag()) {
 			lstrcpyn(Cache.Title, (LPCTSTR)ttatag.id3v1.GetTitle(), MAX_MUSICTEXT - 1);
 			lstrcpyn(Cache.Artist, (LPCTSTR)ttatag.id3v1.GetArtist(), MAX_MUSICTEXT - 1);

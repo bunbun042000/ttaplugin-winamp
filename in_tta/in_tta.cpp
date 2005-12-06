@@ -752,7 +752,7 @@ int set_position (unsigned long pos) {
 		return -1;
 	}
 
-	seek_pos = ttaTag.id3v2.TagLength() + seek_table[data_pos = pos];
+	seek_pos = ttaTag.id3v2.GetTagLength() + seek_table[data_pos = pos];
 	SetFilePointer(ttaTag.GetHFILE(), seek_pos, NULL, FILE_BEGIN);
 
 	data_cur = 0;

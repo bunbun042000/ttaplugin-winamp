@@ -7,6 +7,35 @@
 
 extern char *genre[];
 
+struct version {
+	unsigned __int8 flag;
+	char *ver;
+	char **Str_Enc;
+};
+
+static char *EncodingVer24[] =
+{
+	"ISO-8859-1",
+	"UTF-16(UNICODE)",
+	"UTF-16BE(UNICODE)",
+	"UTF-8(UNICODE)",
+	NULL
+};
+static char *EncodingVer23[] =
+{
+	"ISO-8859-1",
+	"UTF-16(UNICODE)",
+	NULL
+};
+
+const version ID3v2Version[] =
+{
+	{0x03, "ver.2.3", EncodingVer23},
+	{0x04, "ver.2.4", EncodingVer24},
+	{0xff, NULL, NULL}
+};
+
+
 // CFileInfo dialog
 
 class CFileInfo : public CDialog
@@ -67,6 +96,7 @@ protected:
 	CString m_sID3v2_Arrangements;
 	CString m_sID3v2_Original_Artists;
 	CString m_sID3v2_Encoding_Engineer;
+	BOOL m_bID3v2_UnSynchronization;
 
 	CEdit m_ID3v2_Title;
 	CEdit m_ID3v2_Artists;
@@ -85,6 +115,7 @@ protected:
 	CComboBox m_ID3v2_Version;
 	CComboBox m_ID3v2_String_Encoding;
 	CButton m_ID3v2_CopyFromV1;
+	CButton m_ID3v2_UnSynchronization;
 
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedOk();

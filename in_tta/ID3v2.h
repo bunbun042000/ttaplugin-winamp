@@ -27,6 +27,7 @@ using namespace std;
 
 #endif
 
+extern const unsigned __int32 HEADER_LENGTH;
 
 __inline static void pack_sint28(unsigned __int32 value, char *ptr) {
 	ptr[0] = (value >> 21);
@@ -93,6 +94,7 @@ public:
 	__int32 GetSize() {return m_dwSize;}
 	__int32 GetFrame(unsigned char *pData, __int32 dwSize, unsigned __int8 version);
 	char   *SetFrame();
+	unsigned __int8 GetEncoding() {return m_Encoding;}
 	void    UTF16toUTF16BE(WCHAR *str, int len);
 
 private:
@@ -122,15 +124,45 @@ public:
 	virtual ~CID3v2();
 	__int32 ReadTag(const char *filename);
 	bool    hasTag() {return m_bHastag;}
-	__int32 TagLength() {return m_dwSize;}
+	__int32 GetTagLength() {return m_bHastag ? m_dwSize + HEADER_LENGTH : 0;}
 	__int32 SaveTag();
 
 
+	void    SetUnSynchronization(bool bUnSynchronization) {m_bUnSynchronization = bUnSynchronization;}
+	bool    GetUnSynchronization() {return m_bUnSynchronization;}
+	unsigned __int8 GetVersion() {return m_ver;}
+	unsigned __int8 GetEncoding() {return m_Encoding;}
+
+	void    SetVersion(unsigned __int8 ver);
+	bool    SetEncoding(unsigned __int8 enc);
 	CString GetArtist();
 	void SetArtist(CString &Artist);
-
 	CString GetTitle();
+	void SetTitle(CString &Title);
 	CString GetAlbum();
+	void SetAlbum(CString &Album);
+	CString GetTrackNo();
+	void SetTrackNo(CString &TrackNo);
+	CString GetYear();
+	void SetYear(CString &Year);
+	CString GetGenre();
+	void SetGenre(CString &Genre);
+	CString GetComment();
+	void SetComment(CString &Comment);
+	CString GetCopyright();
+	void SetCopyright(CString &Copyright);
+	CString GetURI();
+	void SetURI(CString &URI);
+	CString GetWords();
+	void SetWords(CString &Words);
+	CString GetComposers();
+	void SetComposers(CString &Composers);
+	CString GetArrangements();
+	void SetArrangements(CString &Arrangements);
+	CString GetOrigArtist();
+	void SetOrigArtist(CString &OrigArtist);
+	CString GetEncEngineer();
+	void SetEncEngineer(CString &EncEngineer);
 private:
 	CString	FileName;	// filename
 	int		STATE;		// return code
@@ -149,13 +181,12 @@ private:
 
 	bool AddFrame(CID3v2Frame &frame);
 	bool DelFrame(const char *name);
-	bool GetFrame(const char *name, CID3v2Frame &strFrame);
 	bool GetComment(const char *name, CString &strValue);
-	void GetFrameNames(CStringArray &strArray);
 	__int32 SetComment(char *ID, CString &Comment); 
+	__int32 GetTotalFrameLength();
 	__int32 DecodeUnSynchronization(unsigned char *data, __int32 dwSize);
 	__int32 EncodeUnSynchronization(unsigned char *srcData, __int32 dwSize, unsigned char *dstData);
-
+	void Release();
 
 };
 

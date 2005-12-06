@@ -92,7 +92,8 @@ bool CID3v1::SaveTag(HWND hMainWindow)
 		Year.GetBufferSetLength(sizeof(tag.year)), sizeof(tag.year));
 	CopyMemory(tag.comment,
 		Comment.GetBufferSetLength(sizeof(tag.comment)), sizeof(tag.comment));
-	tag.track = Track;
+	if(Track == NULL) Track = 0xff;
+		tag.track = Track;
 	tag.genre = Genre;
 
 	offset = (has_tag) ? -(int) sizeof(v1tag) : 0;
