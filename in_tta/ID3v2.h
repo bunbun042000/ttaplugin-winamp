@@ -30,10 +30,10 @@ using namespace std;
 extern const unsigned __int32 HEADER_LENGTH;
 
 __inline static void pack_sint28(unsigned __int32 value, char *ptr) {
-	ptr[0] = (value >> 21);
-	ptr[1] = (value >> 14);
-	ptr[2] = (value >>  7);
-	ptr[3] = (value);
+	ptr[0] = (value >> 21) & 0x7f;
+	ptr[1] = (value >> 14) & 0x7f;
+	ptr[2] = (value >>  7) & 0x7f;
+	ptr[3] = (value) & 0x7f;
 }
 
 __inline static unsigned __int32 unpack_sint28 (unsigned const char *ptr) {

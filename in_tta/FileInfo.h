@@ -54,6 +54,7 @@ protected:
 	virtual BOOL OnInitDialog();
 	void ShowHideID3v1Column();
 	void ShowHideID3v2Column();
+	void SetVersionSpecificColumn();
 
 	CString m_sFileName;
 
@@ -117,10 +118,18 @@ protected:
 	CButton m_ID3v2_CopyFromV1;
 	CButton m_ID3v2_UnSynchronization;
 
+	CString m_sFileFormat;
+
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnBnClickedId3v1Save();
 	afx_msg void OnBnClickedId3v2Save();
-	CString m_sFileFormat;
+	afx_msg void OnBnClickedCopyfromv1();
+public:
+	afx_msg void OnCbnEditupdateId3v2Version();
+public:
+	afx_msg void OnCbnEditchangeId3v2Version();
+public:
+	afx_msg void OnCbnSelchangeId3v2Version();
 };

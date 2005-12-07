@@ -113,9 +113,12 @@ __int32 CID3v2::SetComment(char *ID, CString &Comment)
 {
 	map<CString, CID3v2Frame>::iterator it = m_frames.find(CString(ID));
 	if(it != m_frames.end()){
-		it->second.SetComment(Comment, m_Encoding, m_ver);
+		if(Comment != "")
+			it->second.SetComment(Comment, m_Encoding, m_ver);
+		else
+			DelFrame(ID);
 //		m_dwSize = it->second.GetSize();
-	} else {
+	} else if(Comment != "") {
 		CID3v2Frame frame(ID);
 		frame.SetComment(Comment, m_Encoding, m_ver);
 		m_frames.insert(pair<CString, CID3v2Frame>(CString(ID), frame));
@@ -145,9 +148,10 @@ void CID3v2::SetVersion(unsigned __int8 ver)
 
 bool CID3v2::SetEncoding(unsigned __int8 enc)
 {
-	if ((m_ver ==0x03 && enc > 0x02) || (m_ver == 0x04 && enc > 0x04) 
-		|| (m_ver != 0x03 && m_ver != 0x04))
+	if ((m_ver == 0x04 && enc > FIELD_TEXT_MAX + 1)	|| (m_ver != 0x03 && m_ver != 0x04))
 		return false;
+	if(m_ver == 0x03 && (enc < FIELD_TEXT_MAX + 1) && (enc > FIELD_TEXT_UTF_16))
+		m_Encoding = FIELD_TEXT_ISO_8859_1;
 	m_Encoding = enc;
 	return true;
 }
@@ -404,7 +408,6 @@ __int32 CID3v2::ReadTag(const char *filename)
 	CID3v2Frame frame;
 	// read id3v2 frames
 	while (dwRemainSize) {
-		int comments = 0;
 
 		// get frame header
 		dwReadSize = 
@@ -472,7 +475,7 @@ __int32 CID3v2::SaveTag()
 	header[3] = m_ver;
 	header[4] = m_subver;
 	header[5] = m_Flags;
-	memcpy((header + 10), tempData, EncLength);
+	memcpy((header + HEADER_LENGTH), tempData, EncLength);
 	delete tempData;
 
 	char TempPath[MAX_PATHLEN];
@@ -587,7 +590,7 @@ __int32 CID3v2::SaveTag()
 		return dwWin32errorCode;
 	}
 
-	if(!WriteFile(HFILE, header, ::unpack_sint28((unsigned char *)(header + 6)) + HEADER_LENGTH, &result, NULL)){
+	if(!WriteFile(HFILE, header, EncLength + HEADER_LENGTH, &result, NULL)){
 		dwWin32errorCode = GetLastError();
 		CloseHandle(HFILE);
 		if(bTempFile)
@@ -786,12 +789,15 @@ void CID3v2Frame::Release()
 __int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __int8 version)
 {
 	Release();
+	if(*pData == NULL)
+		return 0;
 	if(dwSize < 10)
 		return 0;
 	m_ID = new char[ID3v2FrameIDLength + 1];
 	if(!m_ID)
 		return 0;
 	memcpy(m_ID, pData, ID3v2FrameIDLength);
+	// for Padding
 	m_ID[ID3v2FrameIDLength] = '\0';
 
 	__int32 size;
@@ -906,10 +912,16 @@ char *CID3v2Frame::SetFrame()
 			break;
 		}
 		case FIELD_TEXT_UTF_8: {
+			__int32 size = ::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, 0, 0);
+			size = size * sizeof(WCHAR);
+			unsigned char *tempDataUTF16 = new unsigned char[size];
+			if(!tempDataUTF16)
+				return NULL;
+			::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, (WCHAR *)tempDataUTF16, size / sizeof(WCHAR));
 			tempchar = new unsigned char[m_dwSize];
 			if(!tempchar) return NULL;
 			tempchar[0] = m_Encoding;
-			_tcscpy_s((char *)(tempchar + 1), m_dwSize + 1, m_Comment.GetBuffer());
+			::WideCharToMultiByte(CP_UTF8, 0, (WCHAR *)tempDataUTF16, -1, (char *)(tempchar + 1), m_dwSize - 2, NULL, NULL);
 			break;
 		}
 	}
@@ -922,7 +934,7 @@ char *CID3v2Frame::SetFrame()
 	else if(m_Version == 0x04)
 		::pack_sint28(m_dwSize, frame + 4);
 	Compress16((unsigned char *)(frame + 8), m_wFlags);
-	memcpy((frame + 10), (const char *)tempchar, m_dwSize);
+	memcpy((frame + FRAME_HEADER_LENGTH), (const char *)tempchar, m_dwSize);
 	delete tempchar;
 
 	return frame;
@@ -944,7 +956,7 @@ void CID3v2Frame::SetComment(CString str, unsigned __int8 Encoding, unsigned __i
 		}
 		case FIELD_TEXT_UTF_16:	{
 			size = ::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, 0, 0);
-			size = size * sizeof(WCHAR) + 3;
+			size = size * sizeof(WCHAR) + 4;
 			break;
 		}
 		case FIELD_TEXT_UTF_16BE: {
@@ -953,7 +965,14 @@ void CID3v2Frame::SetComment(CString str, unsigned __int8 Encoding, unsigned __i
 			break;
 		}
 		case FIELD_TEXT_UTF_8: {
-			size = m_Comment.GetLength() + 2;
+			size = ::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, 0, 0);
+			size = size * sizeof(WCHAR);
+			unsigned char *tempDataUTF16 = new unsigned char[size];
+			if(!tempDataUTF16)
+				return;
+			::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, (WCHAR *)tempDataUTF16, size / sizeof(WCHAR));
+			size = ::WideCharToMultiByte(CP_UTF8, 0, (WCHAR *)tempDataUTF16, -1, NULL, 0, NULL, NULL);
+			size += 2;
 			break;
 		}
 	}

@@ -111,6 +111,8 @@ BEGIN_MESSAGE_MAP(CFileInfo, CDialog)
 	ON_BN_CLICKED(IDCANCEL, &CFileInfo::OnBnClickedCancel)
 	ON_BN_CLICKED(IDC_ID3V1_SAVE, &CFileInfo::OnBnClickedId3v1Save)
 	ON_BN_CLICKED(IDC_ID3V2_SAVE, &CFileInfo::OnBnClickedId3v2Save)
+	ON_BN_CLICKED(IDC_COPYFROMV1, &CFileInfo::OnBnClickedCopyfromv1)
+	ON_CBN_SELCHANGE(IDC_ID3V2_VERSION, &CFileInfo::OnCbnSelchangeId3v2Version)
 END_MESSAGE_MAP()
 
 
@@ -139,6 +141,9 @@ void CFileInfo::OnBnClickedOk()
 	}
 
 	if (m_bID3v2_save) {
+		dlgtag.id3v2.SetUnSynchronization(m_bID3v2_UnSynchronization);
+		dlgtag.id3v2.SetEncoding((unsigned char)m_ID3v2_String_Encoding.GetCurSel());
+		dlgtag.id3v2.SetVersion((unsigned char)m_ID3v2_Version.GetCurSel());
 		dlgtag.id3v2.SetArtist(m_sID3v2_Artists);
 		dlgtag.id3v2.SetTitle(m_sID3v2_Title);
 		dlgtag.id3v2.SetAlbum(m_sID3v2_Album);
@@ -172,8 +177,7 @@ BOOL CFileInfo::OnInitDialog()
 
 	int nCount;
 	__int32 i = 0;
-	for(i = 0; i < GENRES; i++)
-	{
+	for(i = 0; i < GENRES; i++)	{
 		nCount = m_ID3v1_Genre.AddString(genre[i]);
 		if (nCount == CB_ERR)
 			break;
@@ -218,7 +222,7 @@ BOOL CFileInfo::OnInitDialog()
 			m_sID3v1_TrackNo = buf;
 		} else
 			m_sID3v1_TrackNo = "";
-		m_ID3v1_Genre.SetCurSel(dlgtag.id3v1.GetGenre());
+		m_ID3v1_Genre.SetCurSel((char)(dlgtag.id3v1.GetGenre()));
 	}
 	else
 	{
@@ -255,17 +259,7 @@ BOOL CFileInfo::OnInitDialog()
 		m_sID3v2_Encoding_Engineer = dlgtag.id3v2.GetEncEngineer();
 
 		m_bID3v2_UnSynchronization = dlgtag.id3v2.GetUnSynchronization();
-		m_ID3v2_Version.SetCurSel((int)(dlgtag.id3v2.GetVersion() - ID3v2Version[0].flag));
-		i = 0;
-		m_ID3v2_String_Encoding.ResetContent();
-		while(ID3v2Version[dlgtag.id3v2.GetVersion() - ID3v2Version[0].flag].Str_Enc[i] != NULL) {
-			nCount = m_ID3v2_String_Encoding.AddString(ID3v2Version[dlgtag.id3v2.GetVersion() 
-				- ID3v2Version[0].flag].Str_Enc[i]);
-			if (nCount == CB_ERR)
-				break;
-			i++;
-		}
-		m_ID3v2_String_Encoding.SetCurSel((int)(dlgtag.id3v2.GetEncoding()));
+		SetVersionSpecificColumn();
 
 	}
 	else
@@ -280,6 +274,21 @@ BOOL CFileInfo::OnInitDialog()
 }
 
 
+void CFileInfo::SetVersionSpecificColumn()
+{
+	m_ID3v2_Version.SetCurSel((int)(dlgtag.id3v2.GetVersion() - ID3v2Version[0].flag));
+	__int32 i = 0;
+	__int32 nCount = 0;
+	m_ID3v2_String_Encoding.ResetContent();
+	while(ID3v2Version[dlgtag.id3v2.GetVersion() - ID3v2Version[0].flag].Str_Enc[i] != NULL) {
+		nCount = m_ID3v2_String_Encoding.AddString(ID3v2Version[dlgtag.id3v2.GetVersion() 
+			- ID3v2Version[0].flag].Str_Enc[i]);
+		if (nCount == CB_ERR)
+			break;
+		i++;
+	}
+	m_ID3v2_String_Encoding.SetCurSel((int)(dlgtag.id3v2.GetEncoding()));
+}
 
 void CFileInfo::ShowHideID3v1Column()
 {
@@ -345,6 +354,7 @@ void CFileInfo::OnBnClickedId3v2Save()
 	{
 		m_bID3v2_save = TRUE;
 		ShowHideID3v2Column();
+		SetVersionSpecificColumn();
 	}
 	else
 	{
@@ -353,4 +363,41 @@ void CFileInfo::OnBnClickedId3v2Save()
 		ShowHideID3v2Column();
 	}
 
+}
+
+void CFileInfo::OnBnClickedCopyfromv1()
+{
+	// TODO: Add your control notification handler code here
+	UpdateData(TRUE);
+
+	m_sID3v2_Title = m_sID3v1_Name;
+	m_sID3v2_Artists = m_sID3v1_Artists;
+	m_sID3v2_Album = m_sID3v1_Album;
+	m_sID3v2_Year = m_sID3v1_Year;
+	m_sID3v2_Genre = genre[m_ID3v1_Genre.GetCurSel()];
+	m_sID3v2_Comment = m_sID3v1_Comment;
+	m_sID3v2_TrackNo = 	m_sID3v1_TrackNo;
+
+	UpdateData(FALSE);
+}
+
+
+
+void CFileInfo::OnCbnSelchangeId3v2Version()
+{
+	// TODO: Add your control notification handler code here
+	UpdateData(TRUE);
+	dlgtag.id3v2.SetVersion(ID3v2Version[m_ID3v2_Version.GetCurSel()].flag);
+	dlgtag.id3v2.SetEncoding((unsigned char)m_ID3v2_String_Encoding.GetCurSel());
+	__int32 i = 0;
+	__int32 nCount = 0;
+	m_ID3v2_String_Encoding.ResetContent();
+	while(ID3v2Version[dlgtag.id3v2.GetVersion() - ID3v2Version[0].flag].Str_Enc[i] != NULL) {
+		nCount = m_ID3v2_String_Encoding.AddString(ID3v2Version[dlgtag.id3v2.GetVersion() 
+			- ID3v2Version[0].flag].Str_Enc[i]);
+		if (nCount == CB_ERR)
+			break;
+		i++;
+	}
+	m_ID3v2_String_Encoding.SetCurSel((int)(dlgtag.id3v2.GetEncoding()));
 }
