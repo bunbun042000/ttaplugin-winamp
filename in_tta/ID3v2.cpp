@@ -433,12 +433,6 @@ __int32 CID3v2::SaveTag()
 
 	DWORD  result;
 	bool bTempFile = false;
-//	unsigned char *buffer, *ptr;
-//	unsigned char *tag_data, *tptr;
-//	DWORD new_size, id3v2_size;
-//	int indx, offset;
-//	BOOL copy_data = TRUE;
-//	BOOL safe_mode = FALSE;
 
 	map<CString,CID3v2Frame>::iterator it = m_frames.begin();
 	__int32 totalLength = 0;
@@ -483,92 +477,21 @@ __int32 CID3v2::SaveTag()
 
 	if(EncLength > m_dwSize) {
 		::pack_sint28(EncLength, (header + 6));
-		HANDLE HFILE2;
-		HFILE2 = CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ, 
-			NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-		if(HFILE2 == INVALID_HANDLE_VALUE) {
-			dwWin32errorCode = GetLastError();
-			delete header;
-			return dwWin32errorCode;
-		}
-		DWORD dwDataSize = GetFileSize(HFILE2, NULL);
-		if (m_dwSize != 0) dwDataSize -= m_dwSize + HEADER_LENGTH;
-		char *pRawData = new char[dwDataSize];
-		if(!pRawData) {
-			dwWin32errorCode = GetLastError();
-			CloseHandle(HFILE2);
-			delete header;
-			return dwWin32errorCode;
-		}
-		// Create Temporary File
 		GetTempPath(MAX_PATHLEN, TempPath);
 		if(!GetTempFileName(TempPath, "wat", 0, szTempFile)) {
 			dwWin32errorCode = GetLastError();
-			delete header;
-			delete pRawData;
-			CloseHandle(HFILE2);
 			DeleteFile(szTempFile);
 			return dwWin32errorCode;
 		}
-		if(SetFilePointer(HFILE2, GetTagLength(), NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
-			dwWin32errorCode = GetLastError();
-			delete header;
-			delete pRawData;
-			CloseHandle(HFILE2);
-			DeleteFile(szTempFile);
-			return dwWin32errorCode;
-		}
-
-		HFILE = CreateFile(szTempFile, GENERIC_WRITE | GENERIC_READ, FILE_SHARE_READ, NULL,
-			CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		CopyBodyData(EncLength + HEADER_LENGTH, szTempFile);
+		bTempFile = true;
+		HFILE = CreateFile(szTempFile, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+			FILE_ATTRIBUTE_NORMAL, NULL);
 		if(HFILE == INVALID_HANDLE_VALUE) {
 			dwWin32errorCode = GetLastError();
 			delete header;
-			delete pRawData;
-			DeleteFile(szTempFile);
-			CloseHandle(HFILE2);
 			return dwWin32errorCode;
 		}
-
-		if(SetFilePointer(HFILE, 0, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
-			dwWin32errorCode = GetLastError();
-			delete header;
-			delete pRawData;
-			CloseHandle(HFILE);
-			CloseHandle(HFILE2);
-			DeleteFile(szTempFile);
-			return dwWin32errorCode;
-		}
-		if(SetFilePointer(HFILE, EncLength + HEADER_LENGTH, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
-			dwWin32errorCode = GetLastError();
-			delete header;
-			delete pRawData;
-			CloseHandle(HFILE);
-			CloseHandle(HFILE2);
-			DeleteFile(szTempFile);
-			return dwWin32errorCode;
-		}
-
-
-		if(!ReadFile(HFILE2, pRawData, dwDataSize, &result, NULL) || dwDataSize != result) {
-			dwWin32errorCode = GetLastError();
-			CloseHandle(HFILE2);
-			CloseHandle(HFILE);
-			delete header;
-			delete pRawData;
-			return dwWin32errorCode;
-		}
-		if(!WriteFile(HFILE, pRawData, dwDataSize, &result, NULL) || dwDataSize != result) {
-			dwWin32errorCode = GetLastError();
-			CloseHandle(HFILE2);
-			CloseHandle(HFILE);
-			delete header;
-			delete pRawData;
-			return dwWin32errorCode;
-		}
-		delete pRawData;
-		CloseHandle(HFILE2);
-		bTempFile = true;
 
 	} else {
 		HFILE = CreateFile(FileName, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING,
@@ -612,25 +535,7 @@ __int32 CID3v2::SaveTag()
 
 	CloseHandle(HFILE);
 	if (bTempFile){
-		char szPreFile[MAX_PATHLEN];
-		if(!GetTempFileName(TempPath, "wat", 0, szPreFile)) {
-			dwWin32errorCode = GetLastError();
-			DeleteFile(szTempFile);
-			return dwWin32errorCode;
-		}
-		DeleteFile(szPreFile);
-		if(!CopyFileEx(FileName, szPreFile, NULL, NULL, false, COPY_FILE_RESTARTABLE)) {
-			dwWin32errorCode = GetLastError();
-			DeleteFile(szTempFile);
-			return dwWin32errorCode;
-		}
-		if(!CopyFileEx(szTempFile, FileName, NULL, NULL, false, COPY_FILE_RESTARTABLE)) {
-			dwWin32errorCode = GetLastError();
-			MoveFile(szPreFile, FileName);
-			DeleteFile(szTempFile);
-			return dwWin32errorCode;
-		}
-		DeleteFile(szPreFile);
+		ExchangeTempFileToOriginalFile(szTempFile);
 		DeleteFile(szTempFile);
 	}
 
@@ -638,63 +543,33 @@ __int32 CID3v2::SaveTag()
 
 }
 
-//static void del_id3v2_tag (tta_info *ttainfo) {
-///	HANDLE hFile, hMap;
-//	unsigned char *buffer;
-//	int indx, result;
-//	BOOL safe_mode = FALSE;
-//
-//	if (!ttainfo->id3v2.id3has) return;
-//
-//	if (!memcmp(ttainfo->filename, info.filename,
-//		lstrlen(ttainfo->filename))) safe_mode = TRUE;
-//
-//	hFile = CreateFile(ttainfo->filename, GENERIC_READ|GENERIC_WRITE,
-//		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
-//	if (hFile == INVALID_HANDLE_VALUE) {
-//		tta_error(OPEN_ERROR, ttainfo->filename);
-//		return;
-//	}
-//
-//	hMap = CreateFileMapping(hFile, NULL, PAGE_READWRITE, 0, 0, NULL);
-//	if (!hMap) {
-//		CloseHandle(hFile);
-//		CloseHandle(hMap);
-//		return;
-//	}
-//
-//	buffer = (unsigned char *)MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, 0);
-//	if (!buffer) {
-//		CloseHandle(hFile);
-//		CloseHandle(hMap);
-//		return;
-//	}
-//
-//	if (safe_mode) pause();
-//
-//	MoveMemory(buffer, buffer + ttainfo->id3v2.size,
-//		ttainfo->FILESIZE - ttainfo->id3v2.size);
-//
-//	if (safe_mode) FlushViewOfFile((LPCVOID *) buffer, 0);
-//	UnmapViewOfFile((LPCVOID *) buffer);
-//	CloseHandle(hMap);
-//
-//	SetFilePointer(hFile, -(int) ttainfo->id3v2.size, NULL, FILE_END);
-//	SetEndOfFile(hFile);
-//	CloseHandle(hFile);
-//
-//	ttainfo->FILESIZE -= ttainfo->id3v2.size;
-//	ttainfo->id3v2.size = 0;
-//
-//	if (safe_mode) {
-//		info.FILESIZE = ttainfo->FILESIZE;
-//		info.id3v2.size = ttainfo->id3v2.size;
-//		seek_needed = decode_pos_ms;
-//		unpause();
-//	}
-//
-//	ttainfo->id3v2.id3has = 0;
-//}
+__int32 CID3v2::DeleteTag(const char *filename)
+{
+	FileName =  filename;
+	__int32 dwWin32errorCode = ERROR_SUCCESS;
+	bool bTempFile = false;
+	char szTempFile[MAX_PATHLEN];
+	char TempPath[MAX_PATHLEN];
+	// Create Temporary File
+	GetTempPath(MAX_PATHLEN, TempPath);
+	if(!GetTempFileName(TempPath, "wat", 0, szTempFile)) {
+		dwWin32errorCode = GetLastError();
+		DeleteFile(szTempFile);
+		return dwWin32errorCode;
+	}
+
+	dwWin32errorCode = CopyBodyData(0, szTempFile);
+	if(dwWin32errorCode != ERROR_SUCCESS)
+		return dwWin32errorCode;
+
+	dwWin32errorCode = ExchangeTempFileToOriginalFile(szTempFile);
+	if(dwWin32errorCode != ERROR_SUCCESS)
+		m_bHastag = true;
+	else
+		m_bHastag = false;
+	DeleteFile(szTempFile);
+	return dwWin32errorCode;
+}
 
 __int32 CID3v2::DecodeUnSynchronization(unsigned char *data, __int32 dwSize)
 {
@@ -739,6 +614,100 @@ __int32 CID3v2::EncodeUnSynchronization(unsigned char *srcData, __int32 dwSize, 
 		dwDecodeSize++;
 	}
 	return dwDecodeSize;
+}
+
+__int32 CID3v2::CopyBodyData(__int32 startbody, const char *sDstFileName)
+{
+	__int32 dwWin32errorCode = ERROR_SUCCESS;
+	DWORD  result;
+	HANDLE ORIGINALFILE, TEMPFILE;
+
+	ORIGINALFILE = CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ, 
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if(ORIGINALFILE == INVALID_HANDLE_VALUE) {
+		dwWin32errorCode = GetLastError();
+		return dwWin32errorCode;
+	}
+	DWORD dwDataSize = GetFileSize(ORIGINALFILE, NULL);
+	if (m_dwSize != 0) {
+		dwDataSize -= m_dwSize + HEADER_LENGTH;
+	}
+
+	char *pRawData = new char[dwDataSize];
+	if(!pRawData) {
+		dwWin32errorCode = GetLastError();
+		CloseHandle(ORIGINALFILE);
+		return dwWin32errorCode;
+	}
+	// Create Temporary File
+	if(SetFilePointer(ORIGINALFILE, m_dwSize + HEADER_LENGTH, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
+		dwWin32errorCode = GetLastError();
+		delete pRawData;
+		CloseHandle(ORIGINALFILE);
+		DeleteFile(sDstFileName);
+		return dwWin32errorCode;
+	}
+	TEMPFILE = CreateFile(sDstFileName, GENERIC_WRITE | GENERIC_READ, FILE_SHARE_READ, NULL,
+		CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if(TEMPFILE == INVALID_HANDLE_VALUE) {
+		dwWin32errorCode = GetLastError();
+		delete pRawData;
+		DeleteFile(sDstFileName);
+		CloseHandle(ORIGINALFILE);
+		return dwWin32errorCode;
+	}
+	if(SetFilePointer(TEMPFILE, startbody, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
+		dwWin32errorCode = GetLastError();
+		delete pRawData;
+		CloseHandle(ORIGINALFILE);
+		CloseHandle(TEMPFILE);
+		DeleteFile(sDstFileName);
+		return dwWin32errorCode;
+	}
+	if(!ReadFile(ORIGINALFILE, pRawData, dwDataSize, &result, NULL) || dwDataSize != result) {
+		dwWin32errorCode = GetLastError();
+		CloseHandle(ORIGINALFILE);
+		CloseHandle(TEMPFILE);
+		delete pRawData;
+		return dwWin32errorCode;
+	}
+	if(!WriteFile(TEMPFILE, pRawData, dwDataSize, &result, NULL) || dwDataSize != result) {
+		dwWin32errorCode = GetLastError();
+		CloseHandle(ORIGINALFILE);
+		CloseHandle(TEMPFILE);
+		delete pRawData;
+		return dwWin32errorCode;
+	}
+	delete pRawData;
+	CloseHandle(ORIGINALFILE);
+	CloseHandle(TEMPFILE);
+	return dwWin32errorCode;
+}
+
+__int32 CID3v2::ExchangeTempFileToOriginalFile(const char *sDestFileName)
+{
+	char szPreFile[MAX_PATHLEN];
+	char TempPath[MAX_PATHLEN];
+	__int32 dwWin32errorCode = ERROR_SUCCESS;
+
+	GetTempPath(MAX_PATHLEN, TempPath);
+	if(!GetTempFileName(TempPath, "wat", 0, szPreFile)) {
+		dwWin32errorCode = GetLastError();
+		return dwWin32errorCode;
+	}
+	DeleteFile(szPreFile);
+	if(!CopyFileEx(FileName, szPreFile, NULL, NULL, false, COPY_FILE_RESTARTABLE)) {
+		dwWin32errorCode = GetLastError();
+		return dwWin32errorCode;
+	}
+	if(!CopyFileEx(sDestFileName, FileName, NULL, NULL, false, COPY_FILE_RESTARTABLE)) {
+		dwWin32errorCode = GetLastError();
+		MoveFile(szPreFile, FileName);
+		return dwWin32errorCode;
+	}
+	DeleteFile(szPreFile);
+
+	return dwWin32errorCode;
 }
 
 

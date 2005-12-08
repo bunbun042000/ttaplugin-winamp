@@ -35,17 +35,17 @@ public:
 	void CloseFile();
 	void SetPlayTitle(char *title);
 
-	HANDLE GetHFILE() {return HFILE;}
-	char *GetFileName();
-	int GetNumberofChannel() {return NCH;}
-	int GetBitsperSample() {return BPS;}
-	int GetByteSize() {return BSIZE;}
-	int GetFormat() {return FORMAT;}
-	int GetSampleRate() {return SAMPLERATE;}
-	int GetDataLength() {return DATALENGTH;}
-	int GetLengthbyFrame() {return FRAMELEN;}
+	HANDLE  GetHFILE() {return HFILE;}
+	char   *GetFileName();
+	__int32 GetNumberofChannel() {return NCH;}
+	__int32 GetBitsperSample() {return BPS;}
+	unsigned __int8  GetByteSize() {return BSIZE;}
+	int    GetFormat() {return FORMAT;}
+	int    GetSampleRate() {return SAMPLERATE;}
+	int    GetDataLength() {return DATALENGTH;}
+	int    GetLengthbyFrame() {return FRAMELEN;}
 	unsigned long GetLengthbymsec() {return LENGTH;}
-	int GetFileSize() {return FILESIZE;}
+	int    GetFileSize() {return FILESIZE;}
 	double GetCompressRate() {return COMPRESS;}
 	int GetBitrate() {return BITRATE;}
 //	bool HasID3v1Tag() {return id3v1.hasTag();}
@@ -61,7 +61,7 @@ private:
 
 	int		NCH;		// number of channels
 	int		BPS;		// bits per sample
-	int		BSIZE;		// byte size
+	unsigned __int8	BSIZE;		// byte size
 	int		FORMAT;		// audio format
 	int		SAMPLERATE;	// samplerate (sps)
 	int		DATALENGTH;	// data length in samples

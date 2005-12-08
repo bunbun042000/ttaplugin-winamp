@@ -37,7 +37,7 @@ __inline static void pack_sint28(unsigned __int32 value, char *ptr) {
 }
 
 __inline static unsigned __int32 unpack_sint28 (unsigned const char *ptr) {
-	unsigned int value = 0;
+	unsigned __int32 value = 0;
 
 //	if (ptr[0] & 0x80) return 0;
 
@@ -124,14 +124,15 @@ public:
 	virtual ~CID3v2();
 	__int32 ReadTag(const char *filename);
 	bool    hasTag() {return m_bHastag;}
-	__int32 GetTagLength() {return m_bHastag ? m_dwSize + HEADER_LENGTH : 0;}
 	__int32 SaveTag();
+	__int32 DeleteTag(const char *filename);
 
 
 	void    SetUnSynchronization(bool bUnSynchronization) {m_bUnSynchronization = bUnSynchronization;}
 	bool    GetUnSynchronization() {return m_bUnSynchronization;}
 	unsigned __int8 GetVersion() {return m_ver;}
 	unsigned __int8 GetEncoding() {return m_Encoding;}
+	__int32 GetTagLength() {return m_bHastag ? m_dwSize + HEADER_LENGTH : 0;}
 
 	void    SetVersion(unsigned __int8 ver);
 	bool    SetEncoding(unsigned __int8 enc);
@@ -165,7 +166,7 @@ public:
 	void SetEncEngineer(CString &EncEngineer);
 private:
 	CString	FileName;	// filename
-	int		STATE;		// return code
+	__int32	STATE;		// return code
 
 	unsigned __int8 m_Encoding; // Strings Encoding;
 	unsigned __int8 m_ver;
@@ -186,6 +187,8 @@ private:
 	__int32 GetTotalFrameLength();
 	__int32 DecodeUnSynchronization(unsigned char *data, __int32 dwSize);
 	__int32 EncodeUnSynchronization(unsigned char *srcData, __int32 dwSize, unsigned char *dstData);
+	__int32 CopyBodyData(__int32 startbody, const char *sDestFileName);
+	__int32 ExchangeTempFileToOriginalFile(const char *sDestFileName);
 	void Release();
 
 };

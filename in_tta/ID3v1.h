@@ -74,7 +74,7 @@ public:
 private:
 	HANDLE	HFILE;
 	CString	FileName;	// filename
-	int		STATE; // filestate
+	__int32	STATE; // filestate
 
 	CString Title;
 	CString Artist;
@@ -86,7 +86,7 @@ private:
 
 	bool	has_tag;
 
-	void  error(HWND hMainWindow, int error_no);
+	void  error(HWND hMainWindow, __int32 error_no);
 };
 
 #endif // !defined(AFX_ID3V1_H__F52065F6_B156_468F_8A35_DAD534E31131__INCLUDED_)

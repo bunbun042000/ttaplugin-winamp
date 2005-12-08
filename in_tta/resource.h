@@ -30,7 +30,10 @@
 #define IDC_ID3V1_COMMENT               2004
 #define IDS_TTAFORMAT                   2004
 #define IDC_ID3V1_ALBUM                 2005
+#define IDS_ID3V2DELETE                 2005
 #define IDC_ID3V1_YEAR                  2006
+#define IDS_ID3V2DELETE2                2006
+#define IDS_ID3V1DELETE                 2006
 #define IDC_ID3V1_GENRE                 2008
 #define IDC_ID3V1_SAVE                  2009
 #define IDC_FILEFORMAT                  2011
@@ -55,7 +58,6 @@
 #define IDC_ID3V2_GENRE                 2032
 #define IDC_ID3V2_TRACKNO               2033
 #define IDC_ID3V2_SYNCHRONIZATIOn       2034
-#define IDC_LIST1                       2035
 #define IDI_INFO_ICON                   10002
 #define IDD_TAGINFO                     10004
 

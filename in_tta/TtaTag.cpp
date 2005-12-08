@@ -62,7 +62,7 @@ bool CTtaTag::ReadTag(HWND hMainWindow, const char *filename)
 	//Read ID3v1.1
 	id3v1.ReadTag(hMainWindow, filename);
 
-	//Read ID3v2.3
+	//Read ID3v2.3 and 2.4
 	id3v2.ReadTag(filename);
 
 	//Read TTA Header

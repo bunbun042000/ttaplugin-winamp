@@ -43,7 +43,7 @@ class CTagInfo
 public:
 	CTagInfo();
 	virtual ~CTagInfo();
-	int  GetExtendedFileInfo(HWND hMainWindow, extendedFileInfoStruct *ExtendedFileInfo);
+	__int32  GetExtendedFileInfo(HWND hMainWindow, extendedFileInfoStruct *ExtendedFileInfo);
 	
 private:
 	CRITICAL_SECTION	CriticalSection;

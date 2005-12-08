@@ -267,10 +267,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\id3tag.h"
-				>
-			</File>
-			<File
 				RelativePath=".\ID3v1.h"
 				>
 			</File>
@@ -300,10 +296,6 @@
 			</File>
 			<File
 				RelativePath=".\TagInfo.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ttadec.h"
 				>
 			</File>
 			<File

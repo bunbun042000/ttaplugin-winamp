@@ -3,7 +3,8 @@
 #include "TtaTag.h"
 #include "afxwin.h"
 
-#define	MAX_GENRE		148
+const static __int32 MAX_GENRE = 148;
+const static __int32 DEFAULT_GENRE = 12; // "Others"
 
 extern char *genre[];
 
@@ -55,7 +56,10 @@ protected:
 	void ShowHideID3v1Column();
 	void ShowHideID3v2Column();
 	void SetVersionSpecificColumn();
+	void SetID3v1Genre(CString &Genre);
+	__int32  GetID3v1Genre();
 
+	CRITICAL_SECTION	CriticalSection;
 	CString m_sFileName;
 
 // FileInformation
@@ -126,10 +130,6 @@ protected:
 	afx_msg void OnBnClickedId3v1Save();
 	afx_msg void OnBnClickedId3v2Save();
 	afx_msg void OnBnClickedCopyfromv1();
-public:
-	afx_msg void OnCbnEditupdateId3v2Version();
-public:
-	afx_msg void OnCbnEditchangeId3v2Version();
-public:
 	afx_msg void OnCbnSelchangeId3v2Version();
+	afx_msg void OnBnClickedCopyfromv2();
 };
