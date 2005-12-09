@@ -440,9 +440,11 @@ __int32 CID3v2::SaveTag()
 
 	totalLength = GetTotalFrameLength();
 
+	if(totalLength == 0 && m_bHastag)
+		return DeleteTag(FileName);
+
 	char *frames = new char[totalLength];
 
-	it = m_frames.begin();
 	__int32 dwOffset = 0;
 	while(it != m_frames.end()){
 		memcpy((frames + dwOffset), it->second.SetFrame(), it->second.GetSize() + FRAME_HEADER_LENGTH);
@@ -483,7 +485,13 @@ __int32 CID3v2::SaveTag()
 			DeleteFile(szTempFile);
 			return dwWin32errorCode;
 		}
-		CopyBodyData(EncLength + HEADER_LENGTH, szTempFile);
+
+		dwWin32errorCode = CopyBodyData(EncLength + HEADER_LENGTH, szTempFile);
+		if(dwWin32errorCode != ERROR_SUCCESS) {
+			DeleteFile(szTempFile);
+			return dwWin32errorCode;
+		}
+
 		bTempFile = true;
 		HFILE = CreateFile(szTempFile, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING,
 			FILE_ATTRIBUTE_NORMAL, NULL);
@@ -640,7 +648,7 @@ __int32 CID3v2::CopyBodyData(__int32 startbody, const char *sDstFileName)
 		return dwWin32errorCode;
 	}
 	// Create Temporary File
-	if(SetFilePointer(ORIGINALFILE, m_dwSize + HEADER_LENGTH, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
+	if(SetFilePointer(ORIGINALFILE, m_dwSize != 0 ? m_dwSize + HEADER_LENGTH : 0, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
 		dwWin32errorCode = GetLastError();
 		delete pRawData;
 		CloseHandle(ORIGINALFILE);
@@ -779,6 +787,7 @@ __int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __i
 	if((size + 10) > dwSize)
 		return 0;
 
+	m_dwSize = size;
 	pData += 8;
 	m_wFlags = Extract16(pData);
 	pData += 2;
@@ -788,57 +797,57 @@ __int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __i
 	switch(m_Encoding) {
 		case FIELD_TEXT_ISO_8859_1:
 		default: {
-			char *tempchar = new char[size];
+			char *tempchar = new char[m_dwSize];
 			if(!tempchar) break;
-			memcpy(tempchar, (char *)pData, size - 1);
-			tempchar[size - 1] = '\0';
+			memcpy(tempchar, (char *)pData, m_dwSize - 1);
+			tempchar[m_dwSize - 1] = '\0';
 			m_Comment = tempchar;
 			delete tempchar;
 			break;
 		}
 		case FIELD_TEXT_UTF_16:	{
 			if(!(memcmp(pData, UTF16_LE, 2))) 
-				UTF16toUTF16BE((WCHAR *)(pData + 3), (size - 3) / 2);
+				UTF16toUTF16BE((WCHAR *)(pData + 2), (m_dwSize - 3) / 2);
 
 			size = ::WideCharToMultiByte(CP_ACP, 0, 
-				(const WCHAR *)(pData + 3), (size - 3) / 2, 0, 0, NULL, NULL);
+				(const WCHAR *)(pData + 2), (m_dwSize - 3) / 2, 0, 0, NULL, NULL);
 			size ++;
 			char *tempchar = new char[size];
 			if(!tempchar) break;
 			::WideCharToMultiByte(CP_ACP, 0,
-				(const WCHAR *)(pData + 3), (size - 3) / 2, tempchar, size, NULL, NULL);
+				(const WCHAR *)(pData + 2), (m_dwSize - 3) / 2, tempchar, size, NULL, NULL);
 			tempchar[size - 1] = '\0';
 			m_Comment = tempchar;
 			delete tempchar;
 			break;
 		}
 		case FIELD_TEXT_UTF_16BE: {
-			UTF16toUTF16BE((WCHAR *)(pData + 1), (size - 1) / 2);
-			size = ::WideCharToMultiByte(CP_ACP, 0, (const WCHAR *)(pData + 1), (size - 1) / 2, 0, 0, NULL, NULL);
+			UTF16toUTF16BE((WCHAR *)pData, (m_dwSize - 1) / 2);
+			size = ::WideCharToMultiByte(CP_ACP, 0, (const WCHAR *)pData, (m_dwSize - 1) / 2, 0, 0, NULL, NULL);
 			size++;
 			char *tempchar = new char[size];
 			if(!tempchar) break;
-			::WideCharToMultiByte(CP_ACP, 0, (const WCHAR *)(pData + 1), (size - 1) / 2, tempchar, size, NULL, NULL);
+			::WideCharToMultiByte(CP_ACP, 0, (const WCHAR *)pData, (m_dwSize - 1) / 2, tempchar, size, NULL, NULL);
 			tempchar[size - 1] = '\0';
 			m_Comment = tempchar;
 			delete tempchar;
 			break;
 		}
 		case FIELD_TEXT_UTF_8: {
-			int size = ::MultiByteToWideChar(CP_UTF8, 0, (char *)(pData + 1), m_dwSize - 1, NULL, 0);
+			size = ::MultiByteToWideChar(CP_UTF8, 0, (char *)pData, m_dwSize - 1, NULL, 0);
 			size++;
 			WCHAR *tempchar = new WCHAR[size];
 			if(!tempchar) break;
-			::MultiByteToWideChar(CP_UTF8, 0, (char *)(pData + 1), m_dwSize - 1, tempchar, size - 1);
+			::MultiByteToWideChar(CP_UTF8, 0, (char *)pData, m_dwSize - 1, tempchar, size - 1);
 			tempchar[size - 1] = L'\0';
 
-			size = ::WideCharToMultiByte(CP_UTF8, 0, tempchar, -1, 0, 0, NULL, NULL);
+			size = ::WideCharToMultiByte(CP_ACP, 0, tempchar, -1, 0, 0, NULL, NULL);
 			char *tempchar2 = new char[size];
 			if(!tempchar2) {
 				delete tempchar;
 				break;
 			}
-			::WideCharToMultiByte(CP_UTF8, 0, tempchar, -1, tempchar2, size, NULL, NULL);
+			::WideCharToMultiByte(CP_ACP, 0, tempchar, -1, tempchar2, size, NULL, NULL);
 			m_Comment = tempchar2;
 			delete tempchar2;
 			delete tempchar;
@@ -846,8 +855,7 @@ __int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __i
 		}
 	}
 
-	m_dwSize = size;
-	return (size + FRAME_HEADER_LENGTH);
+	return (m_dwSize + FRAME_HEADER_LENGTH);
 }
 
 char *CID3v2Frame::SetFrame()
@@ -868,7 +876,7 @@ char *CID3v2Frame::SetFrame()
 			if(!tempchar) return NULL;
 			tempchar[0] = m_Encoding;
 			memcpy(tempchar + 1, UTF16_BE, 2);
-			::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, (WCHAR *)(tempchar + 3),
+			::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)m_Comment, -1, (WCHAR *)(tempchar + 3),
 				(m_dwSize - 3) / sizeof(WCHAR));
 			break;
 		}
@@ -876,21 +884,21 @@ char *CID3v2Frame::SetFrame()
 			tempchar = new unsigned char[m_dwSize];
 			if(!tempchar) return NULL;
 			tempchar[0] = m_Encoding;
-			::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, (WCHAR *)(tempchar + 1), (m_dwSize - 1) / sizeof(WCHAR));
+			::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)m_Comment, -1, (WCHAR *)(tempchar + 1), (m_dwSize - 1) / sizeof(WCHAR));
 			UTF16toUTF16BE((WCHAR *)(tempchar + 1), (m_dwSize - 1) / sizeof(WCHAR));
 			break;
 		}
 		case FIELD_TEXT_UTF_8: {
-			__int32 size = ::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, 0, 0);
+			__int32 size = ::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)m_Comment, -1, 0, 0);
 			size = size * sizeof(WCHAR);
 			unsigned char *tempDataUTF16 = new unsigned char[size];
 			if(!tempDataUTF16)
 				return NULL;
-			::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, (WCHAR *)tempDataUTF16, size / sizeof(WCHAR));
+			::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)m_Comment, -1, (WCHAR *)tempDataUTF16, size / sizeof(WCHAR));
 			tempchar = new unsigned char[m_dwSize];
 			if(!tempchar) return NULL;
 			tempchar[0] = m_Encoding;
-			::WideCharToMultiByte(CP_UTF8, 0, (WCHAR *)tempDataUTF16, -1, (char *)(tempchar + 1), m_dwSize - 2, NULL, NULL);
+			::WideCharToMultiByte(CP_UTF8, 0, (WCHAR *)tempDataUTF16, -1, (char *)(tempchar + 1), m_dwSize - 1, NULL, NULL);
 			break;
 		}
 	}
@@ -930,7 +938,7 @@ void CID3v2Frame::SetComment(CString str, unsigned __int8 Encoding, unsigned __i
 		}
 		case FIELD_TEXT_UTF_16BE: {
 			size = ::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, 0, 0);
-			size = size * sizeof(WCHAR) + 1;
+			size = size * sizeof(WCHAR) + 2;
 			break;
 		}
 		case FIELD_TEXT_UTF_8: {
@@ -941,7 +949,7 @@ void CID3v2Frame::SetComment(CString str, unsigned __int8 Encoding, unsigned __i
 				return;
 			::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, (WCHAR *)tempDataUTF16, size / sizeof(WCHAR));
 			size = ::WideCharToMultiByte(CP_UTF8, 0, (WCHAR *)tempDataUTF16, -1, NULL, 0, NULL, NULL);
-			size += 2;
+			size += 1;
 			break;
 		}
 	}

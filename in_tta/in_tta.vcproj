@@ -22,7 +22,7 @@
 			ConfigurationType="2"
 			UseOfMFC="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="0"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
