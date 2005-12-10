@@ -90,12 +90,12 @@ public:
 	CID3v2Frame(const char *ID);
 	char   *GetFrameID() {return m_ID;}
 	CString GetComment() {return m_Comment;}
-	void    SetComment(CString str, unsigned __int8 Encoding, unsigned __int8 version);
+	void    SetComment(CString description, CString str, char *sLanguage, 
+		unsigned __int8 Encoding, unsigned __int8 version);
 	__int32 GetSize() {return m_dwSize;}
 	__int32 GetFrame(unsigned char *pData, __int32 dwSize, unsigned __int8 version);
 	char   *SetFrame();
 	unsigned __int8 GetEncoding() {return m_Encoding;}
-	void    UTF16toUTF16BE(WCHAR *str, int len);
 
 private:
 
@@ -105,6 +105,16 @@ private:
 		unsigned __int8  size[4];
 		short flags;
 	};
+	void    UTF16toUTF16BE(WCHAR *str, int len);
+	CString GetEncodingString(unsigned char *pData, __int32 dwRemainSize, unsigned __int8 Encoding);
+
+	//return String Size(include BE/LE, but without Encoding)
+	__int32 GetEncodingLength(CString &str, unsigned __int8 version, unsigned __int8 Encoding);
+	unsigned char *SetEncodingString(CString &str, unsigned __int8 version, unsigned __int8 Encoding);
+	
+
+	CString m_Description;
+	char   *m_sLanguage;
 
 	__int32 m_dwSize;			// Comment size (without header)
 	unsigned __int8 m_Encoding;
@@ -149,11 +159,11 @@ public:
 	CString GetGenre();
 	void SetGenre(CString &Genre);
 	CString GetComment();
-	void SetComment(CString &Comment);
+	void SetComment(CString &Description, CString &Comment);
 	CString GetCopyright();
 	void SetCopyright(CString &Copyright);
 	CString GetURI();
-	void SetURI(CString &URI);
+	void SetURI(CString &Description, CString &URI);
 	CString GetWords();
 	void SetWords(CString &Words);
 	CString GetComposers();
@@ -183,7 +193,7 @@ private:
 	bool AddFrame(CID3v2Frame &frame);
 	bool DelFrame(const char *name);
 	bool GetComment(const char *name, CString &strValue);
-	__int32 SetComment(char *ID, CString &Comment); 
+	__int32 SetComment(char *ID, CString &Description, CString &Comment, char *sLanguage); 
 	__int32 GetTotalFrameLength();
 	__int32 DecodeUnSynchronization(unsigned char *data, __int32 dwSize);
 	__int32 EncodeUnSynchronization(unsigned char *srcData, __int32 dwSize, unsigned char *dstData);

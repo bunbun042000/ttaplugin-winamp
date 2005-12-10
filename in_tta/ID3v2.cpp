@@ -38,7 +38,7 @@ const unsigned __int8 UTF16_BE[] = {0xff, 0xfe};
 const unsigned __int32 HEADER_LENGTH = 10;
 const unsigned __int32 FRAME_HEADER_LENGTH = 10;
 
-const unsigned __int32 MAX_BUFFER_SIZE = 1000000;
+static const __int32 COMM_Lang_Length = 3;
 
 
 //////////////////////////////////////////////////////////////////////
@@ -109,18 +109,18 @@ bool CID3v2::GetComment(const char *name, CString &strValue)
 
 
 
-__int32 CID3v2::SetComment(char *ID, CString &Comment)
+__int32 CID3v2::SetComment(char *ID, CString &Description, CString &Comment, char *sLanguage)
 {
 	map<CString, CID3v2Frame>::iterator it = m_frames.find(CString(ID));
 	if(it != m_frames.end()){
 		if(Comment != "")
-			it->second.SetComment(Comment, m_Encoding, m_ver);
+			it->second.SetComment(Description, Comment, sLanguage, m_Encoding, m_ver);
 		else
 			DelFrame(ID);
 //		m_dwSize = it->second.GetSize();
 	} else if(Comment != "") {
 		CID3v2Frame frame(ID);
-		frame.SetComment(Comment, m_Encoding, m_ver);
+		frame.SetComment(Description, Comment, sLanguage, m_Encoding, m_ver);
 		m_frames.insert(pair<CString, CID3v2Frame>(CString(ID), frame));
 
 	}
@@ -165,7 +165,7 @@ CString CID3v2::GetAlbum()
 
 void CID3v2::SetAlbum(CString &Album)
 {
-	SetComment("TALB", Album);
+	SetComment("TALB", CString(""), Album, NULL);
 }
 
 CString CID3v2::GetTitle()
@@ -177,7 +177,7 @@ CString CID3v2::GetTitle()
 
 void CID3v2::SetTitle(CString &Title)
 {
-	SetComment("TIT2", Title);
+	SetComment("TIT2", CString(""), Title, NULL);
 }
 
 CString CID3v2::GetArtist()
@@ -189,7 +189,7 @@ CString CID3v2::GetArtist()
 
 void CID3v2::SetArtist(CString &Artist)
 {
-	SetComment("TPE1", Artist);
+	SetComment("TPE1", CString(""), Artist, NULL);
 }
 
 CString CID3v2::GetTrackNo()
@@ -201,7 +201,7 @@ CString CID3v2::GetTrackNo()
 
 void CID3v2::SetTrackNo(CString &TrackNo)
 {
-	SetComment("TRCK", TrackNo);
+	SetComment("TRCK", CString(""), TrackNo, NULL);
 }
 
 CString CID3v2::GetYear()
@@ -218,11 +218,11 @@ CString CID3v2::GetYear()
 void CID3v2::SetYear(CString &Year)
 {
 	if(m_ver == 0x03) {
-		SetComment("TYER", Year);
-		SetComment("TDRL", CString(""));
+		SetComment("TYER", CString(""), Year, NULL);
+		SetComment("TDRL", CString(""), CString(""), NULL);
 	} else if(m_ver == 0x04) {
-		SetComment("TYER", CString(""));
-		SetComment("TDRL", Year);
+		SetComment("TYER", CString(""), CString(""), NULL);
+		SetComment("TDRL", CString(""), Year, NULL);
 	}
 }
 
@@ -235,7 +235,7 @@ CString CID3v2::GetGenre()
 
 void CID3v2::SetGenre(CString &Genre)
 {
-	SetComment("TCON", Genre);
+	SetComment("TCON", CString(""), Genre, NULL);
 }
 
 CString CID3v2::GetComment()
@@ -245,9 +245,9 @@ CString CID3v2::GetComment()
 	return Comment;
 }
 
-void CID3v2::SetComment(CString &Comment)
+void CID3v2::SetComment(CString &Description, CString &Comment)
 {
-	SetComment("COMM", Comment);
+	SetComment("COMM", Description, Comment, "eng");
 }
 
 CString CID3v2::GetCopyright()
@@ -259,7 +259,7 @@ CString CID3v2::GetCopyright()
 
 void CID3v2::SetCopyright(CString &Copyright)
 {
-	SetComment("TCOP", Copyright);
+	SetComment("TCOP", CString(""), Copyright, NULL);
 }
 
 CString CID3v2::GetURI()
@@ -269,9 +269,9 @@ CString CID3v2::GetURI()
 	return URI;
 }
 
-void CID3v2::SetURI(CString &URI)
+void CID3v2::SetURI(CString &Description, CString &URI)
 {
-	SetComment("WXXX", URI);
+	SetComment("WXXX", Description, URI, NULL);
 }
 
 CString CID3v2::GetWords()
@@ -283,7 +283,7 @@ CString CID3v2::GetWords()
 
 void CID3v2::SetWords(CString &Words)
 {
-	SetComment("TEXT", Words);
+	SetComment("TEXT", CString(""), Words, NULL);
 }
 
 CString CID3v2::GetComposers()
@@ -295,7 +295,7 @@ CString CID3v2::GetComposers()
 
 void CID3v2::SetComposers(CString &Composers)
 {
-	SetComment("TCOM", Composers);
+	SetComment("TCOM", CString(""), Composers, NULL);
 }
 
 CString CID3v2::GetArrangements()
@@ -307,7 +307,7 @@ CString CID3v2::GetArrangements()
 
 void CID3v2::SetArrangements(CString &Arrangements)
 {
-	SetComment("TPE4", Arrangements);
+	SetComment("TPE4", CString(""), Arrangements, NULL);
 }
 
 CString CID3v2::GetOrigArtist()
@@ -319,7 +319,7 @@ CString CID3v2::GetOrigArtist()
 
 void CID3v2::SetOrigArtist(CString &OrigArtist)
 {
-	SetComment("TOPE", OrigArtist);
+	SetComment("TOPE", CString(""), OrigArtist, NULL);
 }
 
 CString CID3v2::GetEncEngineer()
@@ -331,7 +331,7 @@ CString CID3v2::GetEncEngineer()
 
 void CID3v2::SetEncEngineer(CString &EncEngineer)
 {
-	SetComment("TENC", EncEngineer);
+	SetComment("TENC", CString(""), EncEngineer, NULL);
 }
 
 
@@ -737,6 +737,13 @@ CID3v2Frame::CID3v2Frame(const CID3v2Frame &obj)
 	m_Encoding = obj.m_Encoding;
 	m_wFlags = obj.m_wFlags;
 	m_Version = obj.m_Version;
+	m_Description = obj.m_Description;
+	if(obj.m_sLanguage != NULL){
+		m_sLanguage = new char[COMM_Lang_Length + 1];
+		memcpy(m_sLanguage, obj.m_sLanguage, COMM_Lang_Length);
+		m_sLanguage[COMM_Lang_Length] = '\0';
+	} else
+		m_sLanguage = NULL;
 }
 
 CID3v2Frame::CID3v2Frame(const char *ID)
@@ -759,8 +766,7 @@ void CID3v2Frame::Release()
 	m_ID = NULL;
 	m_wFlags = 0;
 	m_Version = 0x04;
-	if (m_ID != NULL)
-		delete m_ID;
+	m_sLanguage = NULL;
 }
 
 __int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __int8 version)
@@ -791,117 +797,51 @@ __int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __i
 	pData += 8;
 	m_wFlags = Extract16(pData);
 	pData += 2;
-	memcpy(&m_Encoding, pData, sizeof(m_Encoding));
-	pData++;
 
-	switch(m_Encoding) {
-		case FIELD_TEXT_ISO_8859_1:
-		default: {
-			char *tempchar = new char[m_dwSize];
-			if(!tempchar) break;
-			memcpy(tempchar, (char *)pData, m_dwSize - 1);
-			tempchar[m_dwSize - 1] = '\0';
-			m_Comment = tempchar;
-			delete tempchar;
-			break;
-		}
-		case FIELD_TEXT_UTF_16:	{
-			if(!(memcmp(pData, UTF16_LE, 2))) 
-				UTF16toUTF16BE((WCHAR *)(pData + 2), (m_dwSize - 3) / 2);
 
-			size = ::WideCharToMultiByte(CP_ACP, 0, 
-				(const WCHAR *)(pData + 2), (m_dwSize - 3) / 2, 0, 0, NULL, NULL);
-			size ++;
-			char *tempchar = new char[size];
-			if(!tempchar) break;
-			::WideCharToMultiByte(CP_ACP, 0,
-				(const WCHAR *)(pData + 2), (m_dwSize - 3) / 2, tempchar, size, NULL, NULL);
-			tempchar[size - 1] = '\0';
-			m_Comment = tempchar;
-			delete tempchar;
-			break;
-		}
-		case FIELD_TEXT_UTF_16BE: {
-			UTF16toUTF16BE((WCHAR *)pData, (m_dwSize - 1) / 2);
-			size = ::WideCharToMultiByte(CP_ACP, 0, (const WCHAR *)pData, (m_dwSize - 1) / 2, 0, 0, NULL, NULL);
-			size++;
-			char *tempchar = new char[size];
-			if(!tempchar) break;
-			::WideCharToMultiByte(CP_ACP, 0, (const WCHAR *)pData, (m_dwSize - 1) / 2, tempchar, size, NULL, NULL);
-			tempchar[size - 1] = '\0';
-			m_Comment = tempchar;
-			delete tempchar;
-			break;
-		}
-		case FIELD_TEXT_UTF_8: {
-			size = ::MultiByteToWideChar(CP_UTF8, 0, (char *)pData, m_dwSize - 1, NULL, 0);
-			size++;
-			WCHAR *tempchar = new WCHAR[size];
-			if(!tempchar) break;
-			::MultiByteToWideChar(CP_UTF8, 0, (char *)pData, m_dwSize - 1, tempchar, size - 1);
-			tempchar[size - 1] = L'\0';
-
-			size = ::WideCharToMultiByte(CP_ACP, 0, tempchar, -1, 0, 0, NULL, NULL);
-			char *tempchar2 = new char[size];
-			if(!tempchar2) {
-				delete tempchar;
-				break;
-			}
-			::WideCharToMultiByte(CP_ACP, 0, tempchar, -1, tempchar2, size, NULL, NULL);
-			m_Comment = tempchar2;
-			delete tempchar2;
-			delete tempchar;
-			break;
+	if(m_ID[0] == 'W' && !strcmp(m_ID, "WXXX")) {
+		m_Comment = GetEncodingString(pData, m_dwSize, FIELD_TEXT_ISO_8859_1);
+	} else {
+		memcpy(&m_Encoding, pData, sizeof(m_Encoding));
+		// L'\0' or '\0'
+		__int32 dwTermLength;
+		if(m_Encoding == FIELD_TEXT_UTF_16 || m_Encoding == FIELD_TEXT_UTF_16BE)
+			dwTermLength = sizeof(L'\0');
+		else
+			dwTermLength = sizeof('\0');
+		pData++;
+		size = m_dwSize - 1;
+		if(m_ID[0] == 'T' && strcmp(m_ID, "TXXX"))
+			m_Comment = GetEncodingString(pData, size, m_Encoding);
+		else if(!strcmp(m_ID, "TXXX")) {
+			m_Description = GetEncodingString(pData, size, m_Encoding);
+			size -= m_Description.GetLength() + dwTermLength;
+			pData += m_Description.GetLength() + dwTermLength;
+			m_Comment = GetEncodingString(pData, size, m_Encoding);
+		} else if(!strcmp(m_ID, "WXXX")) {
+			m_Description = GetEncodingString(pData, size, m_Encoding);
+			size -= m_Description.GetLength() + dwTermLength;
+			pData += m_Description.GetLength() + dwTermLength;
+			m_Comment = GetEncodingString(pData, size, FIELD_TEXT_ISO_8859_1);
+		} else if(!strcmp(m_ID, "COMM")) {
+			m_sLanguage = new char[COMM_Lang_Length + 1];
+			if(!m_sLanguage)
+				return 0;
+			memcpy(m_sLanguage, pData, COMM_Lang_Length);
+			m_sLanguage[COMM_Lang_Length] = '\0';
+			pData += COMM_Lang_Length;
+			size -= COMM_Lang_Length;
+			m_Description = GetEncodingString(pData, size, m_Encoding);
+			size -= m_Description.GetLength() + dwTermLength;
+			pData += m_Description.GetLength() + dwTermLength;
+			m_Comment = GetEncodingString(pData, size, m_Encoding);
 		}
 	}
-
 	return (m_dwSize + FRAME_HEADER_LENGTH);
 }
 
 char *CID3v2Frame::SetFrame()
 {
-	unsigned char *tempchar;
-
-	switch(m_Encoding) {
-		case FIELD_TEXT_ISO_8859_1:
-		default: {
-			tempchar = new unsigned char[m_dwSize];
-			if(!tempchar) return NULL;
-			tempchar[0] = m_Encoding;
-			memcpy((char *)tempchar + 1, (LPCTSTR)m_Comment, m_dwSize - 1);
-			break;
-		}
-		case FIELD_TEXT_UTF_16:	{
-			tempchar = new unsigned char[m_dwSize];
-			if(!tempchar) return NULL;
-			tempchar[0] = m_Encoding;
-			memcpy(tempchar + 1, UTF16_BE, 2);
-			::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)m_Comment, -1, (WCHAR *)(tempchar + 3),
-				(m_dwSize - 3) / sizeof(WCHAR));
-			break;
-		}
-		case FIELD_TEXT_UTF_16BE: {
-			tempchar = new unsigned char[m_dwSize];
-			if(!tempchar) return NULL;
-			tempchar[0] = m_Encoding;
-			::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)m_Comment, -1, (WCHAR *)(tempchar + 1), (m_dwSize - 1) / sizeof(WCHAR));
-			UTF16toUTF16BE((WCHAR *)(tempchar + 1), (m_dwSize - 1) / sizeof(WCHAR));
-			break;
-		}
-		case FIELD_TEXT_UTF_8: {
-			__int32 size = ::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)m_Comment, -1, 0, 0);
-			size = size * sizeof(WCHAR);
-			unsigned char *tempDataUTF16 = new unsigned char[size];
-			if(!tempDataUTF16)
-				return NULL;
-			::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)m_Comment, -1, (WCHAR *)tempDataUTF16, size / sizeof(WCHAR));
-			tempchar = new unsigned char[m_dwSize];
-			if(!tempchar) return NULL;
-			tempchar[0] = m_Encoding;
-			::WideCharToMultiByte(CP_UTF8, 0, (WCHAR *)tempDataUTF16, -1, (char *)(tempchar + 1), m_dwSize - 1, NULL, NULL);
-			break;
-		}
-	}
 
 	char *frame = new char[m_dwSize + FRAME_HEADER_LENGTH];
 
@@ -911,46 +851,95 @@ char *CID3v2Frame::SetFrame()
 	else if(m_Version == 0x04)
 		::pack_sint28(m_dwSize, frame + 4);
 	Compress16((unsigned char *)(frame + 8), m_wFlags);
-	memcpy((frame + FRAME_HEADER_LENGTH), (const char *)tempchar, m_dwSize);
-	delete tempchar;
+
+	// L'\0' or '\0'
+	__int32 dwTermLength;
+	if(m_Encoding == FIELD_TEXT_UTF_16 || m_Encoding == FIELD_TEXT_UTF_16BE)
+		dwTermLength = sizeof(L'\0');
+	else
+		dwTermLength = sizeof('\0');
+	char *temp = frame + FRAME_HEADER_LENGTH;
+
+	if(m_ID[0] == 'W' && !strcmp(m_ID, "WXXX")) {
+		memcpy(temp, (char *)SetEncodingString(m_Comment, m_Version, FIELD_TEXT_ISO_8859_1), m_dwSize);
+	} else {
+		temp[0] = m_Encoding;
+		temp += sizeof(m_Encoding);
+		__int32 size = m_dwSize - 1;
+		if(m_ID[0] == 'T' && strcmp(m_ID, "TXXX"))
+			memcpy(temp, (char *)SetEncodingString(m_Comment, m_Version, m_Encoding), size);
+		else if(!strcmp(m_ID, "TXXX")) {
+			__int32 dwCurrentSize = GetEncodingLength(m_Description, m_Version, m_Encoding);
+			memcpy(temp, (char *)SetEncodingString(m_Description, m_Version, m_Encoding), dwCurrentSize);
+			temp += dwCurrentSize;
+			size -= dwCurrentSize;
+			memcpy(temp, (char *)SetEncodingString(m_Comment, m_Version, m_Encoding), size);
+		} else if(!strcmp(m_ID, "WXXX")) {
+			__int32 dwCurrentSize = GetEncodingLength(m_Description, m_Version, m_Encoding);
+			memcpy(temp, (char *)SetEncodingString(m_Description, m_Version, m_Encoding), dwCurrentSize);
+			temp += dwCurrentSize;
+			size -= dwCurrentSize;
+			memcpy(temp, (char *)SetEncodingString(m_Comment, m_Version, FIELD_TEXT_ISO_8859_1), size);
+		} else if(!strcmp(m_ID, "COMM")) {
+			memcpy(temp, m_sLanguage, COMM_Lang_Length);
+			temp += COMM_Lang_Length;
+			size -= COMM_Lang_Length;
+			__int32 dwCurrentSize = GetEncodingLength(m_Description, m_Version, m_Encoding);
+			memcpy(temp, (char *)SetEncodingString(m_Description, m_Version, m_Encoding), dwCurrentSize);
+			temp += dwCurrentSize;
+			size -= dwCurrentSize;
+			memcpy(temp, (char *)SetEncodingString(m_Comment, m_Version, m_Encoding), size);
+		}
+	}
 
 	return frame;
 }
 
-void CID3v2Frame::SetComment(CString str, unsigned __int8 Encoding, unsigned __int8 version)
+void CID3v2Frame::SetComment(CString description, CString str, char *sLanguage, unsigned __int8 Encoding, unsigned __int8 version)
 {
-	if((Encoding > FIELD_TEXT_MAX) || (version != 0x03 && version != 0x04)) return;
+	if((Encoding > FIELD_TEXT_MAX) || (version != 0x03 && version != 0x04))
+		return;
+	if(!strcmp(m_ID, "COMM") && sLanguage == NULL) 
+		return;
 
 	m_Encoding = Encoding;
 	m_Comment = str;
+	m_Description = description;
 	m_Version = version;
-	__int32 size;
-	switch(m_Encoding) {
-		case FIELD_TEXT_ISO_8859_1:
-		default: {
-			size = m_Comment.GetLength() + 2;
-			break;
-		}
-		case FIELD_TEXT_UTF_16:	{
-			size = ::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, 0, 0);
-			size = size * sizeof(WCHAR) + 4;
-			break;
-		}
-		case FIELD_TEXT_UTF_16BE: {
-			size = ::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, 0, 0);
-			size = size * sizeof(WCHAR) + 2;
-			break;
-		}
-		case FIELD_TEXT_UTF_8: {
-			size = ::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, 0, 0);
-			size = size * sizeof(WCHAR);
-			unsigned char *tempDataUTF16 = new unsigned char[size];
-			if(!tempDataUTF16)
-				return;
-			::MultiByteToWideChar(CP_ACP, 0, m_Comment, -1, (WCHAR *)tempDataUTF16, size / sizeof(WCHAR));
-			size = ::WideCharToMultiByte(CP_UTF8, 0, (WCHAR *)tempDataUTF16, -1, NULL, 0, NULL, NULL);
-			size += 1;
-			break;
+
+	if(!strcmp(m_ID, "COMM")) {
+		if(m_sLanguage != NULL) 
+			delete m_sLanguage;
+		m_sLanguage = new char[COMM_Lang_Length];
+		memcpy(m_sLanguage, sLanguage, COMM_Lang_Length);
+		m_sLanguage[COMM_Lang_Length] = '\0';
+	}
+
+	__int32 size = 0;
+
+	// L'\0' or '\0'
+	__int32 dwTermLength;
+	if(m_Encoding == FIELD_TEXT_UTF_16 || m_Encoding == FIELD_TEXT_UTF_16BE)
+		dwTermLength = sizeof(L'\0');
+	else
+		dwTermLength = sizeof('\0');
+
+	if(m_ID[0] == 'W' && !strcmp(m_ID, "WXXX")) {
+		size = GetEncodingLength(str, version, FIELD_TEXT_ISO_8859_1);
+	} else {
+		size++;
+		if(m_ID[0] == 'T' && strcmp(m_ID, "TXXX"))
+			size += GetEncodingLength(str, version, Encoding);
+		else if(!strcmp(m_ID, "TXXX")) {
+			size += GetEncodingLength(description, version, Encoding);
+			size += GetEncodingLength(str, version, Encoding);
+		} else if(!strcmp(m_ID, "WXXX")) {
+			size += GetEncodingLength(description, version, Encoding);
+			size += GetEncodingLength(str, version, FIELD_TEXT_ISO_8859_1);
+		} else if(!strcmp(m_ID, "COMM")) {
+			size += COMM_Lang_Length;
+			size += GetEncodingLength(description, version, Encoding);
+			size += GetEncodingLength(str, version, Encoding);
 		}
 	}
 	m_dwSize = size;
@@ -963,3 +952,250 @@ void CID3v2Frame::UTF16toUTF16BE(WCHAR *str, int len)
 		str[i] = (str[i] << 8) | (str[i] >> 8);
 }
 
+CString CID3v2Frame::GetEncodingString(unsigned char *pData, __int32 dwRemainSize, unsigned __int8 Encoding)
+{
+	if(m_Encoding > FIELD_TEXT_MAX)
+		return "";
+
+	CString sTempChar;
+
+	switch(Encoding) {
+		case FIELD_TEXT_ISO_8859_1:
+		default: {
+			__int32 size = strlen((char *)pData);
+			if(dwRemainSize < size + 1)
+				return "";
+			char *tempchar = new char[size + 1];
+			if(tempchar == NULL) 
+				return "";
+			strcpy_s(tempchar, size + 1, (char *)pData);
+			tempchar[size] = '\0';
+			sTempChar = tempchar;
+			delete tempchar;
+			break;
+		}
+		case FIELD_TEXT_UTF_16:	{
+			char *tempchar = new char[dwRemainSize];
+			if(tempchar == NULL)
+				return "";
+
+			memcpy(tempchar, pData, dwRemainSize);
+			if(!(memcmp(pData, UTF16_LE, 2)))
+				UTF16toUTF16BE((WCHAR *)(tempchar + 2), (dwRemainSize - 2) / 2);
+
+			__int32 dwStrSize = (wcslen((WCHAR *)(tempchar + 2)) + 1) * sizeof(WCHAR);
+			if (dwRemainSize - 2 < dwStrSize)
+				return "";
+	
+			__int32 size = ::WideCharToMultiByte(CP_ACP, 0, 
+				(const WCHAR *)(tempchar + 2), dwStrSize / 2, 0, 0, NULL, NULL);
+			size ++;
+
+			char *copychar = new char[size];
+			if(!copychar)
+				return "";
+
+			::WideCharToMultiByte(CP_ACP, 0,
+				(const WCHAR *)(tempchar + 2), dwStrSize / 2, copychar, size, NULL, NULL);
+
+			tempchar[size - 1] = '\0';
+			sTempChar = copychar;
+			delete tempchar;
+			delete copychar;
+			break;
+		}
+		case FIELD_TEXT_UTF_16BE: {
+			char *copychar = new char[dwRemainSize];
+			if(copychar == NULL)
+				return "";
+			memcpy(copychar, pData, dwRemainSize);
+			UTF16toUTF16BE((WCHAR *)copychar, dwRemainSize / 2);
+			__int32 dwStrSize = (wcslen((WCHAR *)(copychar + 2)) + 1) * sizeof(WCHAR);
+			if(dwRemainSize < dwStrSize)
+				return "";
+
+			__int32 size = ::WideCharToMultiByte(CP_ACP, 0, (const WCHAR *)copychar, dwStrSize / 2, 0, 0, NULL, NULL);
+			size++;
+			char *tempchar = new char[size];
+			if(!tempchar)
+				return "";
+			::WideCharToMultiByte(CP_ACP, 0, (const WCHAR *)copychar, dwStrSize / 2, tempchar, size, NULL, NULL);
+			tempchar[size - 1] = '\0';
+			sTempChar = tempchar;
+			delete tempchar;
+			delete copychar;
+			break;
+		}
+		case FIELD_TEXT_UTF_8: {
+			__int32 dwStrSize = strlen((char *)pData) + 1;
+			__int32 size = ::MultiByteToWideChar(CP_UTF8, 0, (char *)pData, dwStrSize, NULL, 0);
+			size++;
+			WCHAR *tempchar = new WCHAR[size];
+			if(tempchar == NULL)
+				return "";
+			::MultiByteToWideChar(CP_UTF8, 0, (char *)pData, dwStrSize, tempchar, size - 1);
+				tempchar[size - 1] = L'\0';
+
+			size = ::WideCharToMultiByte(CP_ACP, 0, tempchar, -1, 0, 0, NULL, NULL);
+			char *tempchar2 = new char[size];
+			if(tempchar2 == NULL) {
+				delete tempchar;
+				return "";
+			}
+			::WideCharToMultiByte(CP_ACP, 0, tempchar, -1, tempchar2, size, NULL, NULL);
+			sTempChar = tempchar2;
+			delete tempchar2;
+			delete tempchar;
+			break;
+		}
+	}
+	return sTempChar;
+}
+
+__int32 CID3v2Frame::GetEncodingLength(CString &str, unsigned __int8 version, unsigned __int8 Encoding)
+{
+	if((Encoding > FIELD_TEXT_MAX) || (version != 0x03 && version != 0x04)) 
+		return 0;
+
+	if(version == 0x03 && Encoding > FIELD_TEXT_UTF_16)
+		return 0;
+
+	if(str == "")
+		return 0;
+
+	__int32 size;
+	switch(Encoding) {
+		case FIELD_TEXT_ISO_8859_1:
+		default: {
+			size = str.GetLength() + 1;
+			break;
+		}
+		case FIELD_TEXT_UTF_16:	{
+			if(str == "")
+				size = 2 * sizeof(WCHAR);
+			else {
+				size = ::MultiByteToWideChar(CP_ACP, 0, str, -1, 0, 0);
+				size = (size  + 2) * sizeof(WCHAR);
+			}
+			break;
+		}
+		case FIELD_TEXT_UTF_16BE: {
+			if(str == "")
+				size = sizeof(WCHAR);
+			else {
+				size = ::MultiByteToWideChar(CP_ACP, 0, str, -1, 0, 0);
+				size = (size  + 1) * sizeof(WCHAR);
+			}
+			break;
+		}
+		case FIELD_TEXT_UTF_8: {
+			if(str == "")
+				size = sizeof(unsigned char);
+			else {
+				size = ::MultiByteToWideChar(CP_ACP, 0, str, -1, 0, 0);
+				size = size * sizeof(WCHAR);
+				unsigned char *tempDataUTF16 = new unsigned char[size];
+				if(tempDataUTF16 == NULL)
+					return 0;
+				::MultiByteToWideChar(CP_ACP, 0, str, -1, (WCHAR *)tempDataUTF16, size / sizeof(WCHAR));
+				size = ::WideCharToMultiByte(CP_UTF8, 0, (WCHAR *)tempDataUTF16, -1, NULL, 0, NULL, NULL);
+				size += 1;
+			}
+			break;
+		}
+	}
+	return size;
+
+}
+
+unsigned char *CID3v2Frame::SetEncodingString(CString &str, unsigned __int8 version, unsigned __int8 Encoding)
+{
+	if((Encoding > FIELD_TEXT_MAX) || (version != 0x03 && version != 0x04)) 
+		return NULL;
+
+	if(version == 0x03 && Encoding > FIELD_TEXT_UTF_16)
+		return NULL;
+
+	unsigned char *tempchar;
+
+
+	switch(m_Encoding) {
+		case FIELD_TEXT_ISO_8859_1:
+		default: {
+			if(str == "") {
+				tempchar = new unsigned char[1];
+				tempchar[0] = '\0';
+				break;
+			}
+			tempchar = new unsigned char[str.GetLength() + 1];
+			if(tempchar == NULL)
+				return NULL;
+			memcpy((char *)tempchar, (LPCTSTR)str, str.GetLength() + 1);
+			break;
+		}
+		case FIELD_TEXT_UTF_16:	{
+			__int32 size;
+			if(str == "") 
+				size = 2 * sizeof(WCHAR);
+			else {
+				size = ::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)str, -1, 0, 0);
+				size = (size + 2) * sizeof(WCHAR);
+			}
+			tempchar = new unsigned char[size];
+			if(tempchar == NULL)
+				return NULL;
+			memcpy(tempchar, UTF16_BE, 2);
+			if(str = "")
+				memcpy(tempchar + 2, L'\0', sizeof(WCHAR));
+			else {
+				::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)str, -1, (WCHAR *)(tempchar + 2), 
+					(size - 2) / sizeof(WCHAR));
+			}
+			break;
+		}
+		case FIELD_TEXT_UTF_16BE: {
+			__int32 size;
+			if(str == "")
+				size = sizeof(WCHAR);
+			else {
+				size = ::MultiByteToWideChar(CP_ACP, 0, str, -1, 0, 0);
+				size = (size  + 1) * sizeof(WCHAR);
+			}
+			tempchar = new unsigned char[size];
+			if(tempchar == NULL)
+				return NULL;
+			if(str == "")
+				tempchar = L'\0';
+			else {
+				::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)str, -1, (WCHAR *)tempchar, size / sizeof(WCHAR));
+				UTF16toUTF16BE((WCHAR *)tempchar, m_dwSize / sizeof(WCHAR));
+			}
+			break;
+		}
+		case FIELD_TEXT_UTF_8: {
+			unsigned char *tempDataUTF16;
+			__int32 size;
+			if(str == "")
+				size = sizeof(unsigned char);
+			else {
+				__int32 tempsize = ::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)str, -1, 0, 0);
+				tempsize = tempsize * sizeof(WCHAR);
+				tempDataUTF16 = new unsigned char[tempsize];
+				if(tempDataUTF16 == NULL)
+					return NULL;
+				::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)str, -1, (WCHAR *)tempDataUTF16, tempsize / sizeof(WCHAR));
+				size = ::WideCharToMultiByte(CP_UTF8, 0, (WCHAR *)tempDataUTF16, -1, NULL, 0, NULL, NULL);
+				size += sizeof(unsigned char);
+			}
+			tempchar = new unsigned char[size];
+			if(tempchar == NULL)
+				return NULL;
+			if(str == "")
+				tempchar[0] = '\0';
+			else
+				::WideCharToMultiByte(CP_UTF8, 0, (WCHAR *)tempDataUTF16, -1, (char *)tempchar, size, NULL, NULL);
+			break;
+		}
+	}
+	return tempchar;
+}

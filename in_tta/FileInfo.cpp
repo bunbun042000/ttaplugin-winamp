@@ -157,9 +157,9 @@ void CFileInfo::OnBnClickedOk()
 		dlgtag.id3v2.SetTrackNo(m_sID3v2_TrackNo);
 		dlgtag.id3v2.SetYear(m_sID3v2_Year);
 		dlgtag.id3v2.SetGenre(m_sID3v2_Genre);
-		dlgtag.id3v2.SetComment(m_sID3v2_Comment);
+		dlgtag.id3v2.SetComment(CString(""), m_sID3v2_Comment);
 		dlgtag.id3v2.SetCopyright(m_sID3v2_Copyrights);
-		dlgtag.id3v2.SetURI(m_sID3v2_URI);
+		dlgtag.id3v2.SetURI(CString(""), m_sID3v2_URI);
 		dlgtag.id3v2.SetWords(m_sID3v2_Words);
 		dlgtag.id3v2.SetComposers(m_sID3v2_Composers);
 		dlgtag.id3v2.SetArrangements(m_sID3v2_Arrangements);
