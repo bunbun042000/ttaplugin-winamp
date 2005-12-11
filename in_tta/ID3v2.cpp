@@ -805,7 +805,9 @@ __int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __i
 		memcpy(&m_Encoding, pData, sizeof(m_Encoding));
 		// L'\0' or '\0'
 		__int32 dwTermLength;
-		if(m_Encoding == FIELD_TEXT_UTF_16 || m_Encoding == FIELD_TEXT_UTF_16BE)
+		if(m_Encoding == FIELD_TEXT_UTF_16)
+			dwTermLength = 2 * sizeof(WCHAR);
+		else if(m_Encoding == FIELD_TEXT_UTF_16BE)
 			dwTermLength = sizeof(L'\0');
 		else
 			dwTermLength = sizeof('\0');
@@ -980,7 +982,7 @@ CString CID3v2Frame::GetEncodingString(unsigned char *pData, __int32 dwRemainSiz
 				return "";
 
 			memcpy(tempchar, pData, dwRemainSize);
-			if(!(memcmp(pData, UTF16_LE, 2)))
+			if(!(memcmp(pData, UTF16_BE, 2)))
 				UTF16toUTF16BE((WCHAR *)(tempchar + 2), (dwRemainSize - 2) / 2);
 
 			__int32 dwStrSize = (wcslen((WCHAR *)(tempchar + 2)) + 1) * sizeof(WCHAR);
@@ -1060,8 +1062,6 @@ __int32 CID3v2Frame::GetEncodingLength(CString &str, unsigned __int8 version, un
 	if(version == 0x03 && Encoding > FIELD_TEXT_UTF_16)
 		return 0;
 
-	if(str == "")
-		return 0;
 
 	__int32 size;
 	switch(Encoding) {
@@ -1139,14 +1139,14 @@ unsigned char *CID3v2Frame::SetEncodingString(CString &str, unsigned __int8 vers
 				size = 2 * sizeof(WCHAR);
 			else {
 				size = ::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)str, -1, 0, 0);
-				size = (size + 2) * sizeof(WCHAR);
+				size = (size + 1) * sizeof(WCHAR);
 			}
 			tempchar = new unsigned char[size];
 			if(tempchar == NULL)
 				return NULL;
-			memcpy(tempchar, UTF16_BE, 2);
-			if(str = "")
-				memcpy(tempchar + 2, L'\0', sizeof(WCHAR));
+			memcpy(tempchar, UTF16_LE, 2);
+			if(str == "")
+				memcpy(tempchar + 2, "\0\0", sizeof(WCHAR));
 			else {
 				::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)str, -1, (WCHAR *)(tempchar + 2), 
 					(size - 2) / sizeof(WCHAR));
@@ -1165,7 +1165,7 @@ unsigned char *CID3v2Frame::SetEncodingString(CString &str, unsigned __int8 vers
 			if(tempchar == NULL)
 				return NULL;
 			if(str == "")
-				tempchar = L'\0';
+				memcpy(tempchar, "\0\0", sizeof(WCHAR));
 			else {
 				::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)str, -1, (WCHAR *)tempchar, size / sizeof(WCHAR));
 				UTF16toUTF16BE((WCHAR *)tempchar, m_dwSize / sizeof(WCHAR));
