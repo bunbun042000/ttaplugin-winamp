@@ -32,7 +32,6 @@
 #define TTADEC_H_
 
 #include <mmreg.h>
-#include "id3tag.h"
 
 #pragma pack(1)
 
@@ -65,24 +64,6 @@
 #define WAVE_FORMAT_PCM	1
 #define WAVE_FORMAT_EXTENSIBLE 0xFFFE
 
-typedef struct {
-	HANDLE			HFILE;		// file handle
-	unsigned short	NCH;		// number of channels
-	unsigned short	BPS;		// bits per sample
-	unsigned short	BSIZE;		// byte size
-	unsigned short	FORMAT;		// audio format
-	unsigned long	SAMPLERATE;	// samplerate (sps)
-	unsigned long	DATALENGTH;	// data length in samples
-	unsigned long	FRAMELEN;	// frame length
-	unsigned long	LENGTH;		// playback time (sec)
-	unsigned long	FILESIZE;	// file size (byte)
-	float			COMPRESS;	// compression ratio
-	unsigned long	BITRATE;	// bitrate (kbps)
-	unsigned long	STATE;		// return code
-	char	filename[MAX_PATH];
-	id3v1_data		id3v1;
-	id3v2_data		id3v2;
-} tta_info;
 
 typedef struct {
     unsigned long TTAid;
