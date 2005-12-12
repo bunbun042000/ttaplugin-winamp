@@ -137,21 +137,21 @@ bool CTtaTag::ReadTag(HWND hMainWindow, const char *filename)
 
 void CTtaTag::SetPlayTitle(char *title) {
 	if (id3v2.hasTag() && 
-		(id3v2.GetArtist() || id3v2.GetTitle())) {
-		if (id3v2.GetArtist() && id3v2.GetTitle())
+		(id3v2.GetArtist() != "" || id3v2.GetTitle() != "" || id3v2.GetAlbum() != "")) {
+		if (id3v2.GetArtist() != "" && id3v2.GetTitle() != "")
 			wsprintf(title, "%s - %s", id3v2.GetArtist(), id3v2.GetTitle());
-		else if (id3v2.GetArtist() && id3v2.GetAlbum())
+		else if (id3v2.GetArtist()  != "" && id3v2.GetAlbum() != "")
 			wsprintf(title, "%s - %s", id3v2.GetArtist(), id3v2.GetAlbum());
-		else if (id3v2.GetArtist()) lstrcpy(title, id3v2.GetArtist());
-		else if (id3v2.GetTitle()) lstrcpy(title, id3v2.GetTitle());
+		else if (id3v2.GetArtist() != "") lstrcpy(title, id3v2.GetArtist());
+		else if (id3v2.GetTitle() != "") lstrcpy(title, id3v2.GetTitle());
 	} else if (id3v1.hasTag() &&
-		(id3v1.GetArtist() || id3v1.GetTitle())) {
-		if (id3v1.GetArtist() && id3v1.GetTitle())
+		(id3v1.GetArtist() != "" || id3v1.GetTitle() != "" || id3v1.GetAlbum() != "")) {
+		if (id3v1.GetArtist()  != "" && id3v1.GetTitle() != "")
 			wsprintf(title, "%s - %s", id3v1.GetArtist(), id3v1.GetTitle());
-		else if (id3v1.GetArtist() && id3v1.GetAlbum())
+		else if (id3v1.GetArtist() != "" && id3v1.GetAlbum() != "")
 			wsprintf(title, "%s - %s", id3v1.GetArtist(), id3v1.GetArtist());
-		else if (id3v1.GetArtist()) lstrcpy(title, id3v1.GetArtist());
-		else if (id3v1.GetTitle()) lstrcpy(title, id3v1.GetTitle());
+		else if (id3v1.GetArtist() != "") lstrcpy(title, id3v1.GetArtist());
+		else if (id3v1.GetTitle() != "") lstrcpy(title, id3v1.GetTitle());
 	} else {
 		char p[MAX_PATHLEN];
 		::GetFileTitle(FileName, p, MAX_PATHLEN - 1);
