@@ -440,8 +440,12 @@ __int32 CID3v2::SaveTag()
 
 	totalLength = GetTotalFrameLength();
 
-	if(totalLength == 0 && m_bHastag)
-		return DeleteTag(FileName);
+	if(totalLength == 0) {
+		if(m_dwSize != 0)
+			return DeleteTag(FileName);
+		else
+			return dwWin32errorCode;
+	}
 
 	char *frames = new char[totalLength];
 
@@ -479,7 +483,7 @@ __int32 CID3v2::SaveTag()
 
 	if(EncLength > m_dwSize) {
 		::pack_sint28(EncLength, (header + 6));
-		GetTempPath(MAX_PATHLEN, TempPath);
+		strcpy_s(TempPath, MAX_PATHLEN, (LPCTSTR)GetFilePath(FileName));
 		if(!GetTempFileName(TempPath, "wat", 0, szTempFile)) {
 			dwWin32errorCode = GetLastError();
 			DeleteFile(szTempFile);
@@ -718,7 +722,10 @@ __int32 CID3v2::ExchangeTempFileToOriginalFile(const char *sDestFileName)
 	return dwWin32errorCode;
 }
 
-
+CString CID3v2::GetFilePath(CString &str)
+{
+	return str.Left(str.ReverseFind('\\'));
+}
 
 // CID3v2Frame
 

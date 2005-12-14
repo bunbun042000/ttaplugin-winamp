@@ -199,6 +199,7 @@ private:
 	__int32 EncodeUnSynchronization(unsigned char *srcData, __int32 dwSize, unsigned char *dstData);
 	__int32 CopyBodyData(__int32 startbody, const char *sDestFileName);
 	__int32 ExchangeTempFileToOriginalFile(const char *sDestFileName);
+	CString GetFilePath(CString &str);
 	void Release();
 
 };
