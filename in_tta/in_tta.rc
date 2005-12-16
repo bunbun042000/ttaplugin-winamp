@@ -286,7 +286,6 @@ BEGIN
 
     IDD_ABOUT, DIALOG
     BEGIN
-        RIGHTMARGIN, 141
         BOTTOMMARGIN, 154
     END
 
@@ -323,7 +322,7 @@ IDI_INFO_ICON           ICON                    "info.ico"
 
 STRINGTABLE 
 BEGIN
-    IDS_TTAFORMAT           "Format\t\t: TTA%d\nSample\t\t: %dbit\nSample Rate\t: %dHz\nBit Rate\t\t: %dkbit/s\nNum. of Chan.\t: %d(%s)\nFrame Length\t: %dframe\nLength\t\t: %s"
+    IDS_TTAFORMAT           "Format\t\t: TTA%d\nSample\t\t: %dbit\nSample Rate\t: %dHz\nBit Rate\t\t: %dkbit/s\nNum. of Chan.\t: %d (%s)\nFrame Length\t: %dframe\nLength\t\t: %s"
     IDS_ID3V2DELETE         "Do you want to delete ID3v2 Tag?"
     IDS_ID3V1DELETE         "Do you want to delete ID3v1 Tag?"
 END

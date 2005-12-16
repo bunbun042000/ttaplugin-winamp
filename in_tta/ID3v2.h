@@ -49,15 +49,15 @@ __inline static unsigned __int32 unpack_sint28 (unsigned const char *ptr) {
 }
 
 __inline static void SetLength32 (unsigned __int32 value, char *ptr) {
-	ptr[3] = value >> 24;
-	ptr[2] = value >> 16;
-	ptr[1] = value >> 8;
-	ptr[0] = value;
+	ptr[0] = value >> 24;
+	ptr[1] = value >> 16;
+	ptr[2] = value >> 8;
+	ptr[3] = value;
 }
 
 __inline static unsigned __int32 GetLength32(const unsigned char *ptr) {
-	return (((unsigned __int32)ptr[3]<<24) | ((unsigned __int32)ptr[2]<<16) | 
-		((unsigned __int32)ptr[1]<<8) | ((unsigned __int32)ptr[0]));
+	return (((unsigned __int32)ptr[0]<<24) | ((unsigned __int32)ptr[1]<<16) | 
+		((unsigned __int32)ptr[2]<<8) | ((unsigned __int32)ptr[3]));
 }
 
 __inline static __int16 Extract16(unsigned char buf[2]) {

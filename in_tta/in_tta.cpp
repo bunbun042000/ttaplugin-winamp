@@ -107,7 +107,7 @@ Cin_ttaApp theApp;
 
 
 
-#define  PLUGIN_VERSION "3.2 extended 2"
+#define  PLUGIN_VERSION "3.2 extended Beta3"
 #define  PROJECT_URL "<http://www.sourceforge.net>"
 
 static int paused = 0;

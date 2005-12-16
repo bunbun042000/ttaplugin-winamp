@@ -212,9 +212,9 @@ BOOL CFileInfo::OnInitDialog()
 
 	CString second;
 	if(hour > 0)
-		second.Format("%d:%d:%d (%dsec)", hour, min, sec, Lengthbysec);
+		second.Format("%d:%02d:%02d (%dsec)", hour, min, sec, Lengthbysec);
 	else if(min > 0)
-		second.Format("%d:%d (%dsec)", min, sec, Lengthbysec);
+		second.Format("%d:%02d (%dsec)", min, sec, Lengthbysec);
 	else
 		second.Format("%d", sec);
 
