@@ -31,6 +31,7 @@
 
 #define	STRICT
 
+
 #include "stdafx.h"
 #include "in_tta.h"
 #include <windows.h>
@@ -163,6 +164,7 @@ void __cdecl setoutputtime(int time_in_ms);
 void __cdecl setvolume(int volume);
 void __cdecl setpan(int pan);
 void __cdecl eq_set(int on, char data[10], int preamp);
+
 
 In_Module mod = {
 	IN_VER,
