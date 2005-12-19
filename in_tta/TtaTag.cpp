@@ -28,6 +28,8 @@ CTtaTag::CTtaTag()
 
 CTtaTag::~CTtaTag()
 {
+	CloseFile();
+
 }
 
 char *CTtaTag::GetFileName()
@@ -129,6 +131,8 @@ bool CTtaTag::ReadTag(HWND hMainWindow, const char *filename)
 
 	COMPRESS = ((double)datasize) / origsize;
 	BITRATE = (long) ((COMPRESS * SAMPLERATE * NCH * BPS) / 1000);
+
+	CloseFile();
 
 	return true;
 }
