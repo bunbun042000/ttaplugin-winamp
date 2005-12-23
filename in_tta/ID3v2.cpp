@@ -81,8 +81,8 @@ bool CID3v2::AddFrame(CID3v2Frame &frame)
 
 bool CID3v2::DelFrame(const char *name)
 {
-	//name‚Ì‚È‚©‚©‚çdwIndex‚Ì’l‚ðŽæ“¾
-    map<CString, CID3v2Frame>::iterator itp = m_frames.find(CString(name));
+	//name -> dwIndex
+	map<CString, CID3v2Frame>::iterator itp = m_frames.find(CString(name));
 	
 	if(itp != m_frames.end())
 	{
@@ -95,7 +95,7 @@ bool CID3v2::DelFrame(const char *name)
 bool CID3v2::GetComment(const char *name, CString &strValue)
 {
 	strValue = "";
-	//name‚Ì‚È‚©‚©‚çdwIndex‚Ì’l‚ðŽæ“¾
+	//name -> dwIndex
     map<CString, CID3v2Frame>::iterator itp = m_frames.find(CString(name));
 	
 	if(itp != m_frames.end())
@@ -113,11 +113,11 @@ __int32 CID3v2::SetComment(char *ID, CString &Description, CString &Comment, cha
 {
 	map<CString, CID3v2Frame>::iterator it = m_frames.find(CString(ID));
 	if(it != m_frames.end()){
+		// if comment is exist
 		if(Comment != "")
 			it->second.SetComment(Description, Comment, sLanguage, m_Encoding, m_ver);
 		else
 			DelFrame(ID);
-//		m_dwSize = it->second.GetSize();
 	} else if(Comment != "") {
 		CID3v2Frame frame(ID);
 		frame.SetComment(Description, Comment, sLanguage, m_Encoding, m_ver);
@@ -135,12 +135,14 @@ __int32 CID3v2::GetTotalFrameLength()
 		length += it->second.GetSize() + FRAME_HEADER_LENGTH;
 		it++;
 	}
+	// Total frame length
 	return length;
 }
 
 
 void CID3v2::SetVersion(unsigned __int8 ver)
 {
+	// only version 2.3 or 2.4 
 	if (ver != 0x03 && ver != 0x04)
 		return;
 	m_ver = ver;
@@ -148,6 +150,8 @@ void CID3v2::SetVersion(unsigned __int8 ver)
 
 bool CID3v2::SetEncoding(unsigned __int8 enc)
 {
+	//encoding ver2.3 ISO-8859-1 and UTF-16
+	//encoding ver2.4 ISO-8859-1 UTF-16 UTF-16BE and UTF-8
 	if ((m_ver == 0x04 && enc > FIELD_TEXT_MAX + 1)	|| (m_ver != 0x03 && m_ver != 0x04))
 		return false;
 	if(m_ver == 0x03 && (enc < FIELD_TEXT_MAX + 1) && (enc > FIELD_TEXT_UTF_16))
@@ -366,12 +370,14 @@ __int32 CID3v2::ReadTag(const char *filename)
 		return -1;
 	}
 
+	//only ver2.3 and 2.4
 	m_ver = header.version;
 	if((m_ver != 0x03) && (m_ver != 0x04)) {
 		CloseHandle(HFILE);
 		return -1;
 	}
 
+	// decode header size(without tagheader)
 	m_dwSize = unpack_sint28(header.size); // size (extended header + frames + padding + footer)
 
 	buffer = new unsigned char[m_dwSize];
@@ -438,6 +444,7 @@ __int32 CID3v2::SaveTag()
 	__int32 totalLength = 0;
 	unsigned __int32 EncLength = 0;
 
+	//frame length(without tag header)
 	totalLength = GetTotalFrameLength();
 
 	if(totalLength == 0) {
@@ -449,6 +456,7 @@ __int32 CID3v2::SaveTag()
 
 	char *frames = new char[totalLength];
 
+	// all tags set to buffer
 	__int32 dwOffset = 0;
 	while(it != m_frames.end()){
 		memcpy((frames + dwOffset), it->second.SetFrame(), it->second.GetSize() + FRAME_HEADER_LENGTH);
@@ -456,6 +464,7 @@ __int32 CID3v2::SaveTag()
 		it++;
 	}
 
+	//unsynchronization
 	char *tempData;
 	if(m_bUnSynchronization) {
 		tempData = new char[totalLength * 2];
@@ -471,6 +480,7 @@ __int32 CID3v2::SaveTag()
 	char *header = new char[EncLength + HEADER_LENGTH];
 	if (!header) return NULL;
 
+	//set tag header
 	memcpy(header, "ID3", 3);
 	header[3] = m_ver;
 	header[4] = m_subver;
@@ -490,12 +500,14 @@ __int32 CID3v2::SaveTag()
 			return dwWin32errorCode;
 		}
 
+		// body(music) data copy to temp file
 		dwWin32errorCode = CopyBodyData(EncLength + HEADER_LENGTH, szTempFile);
 		if(dwWin32errorCode != ERROR_SUCCESS) {
 			DeleteFile(szTempFile);
 			return dwWin32errorCode;
 		}
 
+		//open tempfile
 		bTempFile = true;
 		HFILE = CreateFile(szTempFile, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING,
 			FILE_ATTRIBUTE_NORMAL, NULL);

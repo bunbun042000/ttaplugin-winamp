@@ -53,8 +53,6 @@ public:
 	bool			SaveTag(HWND hMainWindow);
 	void			DeleteTag(HWND hMainWindow);
 
-//	CString GetFileName(){return FileName;}
-//	void    SetFileName(const char *filename);
 	CString			GetTitle() {return Title.GetBufferSetLength(ID3V1_TITLELENGTH);}
 	void			SetTitle(const char *title);
 	CString			GetArtist(){return Artist.GetBufferSetLength(ID3V1_ARTISTLENGTH);}

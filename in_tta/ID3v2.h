@@ -99,30 +99,24 @@ public:
 
 private:
 
-	struct frameheader
-	{
-		char  id[ID3v2FrameIDLength];
-		unsigned __int8  size[4];
-		short flags;
-	};
 	void    UTF16toUTF16BE(WCHAR *str, int len);
 	CString GetEncodingString(unsigned char *pData, __int32 dwRemainSize, unsigned __int8 Encoding);
 
 	//return String Size(include BE/LE, but without Encoding)
 	__int32 GetEncodingLength(CString &str, unsigned __int8 version, unsigned __int8 Encoding);
 	unsigned char *SetEncodingString(CString &str, unsigned __int8 version, unsigned __int8 Encoding);
+	void Release();
 	
 
-	CString m_Description;
-	char   *m_sLanguage;
+	CString m_Description;		// Description(WXXX TXXX COMM etc..)
+	char   *m_sLanguage;		// Comment language(e.g. eng)
 
 	__int32 m_dwSize;			// Comment size (without header)
-	unsigned __int8 m_Encoding;
-	CString m_Comment;
-	char *m_ID;
-	unsigned __int16 m_wFlags;
-	unsigned __int8 m_Version;
-	void Release();
+	unsigned __int8 m_Encoding;	// Encoding(ISO-8859-1, UTF-16, UTF-8)
+	CString m_Comment;			// Comment
+	char *m_ID;					// ID (COMM TIT2 ...)
+	unsigned __int16 m_wFlags;	// Flags
+	unsigned __int8 m_Version;	// Version(2.3 2.4 ...)
 
 
 };
@@ -174,21 +168,20 @@ public:
 	void SetOrigArtist(CString &OrigArtist);
 	CString GetEncEngineer();
 	void SetEncEngineer(CString &EncEngineer);
+
 private:
 	CString	FileName;	// filename
-	__int32	STATE;		// return code
 
 	unsigned __int8 m_Encoding; // Strings Encoding;
 	unsigned __int8 m_ver;
 	unsigned __int8 m_subver;
 	unsigned __int8 m_Flags;
 	unsigned __int32 m_dwSize; // extended header + frame + padding + footer
+	
+	// Store frame info
 	map<CString, CID3v2Frame>m_frames;
 	bool	m_bHastag;
 	bool    m_bUnSynchronization;
-
-//	unsigned __int32 tag_length; // include header+frame+etcetera
-
 
 	bool AddFrame(CID3v2Frame &frame);
 	bool DelFrame(const char *name);

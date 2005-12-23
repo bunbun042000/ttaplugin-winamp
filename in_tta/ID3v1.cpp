@@ -43,6 +43,8 @@ bool CID3v1::ReadTag(HWND hMainWindow, const char *filename)
 		CloseHandle(HFILE);
 		return false;
 	}
+
+	// Read File Footer
 	SetFilePointer(HFILE, -(int) sizeof(v1tag), NULL, FILE_END);
 	if (ReadFile(HFILE, &tag, sizeof(v1tag), &result, NULL) &&
 		result == sizeof(v1tag) && (memcmp(tag.id, "TAG", 3) == 0)) {
@@ -79,6 +81,8 @@ bool CID3v1::SaveTag(HWND hMainWindow)
 		CloseHandle(HFILE);
 		return OPEN_ERROR;
 	}
+
+	// Create Tag Area
 	ZeroMemory(&tag, sizeof(v1tag));
 
 	CopyMemory(tag.id, "TAG", 3);
@@ -112,6 +116,7 @@ bool CID3v1::SaveTag(HWND hMainWindow)
 
 void CID3v1::DeleteTag(HWND hMainWindow)
 {
+	// If IDv1 Tag doesn't exist
 	if (!has_tag) return;
 
 	// delete ID3V1 tag
