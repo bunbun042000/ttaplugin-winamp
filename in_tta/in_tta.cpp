@@ -1,5 +1,6 @@
 // in_tta.cpp : Defines the initialization routines for the DLL.
 //
+// $LastChangedDate$
 /* Description:	 TTA input plug-in for upper Winamp 2.91
  *               MediaLibrary Extension version
  * Developed by: Alexander Djourik <ald@true-audio.com>
@@ -108,7 +109,7 @@ Cin_ttaApp theApp;
 
 
 
-#define  PLUGIN_VERSION "3.2 extended Beta4"
+#define  PLUGIN_VERSION "3.2 extended Beta5"
 #define  PROJECT_URL "<http://www.sourceforge.net>"
 
 static int paused = 0;
@@ -199,6 +200,7 @@ In_Module mod = {
 };
 
 HANDLE heap;
+HANDLE decoderFileHANDLE;
 
 int player_init();
 int set_position(unsigned long pos);
@@ -209,6 +211,7 @@ void unpause() { paused = 0; mod.outMod->Pause(0); }
 void __cdecl init () {
 	heap = GetProcessHeap();
 	ttaTag.Flush();
+	decoderFileHANDLE = INVALID_HANDLE_VALUE;
 }
 
 static void tta_error (int error, char *filename) {
@@ -285,13 +288,8 @@ void __cdecl config (HWND parent) {
 		parent, config_dialog);
 }
 
-
-
-
 int __cdecl infodlg (char *filename, HWND parent) {
 	char *p, *fn, *caption;
-
-
 
 	fn = filename;
 	p = fn + lstrlen(fn);
@@ -330,6 +328,8 @@ void __cdecl stop () {
 		HeapFree(heap, 0, seek_table);
 		seek_table = NULL;
 	}
+	if (decoderFileHANDLE != INVALID_HANDLE_VALUE)
+		CloseHandle(decoderFileHANDLE);
 }
 
 void __cdecl show_bitrate (int bitrate) {
@@ -350,6 +350,13 @@ int __cdecl play (char *filename) {
 	return 1;
 	}
 
+	decoderFileHANDLE = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (decoderFileHANDLE == INVALID_HANDLE_VALUE || decoderFileHANDLE == NULL) {
+		return -1;
+	}
+	SetFilePointer(decoderFileHANDLE, ttaTag.id3v2.GetTagLength() + sizeof(TTA_header), NULL, FILE_BEGIN);
+
 	if (player_init () < 0) {
 //		tta_error (info.STATE, filename);
 		return 1;
@@ -362,7 +369,7 @@ int __cdecl play (char *filename) {
 
 	maxlatency = mod.outMod->Open(ttaTag.GetSampleRate(), ttaTag.GetNumberofChannel(), out_bps, -1, -1);
 	if (maxlatency < 0) {
-		ttaTag.CloseFile();
+//		ttaTag.CloseFile();
 		return 1;
 	}
 
@@ -547,7 +554,7 @@ __inline void get_binary(unsigned long *value, unsigned long bits) {
     while (bit_count < bits) {
 		if (bitpos == (isobuffer + ISO_BUFFER_SIZE)) {
 			DWORD result;
-			if (!ReadFile(ttaTag.GetHFILE(), isobuffer, ISO_BUFFER_SIZE,
+			if (!ReadFile(decoderFileHANDLE, isobuffer, ISO_BUFFER_SIZE,
 				&result, NULL) || !result) {
 //				info.STATE = READ_ERROR;
 				return;
@@ -573,7 +580,7 @@ __inline void get_unary(unsigned long *value) {
     while (!(bit_cache ^ bit_mask[bit_count])) {
 		if (bitpos == (isobuffer + ISO_BUFFER_SIZE)) {
 			DWORD result;
-			if (!ReadFile(ttaTag.GetHFILE(), isobuffer, ISO_BUFFER_SIZE,
+			if (!ReadFile(decoderFileHANDLE, isobuffer, ISO_BUFFER_SIZE,
 				&result, NULL) || !result) {
 //				info.STATE = READ_ERROR;
 				return;
@@ -606,7 +613,7 @@ __inline int done_buffer_read() {
     rbytes = (isobuffer + ISO_BUFFER_SIZE) - bitpos;
     if (rbytes < sizeof(long)) {
 		*(long *)isobuffer = *(long *)bitpos;
-		if (!ReadFile(ttaTag.GetHFILE(), isobuffer + rbytes,
+		if (!ReadFile(decoderFileHANDLE, isobuffer + rbytes,
 			ISO_BUFFER_SIZE - rbytes, &result, NULL) || !result) {
 //			info.STATE = READ_ERROR;
 			return 0;
@@ -751,7 +758,7 @@ int set_position (unsigned long pos) {
 	}
 
 	seek_pos = ttaTag.id3v2.GetTagLength() + seek_table[data_pos = pos];
-	SetFilePointer(ttaTag.GetHFILE(), seek_pos, NULL, FILE_BEGIN);
+	SetFilePointer(decoderFileHANDLE, seek_pos, NULL, FILE_BEGIN);
 
 	data_cur = 0;
 	framelen = 0;
@@ -783,7 +790,7 @@ int player_init () {
 	}
 
 	// read seek table
-	if (!ReadFile(ttaTag.GetHFILE(), seek_table, st_size, &result, NULL) ||
+	if (!ReadFile(decoderFileHANDLE, seek_table, st_size, &result, NULL) ||
 		result != st_size) {
 //		info.STATE = READ_ERROR;
 		return -1;

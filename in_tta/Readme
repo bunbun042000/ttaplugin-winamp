@@ -1,43 +1,42 @@
-in_tta.dll Ver3.2 ‰ü‘¢”Å(Beta3) (2005/12/16)
+in_tta.dll Ver3.2 æ”¹é€ ç‰ˆ(Beta5) ($LastChangedDate$)
 =====================================================
 
-*‚±‚Ìƒvƒ‰ƒOƒCƒ“‚Í
-–{‰Æ(http://www.true-audio.com/)”z•z‚Ìwinamp—pƒvƒ‰ƒOƒCƒ“‚É
-ƒƒfƒBƒAƒ‰ƒCƒuƒ‰ƒŠ“Ç‚Ýž‚Ý‹@”\‚ð•t‚¯‰Á‚¦AID3v2Žü‚è‚ð‰ü•Ï‚µ
-‚½‚à‚Ì‚Å‚·B‚æ‚Á‚ÄAWinamp Ver2.9ˆÈ~‚É‘Î‰ž‚µ‚Ü‚·B
+*ã“ã®ãƒ—ãƒ©ã‚°ã‚¤ãƒ³ã¯
+æœ¬å®¶(http://www.true-audio.com/)é…å¸ƒã®winampç”¨ãƒ—ãƒ©ã‚°ã‚¤ãƒ³ã«
+ãƒ¡ãƒ‡ã‚£ã‚¢ãƒ©ã‚¤ãƒ–ãƒ©ãƒªèª­ã¿è¾¼ã¿æ©Ÿèƒ½ã‚’ä»˜ã‘åŠ ãˆã€ID3v2å‘¨ã‚Šã‚’æ”¹å¤‰ã—
+ãŸã‚‚ã®ã§ã™ã€‚ã‚ˆã£ã¦ã€Winamp Ver2.9ä»¥é™ã«å¯¾å¿œã—ã¾ã™ã€‚
 
-“®ìŠm”F‚ÍWinamp5.12‚Ås‚¢‚Ü‚µ‚½B
-
-
-*ƒCƒ“ƒXƒg[ƒ‹•û–@
- Winamp‚ÌƒtƒHƒ‹ƒ_‚É‚ ‚éPluginsƒtƒHƒ‹ƒ_‚Éin_tta.dll‚ðƒRƒs[
- ‚Ä‚­‚¾‚³‚¢B
+å‹•ä½œç¢ºèªã¯Winamp5.13ã§è¡Œã„ã¾ã—ãŸã€‚
 
 
-*XV—š—ð
-2005/12/16 Beta3ŒöŠJ
-	   ID3v2 Ver2.3‚Ì“Ç‚Ýž‚Ý•s‹ï‡C³
-	   (ƒtƒŒ[ƒ€ƒTƒCƒY‚ð³‚µ‚­ƒfƒR[ƒh‚µ‚Ä‚¢‚È‚¢–â‘è)
+*ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«æ–¹æ³•
+ Winampã®ãƒ•ã‚©ãƒ«ãƒ€ã«ã‚ã‚‹Pluginsãƒ•ã‚©ãƒ«ãƒ€ã«in_tta.dllã‚’ã‚³ãƒ”ãƒ¼
+ ã¦ãã ã•ã„ã€‚
 
 
-2005/12/14 Beta2ŒöŠJ
+*æ›´æ–°å±¥æ­´
+2005/12/16 Beta3å…¬é–‹
+	   ID3v2 Ver2.3ã®èª­ã¿è¾¼ã¿ä¸å…·åˆä¿®æ­£
+	   (ãƒ•ãƒ¬ãƒ¼ãƒ ã‚µã‚¤ã‚ºã‚’æ­£ã—ããƒ‡ã‚³ãƒ¼ãƒ‰ã—ã¦ã„ãªã„å•é¡Œ)
 
-*‚»‚Ì‘¼
-”z•z‹K’è‚ÍGPL‚É]‚¢‚Ü‚·B
-(–{‰Æ‚ÌLGPL‚©‚çƒ‰ƒCƒZƒ“ƒX‚ðGPL‚Ö‚Æ•ÏX‚µ‚Ä‚¢‚Ü‚·)
-‚±‚Ì‰ü•Ï‚ÍŽ„‚ªŸŽè‚És‚Á‚½‚à‚Ì‚Å‚ ‚èA‚±‚Ì‰ü•Ï”Å‚ÉŠÖ‚µ‚Ä
-–{‰Æ‚É–â‚¢‡‚í‚¹‚ðs‚í‚È‚¢‚Å‚­‚¾‚³‚¢B
 
-ƒƒfƒBƒAƒ‰ƒCƒuƒ‰ƒŠ“Ç‚Ýž‚ÝŠÖ˜A‚Å‚Í
- ‚¨‚½‚¿‚á‚ñ ‚³‚ñì¬‚Ìin_mpg123.dll ‰üˆ«”Å
-‚Ìƒ\[ƒXƒR[ƒh‚ðŽQÆ‚µ‚Ü‚µ‚½B
+2005/12/14 Beta2å…¬é–‹
+
+*ãã®ä»–
+é…å¸ƒè¦å®šã¯LGPLã«å¾“ã„ã¾ã™ã€‚
+ã“ã®æ”¹å¤‰ã¯ç§ãŒå‹æ‰‹ã«è¡Œã£ãŸã‚‚ã®ã§ã‚ã‚Šã€ã“ã®æ”¹å¤‰ç‰ˆã«é–¢ã—ã¦
+æœ¬å®¶ã«å•ã„åˆã‚ã›ã‚’è¡Œã‚ãªã„ã§ãã ã•ã„ã€‚
+
+ãƒ¡ãƒ‡ã‚£ã‚¢ãƒ©ã‚¤ãƒ–ãƒ©ãƒªèª­ã¿è¾¼ã¿é–¢é€£ã§ã¯
+ ãŠãŸã¡ã‚ƒã‚“ ã•ã‚“ä½œæˆã®in_mpg123.dll æ”¹æ‚ªç‰ˆ
+ã®ã‚½ãƒ¼ã‚¹ã‚³ãƒ¼ãƒ‰ã‚’å‚ç…§ã—ã¾ã—ãŸã€‚
   Web: http://www3.cypress.ne.jp/otachan/
 
-ID3v2ŠÖ˜A‚Å‚Í
-‚Í‚¹‚½ ‚³‚ñì¬‚ÌSTEP(SuperTagEditor‰ü Plugin Version (Nightmare))
-‚Ìƒ\[ƒXƒR[ƒh‚ðŽQl‚É‚µ‚Ü‚µ‚½B
+ID3v2é–¢é€£ã§ã¯
+ã¯ã›ãŸ ã•ã‚“ä½œæˆã®STEP(SuperTagEditoræ”¹ Plugin Version (Nightmare))
+ã®ã‚½ãƒ¼ã‚¹ã‚³ãƒ¼ãƒ‰ã‚’å‚è€ƒã«ã—ã¾ã—ãŸã€‚
   Web: http://haseta2003.hp.infoseek.co.jp/
 
-‚±‚Ìê‚ð‚¨ŽØ‚è‚µ‚Ä‚¨—ç\‚µã‚°‚Ü‚·B
+ã“ã®å ´ã‚’ãŠå€Ÿã‚Šã—ã¦ãŠç¤¼ç”³ã—ä¸Šã’ã¾ã™ã€‚
 
 bunbun.

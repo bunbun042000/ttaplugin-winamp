@@ -1,5 +1,6 @@
 // in_tta.h : main header file for the in_tta DLL
 //
+// $LastChangeDate$
 
 #pragma once
 

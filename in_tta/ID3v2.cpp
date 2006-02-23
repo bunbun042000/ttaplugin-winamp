@@ -1,5 +1,6 @@
-// ID3v2.cpp: CID3v2 クラスのインプリメンテーション
+// ID3v2.cpp: CID3v2 クラスのインプリメンチEEション
 //
+// $LastChangedDate$
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
@@ -42,8 +43,7 @@ static const __int32 COMM_Lang_Length = 3;
 
 
 //////////////////////////////////////////////////////////////////////
-// 構築/消滅
-//////////////////////////////////////////////////////////////////////
+// 構篁E消?E//////////////////////////////////////////////////////////////////////
 
 CID3v2::CID3v2()
 {
@@ -81,7 +81,7 @@ bool CID3v2::AddFrame(CID3v2Frame &frame)
 
 bool CID3v2::DelFrame(const char *name)
 {
-	//name -> dwIndex
+	//nameのなかからdwIndexの値を取得
 	map<CString, CID3v2Frame>::iterator itp = m_frames.find(CString(name));
 	
 	if(itp != m_frames.end())
@@ -95,8 +95,8 @@ bool CID3v2::DelFrame(const char *name)
 bool CID3v2::GetComment(const char *name, CString &strValue)
 {
 	strValue = "";
-	//name -> dwIndex
-    map<CString, CID3v2Frame>::iterator itp = m_frames.find(CString(name));
+	//nameのなかからdwIndexの値を取得
+	map<CString, CID3v2Frame>::iterator itp = m_frames.find(CString(name));
 	
 	if(itp != m_frames.end())
 	{

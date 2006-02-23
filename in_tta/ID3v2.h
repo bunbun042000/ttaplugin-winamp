@@ -1,5 +1,6 @@
-// ID3v2.h: CID3v2 ÉNÉâÉXÇÃÉCÉìÉ^Å[ÉtÉFÉCÉX
+Ôªø// ID3v2.h: CID3v2 „ÇØ„É©„Çπ„ÅÆ„Ç§„É≥„Çø„Éº„Éï„Çß„Ç§„Çπ
 //
+// $LastChangedDate$
 //////////////////////////////////////////////////////////////////////
 
 #if !defined(AFX_ID3V2_H__FBAE6334_4C98_4C30_81D4_B402D55C9818__INCLUDED_)
@@ -11,7 +12,6 @@
 #include <map>
 #include <list>
 using namespace std;
-
 
 #ifndef TTADEC_H_
 
@@ -132,8 +132,8 @@ public:
 	__int32 DeleteTag(const char *filename);
 
 
-	void    SetUnSynchronization(bool bUnSynchronization) {m_bUnSynchronization = bUnSynchronization;}
-	bool    GetUnSynchronization() {return m_bUnSynchronization;}
+	void    SetUnSynchronization(BOOL bUnSynchronization) {m_bUnSynchronization = bUnSynchronization;}
+	BOOL    GetUnSynchronization() {return m_bUnSynchronization;}
 	unsigned __int8 GetVersion() {return m_ver;}
 	unsigned __int8 GetEncoding() {return m_Encoding;}
 	__int32 GetTagLength() {return m_bHastag ? m_dwSize + HEADER_LENGTH : 0;}
@@ -181,7 +181,7 @@ private:
 	// Store frame info
 	map<CString, CID3v2Frame>m_frames;
 	bool	m_bHastag;
-	bool    m_bUnSynchronization;
+	BOOL    m_bUnSynchronization;
 
 	bool AddFrame(CID3v2Frame &frame);
 	bool DelFrame(const char *name);

@@ -1,5 +1,6 @@
 // FileInfo.cpp : implementation file
 //
+// $LastChangedDate$
 
 #include "stdafx.h"
 #include "in_tta.h"

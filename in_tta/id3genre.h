@@ -1,4 +1,6 @@
-/* ID3v1 names with Winamp extensions */
+// ID3v1 names with Winamp extensions
+// $LastChangedDate$
+
 #ifndef ID3GENRE_H_INCLUDE
 #define ID3GENRE_H_INCLUDE
 

@@ -1,4 +1,7 @@
+// $LastChangedDate$
+
 #pragma once
+
 
 #include "TtaTag.h"
 #include "afxwin.h"

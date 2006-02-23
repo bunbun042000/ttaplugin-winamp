@@ -1,5 +1,6 @@
-// ID3v1.h: CID3v1 クラスのインターフェイス
+// ID3v1.h: CID3v1 繧ｯ繝ｩ繧ｹ縺ｮ繧､繝ｳ繧ｿ繝ｼ繝輔ぉ繧､繧ｹ
 //
+//$LastChangedDate$
 //////////////////////////////////////////////////////////////////////
 
 #if !defined(AFX_ID3V1_H__F52065F6_B156_468F_8A35_DAD534E31131__INCLUDED_)
@@ -70,7 +71,6 @@ public:
 
 	bool    hasTag() {return has_tag;}
 private:
-	HANDLE	HFILE;
 	CString	FileName;	// filename
 	__int32	STATE; // filestate
 

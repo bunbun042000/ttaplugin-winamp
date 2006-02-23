@@ -1,6 +1,8 @@
-// ID3v1.cpp: CID3v1 ÉNÉâÉXÇÃÉCÉìÉvÉäÉÅÉìÉeÅ[ÉVÉáÉì
+Ôªø// ID3v1.cpp: CID3v1 „ÇØ„É©„Çπ„ÅÆ„Ç§„É≥„Éó„É™„É°„É≥„ÉÜ„Éº„Ç∑„Éß„É≥
 //
+// $LastChangedDate$
 //////////////////////////////////////////////////////////////////////
+
 
 #include "stdafx.h"
 #include "in_tta.h"
@@ -13,7 +15,7 @@ static char THIS_FILE[]=__FILE__;
 #endif
 
 //////////////////////////////////////////////////////////////////////
-// ç\íz/è¡ñ≈
+// ÊßãÁØâ/Ê∂àÊªÖ
 //////////////////////////////////////////////////////////////////////
 
 CID3v1::CID3v1()
@@ -36,7 +38,7 @@ bool CID3v1::ReadTag(HWND hMainWindow, const char *filename)
 	FileName = filename;
 	ZeroMemory(&tag, sizeof(v1tag));
 
-	HFILE = CreateFile((LPCTSTR)FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
+	HANDLE HFILE = CreateFile((LPCTSTR)FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (HFILE == INVALID_HANDLE_VALUE || HFILE == NULL) {
 		error(hMainWindow, OPEN_ERROR);
@@ -75,7 +77,7 @@ bool CID3v1::SaveTag(HWND hMainWindow)
 	v1tag  tag;
 
 	// update ID3V1 tag
-	HFILE = CreateFile(FileName, GENERIC_READ|GENERIC_WRITE,
+	HANDLE HFILE = CreateFile(FileName, GENERIC_READ|GENERIC_WRITE,
 		FILE_SHARE_READ, NULL,OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (HFILE == INVALID_HANDLE_VALUE) {
 		CloseHandle(HFILE);
@@ -120,7 +122,7 @@ void CID3v1::DeleteTag(HWND hMainWindow)
 	if (!has_tag) return;
 
 	// delete ID3V1 tag
-	HFILE = CreateFile(FileName, GENERIC_READ|GENERIC_WRITE,
+	HANDLE HFILE = CreateFile(FileName, GENERIC_READ|GENERIC_WRITE,
 		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
 	if (HFILE == INVALID_HANDLE_VALUE) {
 		error(hMainWindow, OPEN_ERROR);

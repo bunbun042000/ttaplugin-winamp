@@ -1,7 +1,7 @@
-// TtaTag.h: CTtaTag クラスのインターフェイス
+// TtaTag.h: CTtaTag 繧ｯ繝ｩ繧ｹ縺ｮ繧､繝ｳ繧ｿ繝ｼ繝輔ぉ繧､繧ｹ
 //
-//////////////////////////////////////////////////////////////////////
 // $LastChangedDate$
+//////////////////////////////////////////////////////////////////////
 
 #if !defined(AFX_TTATAG_H__17D3307A_BCA3_4A1A_A6E1_7749937C8172__INCLUDED_)
 #define AFX_TTATAG_H__17D3307A_BCA3_4A1A_A6E1_7749937C8172__INCLUDED_
@@ -32,10 +32,8 @@ public:
 	virtual ~CTtaTag();
 	void Flush();
 	bool ReadTag(HWND hMainWindow, const char *filename);
-	void CloseFile();
 	void SetPlayTitle(char *title);
 
-	HANDLE  GetHFILE() {return HFILE;}
 	char   *GetFileName();
 	__int32 GetNumberofChannel() {return NCH;}
 	__int32 GetBitsperSample() {return BPS;}
@@ -48,17 +46,12 @@ public:
 	int    GetFileSize() {return FILESIZE;}
 	double GetCompressRate() {return COMPRESS;}
 	int GetBitrate() {return BITRATE;}
-//	bool HasID3v1Tag() {return id3v1.hasTag();}
-//	bool HasID3v2Tag() {return id3v2.hasTag();}
 
 	CID3v1	id3v1;
 	CID3v2	id3v2;
 
 private:
-	HANDLE	HFILE;
 	CString	FileName;	// filename
-//	char	FileName[MAX_PATHLEN];	// filename
-
 	int		NCH;		// number of channels
 	int		BPS;		// bits per sample
 	unsigned __int8	BSIZE;		// byte size

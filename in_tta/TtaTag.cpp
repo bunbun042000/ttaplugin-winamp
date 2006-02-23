@@ -1,8 +1,8 @@
-// TtaTag.cpp: CTtaTag ÉNÉâÉXÇÃÉCÉìÉvÉäÉÅÉìÉeÅ[ÉVÉáÉì
+Ôªø// TtaTag.cpp: CTtaTag „ÇØ„É©„Çπ„ÅÆ„Ç§„É≥„Éó„É™„É°„É≥„ÉÜ„Éº„Ç∑„Éß„É≥
 //
+// $LastChangedDate$
 //////////////////////////////////////////////////////////////////////
 
-// $ LastChangedDate: $
 
 #include "stdafx.h"
 #include "in_tta.h"
@@ -17,19 +17,15 @@ static char THIS_FILE[]=__FILE__;
 #endif
 
 //////////////////////////////////////////////////////////////////////
-// ç\íz/è¡ñ≈
+// ÊßãÁØâ/Ê∂àÊªÖ
 //////////////////////////////////////////////////////////////////////
 
 CTtaTag::CTtaTag()
 {
-	HFILE = INVALID_HANDLE_VALUE;
-
 }
 
 CTtaTag::~CTtaTag()
 {
-	CloseFile();
-
 }
 
 char *CTtaTag::GetFileName()
@@ -41,25 +37,15 @@ char *CTtaTag::GetFileName()
 
 void CTtaTag::Flush()
 {
-	HFILE = INVALID_HANDLE_VALUE;
 	FileName = "";
-
 }
 
-void CTtaTag::CloseFile()
-{
-	if (HFILE != INVALID_HANDLE_VALUE)
-		CloseHandle(HFILE);
-}
 
 bool CTtaTag::ReadTag(HWND hMainWindow, const char *filename)
 {
-//	unsigned long result;
 
 	// File open
 	FileName = filename;
-//	strcpy_s(FileName, sizeof(FileName), filename);
-
 
 	//Read ID3v1.1
 	id3v1.ReadTag(hMainWindow, filename);
@@ -68,7 +54,7 @@ bool CTtaTag::ReadTag(HWND hMainWindow, const char *filename)
 	id3v2.ReadTag(filename);
 
 	//Read TTA Header
-	HFILE = CreateFile((LPCTSTR)FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
+	HANDLE HFILE = CreateFile((LPCTSTR)FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (HFILE == INVALID_HANDLE_VALUE || HFILE == NULL) {
 		STATE = OPEN_ERROR;
@@ -132,6 +118,7 @@ bool CTtaTag::ReadTag(HWND hMainWindow, const char *filename)
 	COMPRESS = ((double)datasize) / origsize;
 	BITRATE = (long) ((COMPRESS * SAMPLERATE * NCH * BPS) / 1000);
 
+	CloseHandle(HFILE);
 	return true;
 }
 
