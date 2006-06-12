@@ -69,19 +69,19 @@ bool CTagInfo::GetTagInfo(HWND hMainWindow)
 			lstrcpyn(Cache.Artist, (LPCTSTR)ttatag.id3v2.GetArtist(), MAX_MUSICTEXT - 1);
 			lstrcpyn(Cache.Comment, (LPCTSTR)ttatag.id3v2.GetComment(), MAX_MUSICTEXT -1);
 			lstrcpyn(Cache.Album, (LPCTSTR)ttatag.id3v2.GetAlbum(), MAX_MUSICTEXT - 1);
-			lstrcpyn(Cache.Year, (LPCTSTR)ttatag.id3v2.GetYear(), MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Year, (LPCTSTR)ttatag.id3v2.GetYear(), MAX_YEAR + 1);
 			lstrcpyn(Cache.Genre, (LPCTSTR)ttatag.id3v2.GetGenre(), MAX_MUSICTEXT - 1);
 			lstrcpyn(Cache.Track, (LPCTSTR)ttatag.id3v2.GetTrackNo(), MAX_MUSICTEXT - 1);
 		} else if (ttatag.id3v1.hasTag()) {
 			lstrcpyn(Cache.Title, (LPCTSTR)ttatag.id3v1.GetTitle(), MAX_MUSICTEXT - 1);
 			lstrcpyn(Cache.Artist, (LPCTSTR)ttatag.id3v1.GetArtist(), MAX_MUSICTEXT - 1);
 			lstrcpyn(Cache.Comment, (LPCTSTR)ttatag.id3v1.GetComment(), MAX_MUSICTEXT - 1);
-			lstrcpyn(Cache.Year, (LPCTSTR)ttatag.id3v1.GetYear(), MAX_MUSICTEXT - 1);
+			lstrcpyn(Cache.Year, (LPCTSTR)ttatag.id3v1.GetYear(), MAX_YEAR + 1);
 			lstrcpyn(Cache.Album, (LPCTSTR)ttatag.id3v1.GetAlbum(), MAX_MUSICTEXT - 1);
 			genrenum = (unsigned char)ttatag.id3v1.GetGenre();
 			if (genrenum < GENRES)
 				lstrcpyn(Cache.Genre, (const char *)genre[genrenum], MAX_MUSICTEXT - 1);
-			_ultoa_s((unsigned long)ttatag.id3v1.GetTrack(), buf, MAX_MUSICTEXT -1, 10);
+			_ultoa_s((unsigned long)ttatag.id3v1.GetTrack(), buf, MAX_MUSICTEXT - 1, 10);
 			lstrcpyn(Cache.Track, (const char *)buf, MAX_MUSICTEXT -1 );
 		}		
 	}
