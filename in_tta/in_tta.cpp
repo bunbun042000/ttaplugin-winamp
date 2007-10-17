@@ -311,9 +311,7 @@ int __cdecl play (char *filename) {
 	int return_number;
 
 	return_number = playing_ttafile.SetFileName(filename);
-	if(return_number) return return_number;
-
-
+	if(!return_number) return return_number;
 
 	mod.is_seekable = playing_ttafile.GetSeekTableState();
 
@@ -428,34 +426,34 @@ extern "C"
 		return m_Tag.GetExtendedFileInfo(mod.hMainWindow, &ExtendedFileInfo);
 	}
 
-	__declspec( dllexport ) intptr_t winampGetExtendedRead_open(const char *filename, int *size, int *bps, int *nch, int *srate)
-	{
-		CDecodeFile *transcoding_ttafile;
-		transcoding_ttafile = new CDecodeFile;
+//	__declspec( dllexport ) intptr_t winampGetExtendedRead_open(const char *filename, int *size, int *bps, int *nch, int *srate)
+//	{
+//		CDecodeFile *transcoding_ttafile;
+//		transcoding_ttafile = new CDecodeFile;
+//
+//		if (!transcoding_ttafile) return 0;
+//		
+//		transcoding_ttafile->SetFileName((char *)filename);
+//		transcoding_ttafile->SetOutputBPS(*bps);
+//	
+//		*bps = transcoding_ttafile->GetBitsperSample();
+//		*nch = transcoding_ttafile->GetNumberofChannel();
+//		*srate = transcoding_ttafile->GetSampleRate();
+//		*size = transcoding_ttafile->GetLengthbyFrame() * (*bps / 8) * (*nch);
+//		
+//		return (intptr_t)transcoding_ttafile;
+//	}
 
-		if (!transcoding_ttafile) return 0;
-		
-		transcoding_ttafile->SetFileName((char *)filename);
-		transcoding_ttafile->SetOutputBPS(*bps);
-	
-		*bps = transcoding_ttafile->GetBitsperSample();
-		*nch = transcoding_ttafile->GetNumberofChannel();
-		*srate = transcoding_ttafile->GetSampleRate();
-		*size = transcoding_ttafile->GetLengthbyFrame() * (*bps / 8) * (*nch);
-		
-		return (intptr_t)transcoding_ttafile;
-	}
-
-	__declspec( dllexport ) intptr_t winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
-	{
-		CDecodeFile *dec = (CDecodeFile *)handle;
-		int used = 0;
-		int n;
+//	__declspec( dllexport ) intptr_t winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
+//	{
+//		CDecodeFile *dec = (CDecodeFile *)handle;
+//		int used = 0;
+//		int n;
 ////
 //	//	if (e->file_info.eof && e->len == e->used) return 0;
 ////
-		while (used < len && !*killswitch)
-		{
+//		while (used < len && !*killswitch)
+//		{
 		/* do we need to decode more? */
 //			if (e->used >= e->len) {
 //			e->used = 0;
@@ -472,25 +470,25 @@ extern "C"
 //				e->used += n;
 //				used += n;
 //			}
-		}
-		return used;
-	}
+//		}
+//		return used;
+//	}
 
 	/* return nonzero on success, zero on failure. */
-	__declspec( dllexport ) int winampGetExtendedRead_setTime(intptr_t handle, int millisecs)
-	{
-		CDecodeFile *dec = (CDecodeFile *)handle;
-		dec->SetDecodePosMs(millisecs);
+//	__declspec( dllexport ) int winampGetExtendedRead_setTime(intptr_t handle, int millisecs)
+//	{
+//		CDecodeFile *dec = (CDecodeFile *)handle;
+//		dec->SetDecodePosMs(millisecs);
 //		dec- = 0;
 //		e->used = 0;
-		return 1;
-	}
+//		return 1;
+//	}
 
-	__declspec( dllexport ) void winampGetExtendedRead_close(intptr_t handle)
-	{
-		CDecodeFile *dec = (CDecodeFile *)handle;
+//	__declspec( dllexport ) void winampGetExtendedRead_close(intptr_t handle)
+//	{
+//		CDecodeFile *dec = (CDecodeFile *)handle;
 ///		FLAC_plugin__decoder_finish(e->decoder);
 //		FLAC_plugin__decoder_delete(e->decoder);
-		delete dec;
-	}
+//		delete dec;
+//	}
 }

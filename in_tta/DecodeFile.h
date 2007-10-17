@@ -1,43 +1,12 @@
 #pragma once
 
-#ifndef DECODEFILE_H_INCLUDED
-#define DECODEFILE_H_INCLUDED
-
 #include "TtaTag.h"
 #include "ttadec.h"
 #include "crc32.h"
 
-///////////////////////////////////////////////////////////////////////
-// Description:	 TTAv1 lossless audio decoder.                       //
-// Copyright (c) 1999-2004 Alexander Djourik. All rights reserved.   //
-///////////////////////////////////////////////////////////////////////
 
-///////////////////// constants and definitions ///////////////////////
+//////////////////////// TTA hybrid filter ////////////////////////////
 
-#define PREDICTOR1(x, k)	((long)((((__int64)x << k) - x) >> k))
-#define DEC(x)			(((x)&1)?(++(x)>>1):(-(x)>>1))
-#define SHR8(x)			((((x)>0)?((x)+0x80):((x)-0x80)) >> 8); 
-
-#define SWAP16(x) (\
-(((x)&(1<< 0))?(1<<15):0) | \
-(((x)&(1<< 1))?(1<<14):0) | \
-(((x)&(1<< 2))?(1<<13):0) | \
-(((x)&(1<< 3))?(1<<12):0) | \
-(((x)&(1<< 4))?(1<<11):0) | \
-(((x)&(1<< 5))?(1<<10):0) | \
-(((x)&(1<< 6))?(1<< 9):0) | \
-(((x)&(1<< 7))?(1<< 8):0) | \
-(((x)&(1<< 8))?(1<< 7):0) | \
-(((x)&(1<< 9))?(1<< 6):0) | \
-(((x)&(1<<10))?(1<< 5):0) | \
-(((x)&(1<<11))?(1<< 4):0) | \
-(((x)&(1<<12))?(1<< 3):0) | \
-(((x)&(1<<13))?(1<< 2):0) | \
-(((x)&(1<<14))?(1<< 1):0) | \
-(((x)&(1<<15))?(1<< 0):0))
-
-
-///////////////////////// bit operations //////////////////////////////
 
 const unsigned long bit_mask[] = {
 	0x00000000, 0x00000001, 0x00000003, 0x00000007,
@@ -50,15 +19,6 @@ const unsigned long bit_mask[] = {
 	0x0fffffff, 0x1fffffff, 0x3fffffff, 0x7fffffff,
 	0xffffffff
 };
-
-
-//////////////////////// TTA hybrid filter ////////////////////////////
-
-///////// Filter Settings //////////
-static long flt_set [4][2] = {
-	{10,1}, {9,1}, {10,1}, {12,0}
-};
-
 
 
 class CDecodeFile
@@ -127,8 +87,6 @@ private:
 	HANDLE heap;
 	HANDLE decoderFileHANDLE;
 
-	const unsigned long *bit_shift;
-	const unsigned long *shift_16;
 
 	int		player_init();
 	void	init_buffer_read();
@@ -289,5 +247,3 @@ private:
 	}
 
 };
-
-#endif
