@@ -1,6 +1,6 @@
 // in_tta.cpp : Defines the initialization routines for the DLL.
 //
-// $LastChangedDate: 2007-10-17 23:35:11 +0900 (Ê∞¥, 17 10 2007) $
+// $LastChangedDate: 2007-10-17 23:35:11 +0900 (êÖ, 17 10 2007) $
 /* Description:	 TTA input plug-in for upper Winamp 2.91
  *               MediaLibrary Extension version
  * Developed by: Alexander Djourik <ald@true-audio.com>
