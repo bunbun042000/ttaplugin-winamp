@@ -1,6 +1,6 @@
 // in_tta.cpp : Defines the initialization routines for the DLL.
 //
-// $LastChangedDate$
+// $LastChangedDate: 2007-10-17 23:35:11 +0900 (水, 17 10 2007) $
 /* Description:	 TTA input plug-in for upper Winamp 2.91
  *               MediaLibrary Extension version
  * Developed by: Alexander Djourik <ald@true-audio.com>
@@ -48,7 +48,7 @@
 #include "TtaTag.h"
 #include "FileInfo.h"
 #include "DecodeFile.h"
-//#include "Config.h"
+#include "ttadec.h"
 
 
 #ifdef _DEBUG
@@ -113,7 +113,7 @@ CDecodeFile playing_ttafile;
 
 static long	vis_buffer[BUFFER_SIZE*MAX_NCH];	// vis buffer
 
-#define  PLUGIN_VERSION "3.2 extended"
+#define  PLUGIN_VERSION "3.2 extended $Rev$"
 #define  PROJECT_URL "<http://www.sourceforge.net>"
 
 
