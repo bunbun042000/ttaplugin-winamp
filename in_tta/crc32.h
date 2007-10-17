@@ -101,8 +101,7 @@ const unsigned long crc32_table[256] = {
 #define UPDATE_CRC32(x, crc) crc = \
 	(((crc>>8) & 0x00FFFFFF) ^ crc32_table[(crc^x) & 0xFF])
 
-static unsigned long 
-crc32 (unsigned char *buffer, unsigned long len) {
+static unsigned long crc32 (unsigned char *buffer, unsigned long len) {
 	unsigned long	i;
 	unsigned long	crc = 0xFFFFFFFF;
 

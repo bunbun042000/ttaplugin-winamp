@@ -28,7 +28,7 @@ CID3v1::~CID3v1()
 
 }
 
-bool CID3v1::ReadTag(HWND hMainWindow, const char *filename)
+int CID3v1::ReadTag(const char *filename)
 {
 	// File open
 	unsigned long result;
@@ -41,9 +41,9 @@ bool CID3v1::ReadTag(HWND hMainWindow, const char *filename)
 	HANDLE HFILE = CreateFile((LPCTSTR)FileName, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (HFILE == INVALID_HANDLE_VALUE || HFILE == NULL) {
-		error(hMainWindow, OPEN_ERROR);
+//		error(hMainWindow, OPEN_ERROR);
 		CloseHandle(HFILE);
-		return false;
+		return OPEN_ERROR;
 	}
 
 	// Read File Footer
@@ -54,7 +54,7 @@ bool CID3v1::ReadTag(HWND hMainWindow, const char *filename)
 	} else {
 		CloseHandle(HFILE);
 		has_tag = false;
-		return false;
+		return READ_ERROR;
 	}
 
 	Title = tag.title;
@@ -67,10 +67,10 @@ bool CID3v1::ReadTag(HWND hMainWindow, const char *filename)
 
 	SetFilePointer(HFILE, 0, NULL, FILE_BEGIN);
 	CloseHandle(HFILE);
-	return true;
+	return NO_ERROR;
 }
 
-bool CID3v1::SaveTag(HWND hMainWindow)
+int CID3v1::SaveTag(void)
 {
 	int offset;
 	unsigned long result;
@@ -107,26 +107,24 @@ bool CID3v1::SaveTag(HWND hMainWindow)
 	if (!WriteFile(HFILE, &tag, sizeof(v1tag), &result, 0) ||
 		result != sizeof(v1tag)) {
 		CloseHandle(HFILE);
-		error(hMainWindow, WRITE_ERROR);
-		return false;
+		return WRITE_ERROR;
 	}
 	CloseHandle(HFILE);
 
 	has_tag = true;
-	return true;
+	return NO_ERROR;
 }
 
-void CID3v1::DeleteTag(HWND hMainWindow)
+int CID3v1::DeleteTag(void)
 {
 	// If IDv1 Tag doesn't exist
-	if (!has_tag) return;
+	if (!has_tag) return NO_ERROR;
 
 	// delete ID3V1 tag
 	HANDLE HFILE = CreateFile(FileName, GENERIC_READ|GENERIC_WRITE,
 		FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
 	if (HFILE == INVALID_HANDLE_VALUE) {
-		error(hMainWindow, OPEN_ERROR);
-		return;
+		return OPEN_ERROR;
 	}
 
 	SetFilePointer(HFILE, -(int) sizeof(v1tag), NULL, FILE_END);
@@ -134,6 +132,7 @@ void CID3v1::DeleteTag(HWND hMainWindow)
 	CloseHandle(HFILE);
 
 	has_tag = false;
+	return NO_ERROR;
 }
 
 void CID3v1::SetAlbum(const char *album)

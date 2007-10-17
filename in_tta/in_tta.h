@@ -1,6 +1,6 @@
 // in_tta.h : main header file for the in_tta DLL
 //
-// $LastChangeDate$
+// $LastChangedDate$
 
 #pragma once
 
@@ -9,6 +9,8 @@
 #endif
 
 #include "resource.h"		// main symbols
+#include "TtaTag.h"
+#include "ttadec.h"
 
 #define MAX_PATHLEN		512
 #define GENRES	148
@@ -28,3 +30,4 @@ public:
 
 	DECLARE_MESSAGE_MAP()
 };
+

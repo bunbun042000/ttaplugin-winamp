@@ -22,6 +22,7 @@ static char THIS_FILE[]=__FILE__;
 
 CTtaTag::CTtaTag()
 {
+	Flush();
 }
 
 CTtaTag::~CTtaTag()
@@ -41,14 +42,14 @@ void CTtaTag::Flush()
 }
 
 
-bool CTtaTag::ReadTag(HWND hMainWindow, const char *filename)
+bool CTtaTag::ReadTag(const char *filename)
 {
 
 	// File open
 	FileName = filename;
 
 	//Read ID3v1.1
-	id3v1.ReadTag(hMainWindow, filename);
+	id3v1.ReadTag(filename);
 
 	//Read ID3v2.3 and 2.4
 	id3v2.ReadTag(filename);

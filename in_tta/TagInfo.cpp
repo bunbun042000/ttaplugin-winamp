@@ -57,7 +57,7 @@ bool CTagInfo::GetTagInfo(HWND hMainWindow)
 	Cache.Copyright[0] = '\0';
 	Cache.Encoder[0] = '\0';
 
-	if(ttatag.ReadTag(hMainWindow, Cache.FileName))
+	if(ttatag.ReadTag(Cache.FileName))
 	{
 		Cache.Length = (unsigned long) ttatag.GetLengthbymsec();
 		FindTag = true;

@@ -13,6 +13,7 @@
 #ifndef TTADEC_H_
 
 // return codes
+#define NORMAL			0       // No error
 #define OPEN_ERROR		1		// Can't open file
 #define FORMAT_ERROR	2		// Unknown TTA format version
 #define PLAYER_ERROR	3		// Not supported file format
@@ -50,9 +51,9 @@ class CID3v1
 public:
 	CID3v1();
 	virtual ~CID3v1();
-	bool			ReadTag(HWND hMainWindow, const char *filename);
-	bool			SaveTag(HWND hMainWindow);
-	void			DeleteTag(HWND hMainWindow);
+	int				ReadTag(const char *filename);
+	int				SaveTag();
+	int				DeleteTag();
 
 	CString			GetTitle() {return Title.GetBufferSetLength(ID3V1_TITLELENGTH);}
 	void			SetTitle(const char *title);

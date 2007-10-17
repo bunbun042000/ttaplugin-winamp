@@ -205,6 +205,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\DecodeFile.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\FileInfo.cpp"
 				>
 			</File>
@@ -263,6 +267,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DecodeFile.h"
+				>
+			</File>
+			<File
 				RelativePath=".\FileInfo.h"
 				>
 			</File>
@@ -300,6 +308,10 @@
 			</File>
 			<File
 				RelativePath=".\TagInfo.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ttadec.h"
 				>
 			</File>
 			<File

@@ -31,7 +31,7 @@ public:
 	CTtaTag();
 	virtual ~CTtaTag();
 	void Flush();
-	bool ReadTag(HWND hMainWindow, const char *filename);
+	bool ReadTag(const char *filename);
 	void SetPlayTitle(char *title);
 
 	char   *GetFileName();

@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "in_tta.h"
 #include "FileInfo.h"
+#include "ttadec.h"
 //#include "Resource.h"
 
 // CFileInfo dialog
@@ -139,11 +140,11 @@ void CFileInfo::OnBnClickedOk()
 			dlgtag.id3v1.SetTrack(0xff);
 
 		dlgtag.id3v1.SetGenre(GetID3v1Genre());
-		dlgtag.id3v1.SaveTag(NULL);
+		dlgtag.id3v1.SaveTag();
 	} else {
 		if(dlgtag.id3v1.hasTag())
 			if(AfxMessageBox(IDS_ID3V1DELETE, MB_OKCANCEL, 0) == IDOK)
-				dlgtag.id3v1.DeleteTag(NULL);
+				dlgtag.id3v1.DeleteTag();
 			else
 				return;
 	}
@@ -202,11 +203,11 @@ BOOL CFileInfo::OnInitDialog()
 
 	char buf[10];
 
-	dlgtag.ReadTag(NULL, (LPCTSTR)m_sFileName);
+	dlgtag.ReadTag((LPCTSTR)m_sFileName);
 
 
 	// File Information (TTA)
-	int Lengthbysec = dlgtag.GetLengthbymsec() / 1000;
+	int Lengthbysec = dlgtag.GetLengthbymsec() / SEC_TO_MSEC;
 	int hour = Lengthbysec / 3600;
 	int min  = Lengthbysec / 60;
 	int sec  = Lengthbysec % 60;
