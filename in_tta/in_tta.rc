@@ -86,7 +86,7 @@ BEGIN
             VALUE "LegalCopyright", "Version 3.2, (C) 2005 Alexander Djourik. All rights reserved."
             VALUE "OriginalFilename", "in_tta.dll"
             VALUE "ProductName", "in_tta"
-            VALUE "ProductVersion", "$LastChangedDate$"
+            VALUE "ProductVersion", "$LastChangedDate: 2007-10-18 00:20:05 +0900 (木, 18 10 2007) $"
         END
     END
     BLOCK "VarFileInfo"

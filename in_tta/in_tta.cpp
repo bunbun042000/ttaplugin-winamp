@@ -112,15 +112,13 @@ Cin_ttaApp theApp;
 CDecodeFile playing_ttafile;
 
 static long	vis_buffer[BUFFER_SIZE*MAX_NCH];	// vis buffer
-
-#define  PLUGIN_VERSION "3.2 extended $Rev$"
-#define  PROJECT_URL "<http://www.sourceforge.net>"
-
+static BYTE pcm_buffer[BUFFER_SIZE];
 
 CTagInfo m_Tag;
 CTtaTag  dlgTag;
-static BYTE pcm_buffer[BUFFER_SIZE];
 
+#define  PLUGIN_VERSION "3.2 extended $Rev$"
+#define  PROJECT_URL "<http://www.sourceforge.net>"
 
 static HANDLE decoder_handle = NULL;
 static DWORD WINAPI __stdcall DecoderThread (void *p);
@@ -302,9 +300,6 @@ void __cdecl stop () {
 		CloseHandle(decoderFileHANDLE);
 }
 
-void __cdecl show_bitrate(CDecodeFile dec) {
-}
-
 int __cdecl play (char *filename) {
 	int maxlatency;
 	unsigned long decoder_thread_id;
@@ -350,7 +345,7 @@ void __cdecl eq_set (int on, char data[10], int preamp) {}
 
 
 void __cdecl getfileinfo (char *filename, char *title, int *length_in_ms) {
-	if (!playing_ttafile.GetFileName() || !*filename) { // currently playing file
+	if (!filename || !*filename) { // currently playing file
 		*length_in_ms = playing_ttafile.GetLengthbymsec();
 		playing_ttafile.SetPlayTitle(title);
 	} else {
@@ -383,6 +378,7 @@ static void do_vis(unsigned char *data, int count, int bps, int position) {
 DWORD WINAPI __stdcall DecoderThread (void *p) {
 	int done = 0;
 	int len;
+	int bitrate = playing_ttafile.GetBitrate();
 
 	while (!killDecoderThread) {
 		if (playing_ttafile.GetSeekNeeded() != -1) {
@@ -397,7 +393,7 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 		} else if (mod.outMod->CanWrite() >= 
 			((BUFFER_LENGTH * playing_ttafile.GetNumberofChannel() * 
 			playing_ttafile.GetByteSize()) << (mod.dsp_isactive()? 1:0))) {
-			if (!(len = playing_ttafile.GetSamples(pcm_buffer, BUFFER_LENGTH))) done = 1;
+			if (!(len = playing_ttafile.GetSamples(pcm_buffer, BUFFER_LENGTH, &bitrate))) done = 1;
 			else {
 				do_vis(pcm_buffer, len, playing_ttafile.GetOutputBPS(), playing_ttafile.GetDecodePosMs());
 				if (mod.dsp_isactive())
@@ -405,7 +401,7 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 						playing_ttafile.GetNumberofChannel(), playing_ttafile.GetSampleRate());
 				mod.outMod->Write((char *)pcm_buffer, len * playing_ttafile.GetNumberofChannel() * (playing_ttafile.GetOutputBPS() >> 3));
 			}
-			mod.SetInfo(playing_ttafile.GetBitrate(), playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
+			mod.SetInfo(bitrate, playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
 		} else Sleep(20);
 	}
 

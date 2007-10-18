@@ -32,12 +32,12 @@ public:
 	const char	   *GetFileName(){return (LPCTSTR)FileName;}
 	int				Play();
 	int				Stop();
-	int				GetSamples(BYTE *buffer, long count);
+	int				GetSamples(BYTE *buffer, long count, int *current_bitrate);
 
 	int				GetPaused(){return paused;}
 	void			SetPaused(int p){paused = p;}
-	unsigned int	GetDecodePosMs(){return decode_pos_ms;}
-	void		 	SetDecodePosMs(unsigned int d_pos_ms){decode_pos_ms = d_pos_ms;}
+	int				GetDecodePosMs(){return decode_pos_ms;}
+	void		 	SetDecodePosMs(int d_pos_ms){decode_pos_ms = d_pos_ms;}
 	unsigned int	SeekPosition(int *done);
 	void			SetSeekNeeded(int sn){seek_needed = sn;}
 	int				GetSeekNeeded(){return seek_needed;}
@@ -61,7 +61,7 @@ private:
 
 	int				paused;
 	unsigned long	seek_needed;
-	unsigned int	decode_pos_ms;
+	int				decode_pos_ms;
 
 	BYTE		   *isobuffer;
 	BYTE		   *pcm_buffer;	// PCM buffer
@@ -97,7 +97,7 @@ private:
 	void	rice_init(adapt *rice, BYTE k0, BYTE k1);
 	void	filter_init(fltst *fs, long shift, long mode);
 
-	__inline int done_buffer_read() {
+	__inline int done_buffer_read(int *current_bitrate) {
 		unsigned long crc32, rbytes;
 		DWORD result;
 		
@@ -123,8 +123,7 @@ private:
 		// calculate dynamic bitrate
 		if (data_pos < fframes) {
 			rbytes = seek_table[data_pos] - seek_table[data_pos - 1];
-//			show_bitrate((rbytes << 3) /
-//				(long)(1000 * FRAME_TIME));
+			*current_bitrate = (rbytes << 3) / (long)(1000 * FRAME_TIME);
 		}
 		return result;
 	}

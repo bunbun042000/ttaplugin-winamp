@@ -223,7 +223,7 @@ unsigned int CDecodeFile::SeekPosition(int *done)
 	return decode_pos_ms;
 }
 
-int CDecodeFile::GetSamples(BYTE *buffer, long count) {
+int CDecodeFile::GetSamples(BYTE *buffer, long count, int *current_bitrate) {
 	unsigned long k, depth, unary, binary;
 	long buffer_size = count * ttaTag.GetByteSize() * ttaTag.GetNumberofChannel();
 	BYTE *p = buffer;
@@ -239,7 +239,7 @@ int CDecodeFile::GetSamples(BYTE *buffer, long count) {
 
 		if (data_cur == framelen) {
 			if (data_pos == fframes) break;
-			if (framelen && done_buffer_read()) {
+			if (framelen && done_buffer_read(current_bitrate)) {
 				if (set_position(data_pos) < 0)
 					return -1;
 				if (res) break;
