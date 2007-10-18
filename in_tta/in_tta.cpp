@@ -337,7 +337,7 @@ int __cdecl play (char *filename) {
 }
 
 int  __cdecl getlength () { return playing_ttafile.GetLengthbymsec(); }
-int  __cdecl getoutputtime () { return playing_ttafile.GetDecodePosMs() + (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime()); }
+int  __cdecl getoutputtime () { return (playing_ttafile.GetDecodePosMs() + (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime())); }
 void __cdecl setoutputtime (int time_in_ms) {playing_ttafile.SetSeekNeeded(time_in_ms); }
 void __cdecl setvolume (int volume) { mod.outMod->SetVolume(volume); }
 void __cdecl setpan (int pan) { mod.outMod->SetPan(pan); }

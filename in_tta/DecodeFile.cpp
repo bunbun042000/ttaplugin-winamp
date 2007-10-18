@@ -372,7 +372,7 @@ int CDecodeFile::GetSamples(BYTE *buffer, long count, int *current_bitrate) {
 			dec = tta;
 		}
 	}
-
+	if(res) decode_pos_ms += (res * 1000) / ttaTag.GetSampleRate();
 	return res;
 }
 
