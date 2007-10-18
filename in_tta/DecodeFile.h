@@ -25,6 +25,7 @@ class CDecodeFile
 {
 public:
 	CDecodeFile(void);
+	CDecodeFile(CDecodeFile &s);
 	~CDecodeFile(void);
 
 	int				SetFileName(char *filename);
@@ -58,9 +59,9 @@ private:
 	CString			FileName;
 	CTtaTag			ttaTag;
 
-	int				paused; // = 0;
-	unsigned long	seek_needed; // = -1;
-	unsigned int	decode_pos_ms; // = 0;
+	int				paused;
+	unsigned long	seek_needed;
+	unsigned int	decode_pos_ms;
 
 	BYTE		   *isobuffer;
 	BYTE		   *pcm_buffer;	// PCM buffer

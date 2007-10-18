@@ -72,6 +72,46 @@ CDecodeFile::CDecodeFile(void)
 
 }
 
+CDecodeFile::CDecodeFile(CDecodeFile &s)
+{
+	FileName = s.FileName;
+	ttaTag   = s.ttaTag;
+
+	paused = s.paused;
+	seek_needed = s.seek_needed;
+	decode_pos_ms = s.decode_pos_ms;
+
+	isobuffer = new BYTE[ISO_BUFFER_SIZE + 4];
+	pcm_buffer = new BYTE[BUFFER_SIZE];
+	tta = new decoder[2*MAX_NCH];
+	cache = new long[MAX_NCH];
+
+	memcpy_s(isobuffer, ISO_BUFFER_SIZE + 4, s.isobuffer, (ISO_BUFFER_SIZE + 4));
+	memcpy_s(pcm_buffer, BUFFER_SIZE, s.pcm_buffer, BUFFER_SIZE);
+	memcpy_s(tta, 2 * MAX_NCH, s.tta, 2 * MAX_NCH);
+	memcpy_s(cache, MAX_NCH, s.cache, MAX_NCH);
+
+	fframes = s.fframes;
+	framelen = s.framelen;
+	lastlen = s.lastlen;
+	data_pos = s.data_pos;
+	data_cur = s.data_cur;
+	data_float = s.data_float;
+	maxvalue = s.maxvalue;
+	out_bps = s.out_bps;
+
+	heap = GetProcessHeap();
+	st_state = s.st_state;
+	seek_table = s.seek_table;
+
+	frame_crc32 = s.frame_crc32;
+	bit_count = s.bit_count;
+	bit_cache = s.bit_cache;
+	bitpos = isobuffer + (s.bitpos - s.isobuffer);
+
+	decoderFileHANDLE = INVALID_HANDLE_VALUE;
+}
+
 CDecodeFile::~CDecodeFile(void)
 {
 	delete [] isobuffer;
@@ -82,6 +122,7 @@ CDecodeFile::~CDecodeFile(void)
 		HeapFree(heap, 0, seek_table);
 		seek_table = NULL;
 	}
+	decoderFileHANDLE = INVALID_HANDLE_VALUE;
 }
 
 int CDecodeFile::SetFileName(char *filename)
@@ -185,16 +226,16 @@ unsigned int CDecodeFile::SeekPosition(int *done)
 int CDecodeFile::GetSamples(BYTE *buffer, long count) {
 	unsigned long k, depth, unary, binary;
 	long buffer_size = count * ttaTag.GetByteSize() * ttaTag.GetNumberofChannel();
-	BYTE *p = pcm_buffer;
-//	decoder *dec = tta;
+	BYTE *p = buffer;
+	decoder *dec = tta;
 	long *prev = (long *)cache;
 	long value;
 	int res, flag;
 
-	for (res = flag = 0; p < pcm_buffer + buffer_size;) {
-		fltst *fst = &tta->fst;
-		adapt *rice = &tta->rice;
-		long  *last = &tta->last;
+	for (res = flag = 0; p < buffer + buffer_size;) {
+		fltst *fst = &dec->fst;
+		adapt *rice = &dec->rice;
+		long  *last = &dec->last;
 
 		if (data_cur == framelen) {
 			if (data_pos == fframes) break;
@@ -260,7 +301,7 @@ int CDecodeFile::GetSamples(BYTE *buffer, long count) {
 		if (!data_float && abs(value) > maxvalue) {
 			unsigned long tail =
 				buffer_size / (ttaTag.GetByteSize() * ttaTag.GetNumberofChannel()) - res;
-			ZeroMemory(pcm_buffer, buffer_size);
+			ZeroMemory(buffer, buffer_size);
 			data_cur += tail; res += tail;
 			break;
 		}
@@ -290,7 +331,7 @@ int CDecodeFile::GetSamples(BYTE *buffer, long count) {
 			if (fvalue > 1.0) {
 				unsigned long tail =
 					buffer_size / (ttaTag.GetByteSize() * ttaTag.GetNumberofChannel()) - res;
-				ZeroMemory(pcm_buffer, buffer_size);
+				ZeroMemory(buffer, buffer_size);
 				data_cur += tail; res += tail;
 				break;
 			}
@@ -305,10 +346,10 @@ int CDecodeFile::GetSamples(BYTE *buffer, long count) {
 			flag = 0;
 		} else flag = 1;
 
-		if (tta < tta + (ttaTag.GetNumberofChannel() << data_float) - 1) {
+		if (dec < tta + (ttaTag.GetNumberofChannel() << data_float) - 1) {
 			if (!data_float) *prev++ = value;
 			else *prev = value;
-			tta++;
+			dec++;
 		} else {
 			if (!data_float) {
 				*prev = value;
@@ -328,11 +369,10 @@ int CDecodeFile::GetSamples(BYTE *buffer, long count) {
 				prev = cache;
 			}
 			data_cur++; res++;
+			dec = tta;
 		}
 	}
 
-	if(res) decode_pos_ms += (res * 1000) / ttaTag.GetSampleRate();
-	memcpy(buffer, pcm_buffer, count);
 	return res;
 }
 

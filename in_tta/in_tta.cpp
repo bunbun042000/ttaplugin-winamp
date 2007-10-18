@@ -119,6 +119,7 @@ static long	vis_buffer[BUFFER_SIZE*MAX_NCH];	// vis buffer
 
 CTagInfo m_Tag;
 CTtaTag  dlgTag;
+static BYTE pcm_buffer[BUFFER_SIZE];
 
 
 static HANDLE decoder_handle = NULL;
@@ -302,7 +303,6 @@ void __cdecl stop () {
 }
 
 void __cdecl show_bitrate(CDecodeFile dec) {
-	mod.SetInfo(dec.GetBitrate(), dec.GetSampleRate()/1000, dec.GetNumberofChannel(), 1);
 }
 
 int __cdecl play (char *filename) {
@@ -311,7 +311,7 @@ int __cdecl play (char *filename) {
 	int return_number;
 
 	return_number = playing_ttafile.SetFileName(filename);
-	if(!return_number) return return_number;
+	if(return_number) return return_number;
 
 	mod.is_seekable = playing_ttafile.GetSeekTableState();
 
@@ -323,7 +323,8 @@ int __cdecl play (char *filename) {
 	}
 
 	// setup information display
-	show_bitrate(playing_ttafile);
+	mod.SetInfo(playing_ttafile.GetBitrate(), playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
+//	show_bitrate(playing_ttafile);
 
 	// initialize vis stuff
 	mod.SAVSAInit(maxlatency, playing_ttafile.GetSampleRate());
@@ -383,8 +384,6 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 	int done = 0;
 	int len;
 
-	BYTE pcm_buffer[BUFFER_SIZE];
-
 	while (!killDecoderThread) {
 		if (playing_ttafile.GetSeekNeeded() != -1) {
 			mod.outMod->Flush(playing_ttafile.SeekPosition(&done));
@@ -406,7 +405,7 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 						playing_ttafile.GetNumberofChannel(), playing_ttafile.GetSampleRate());
 				mod.outMod->Write((char *)pcm_buffer, len * playing_ttafile.GetNumberofChannel() * (playing_ttafile.GetOutputBPS() >> 3));
 			}
-			show_bitrate(playing_ttafile);
+			mod.SetInfo(playing_ttafile.GetBitrate(), playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
 		} else Sleep(20);
 	}
 

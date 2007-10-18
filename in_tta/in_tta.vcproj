@@ -271,10 +271,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\DecodeFilePrivate.h"
-				>
-			</File>
-			<File
 				RelativePath=".\FileInfo.h"
 				>
 			</File>
