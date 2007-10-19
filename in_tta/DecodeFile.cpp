@@ -61,6 +61,7 @@ CDecodeFile::CDecodeFile(void)
 	paused = 0;
 	seek_needed = -1;
 	decode_pos_ms = 0;
+	current_position = 0;
 
 	isobuffer = new BYTE[ISO_BUFFER_SIZE + 4];
 	pcm_buffer = new BYTE[BUFFER_SIZE];
@@ -372,7 +373,9 @@ int CDecodeFile::GetSamples(BYTE *buffer, long count, int *current_bitrate) {
 			dec = tta;
 		}
 	}
-	if(res) decode_pos_ms += (res * 1000) / ttaTag.GetSampleRate();
+	if(res) {
+		decode_pos_ms += (res * 1000) / ttaTag.GetSampleRate();
+	}
 	return res;
 }
 

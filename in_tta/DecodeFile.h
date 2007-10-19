@@ -53,6 +53,8 @@ public:
 	unsigned long	GetSeekTableState(){return st_state;}
 	__int32			GetBitsperSample() {return ttaTag.GetBitsperSample();}
 	int				GetLengthbyFrame() {return ttaTag.GetLengthbyFrame();}
+	int				GetCurrentPosition() {return current_position;}
+	void			SetCurrentPosition(int pos) {current_position = pos;}
 
 
 private:
@@ -60,8 +62,9 @@ private:
 	CTtaTag			ttaTag;
 
 	int				paused;
-	unsigned long	seek_needed;
+	long			seek_needed;
 	int				decode_pos_ms;
+	int				current_position;
 
 	BYTE		   *isobuffer;
 	BYTE		   *pcm_buffer;	// PCM buffer
