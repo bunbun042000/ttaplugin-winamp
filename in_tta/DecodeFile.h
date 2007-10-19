@@ -67,7 +67,7 @@ private:
 	int				current_position;
 
 	BYTE		   *isobuffer;
-	BYTE		   *pcm_buffer;	// PCM buffer
+//	BYTE		   *pcm_buffer;	// PCM buffer
 	decoder		   *tta;		// decoder state
 	long		   *cache;		// decoder cache
 

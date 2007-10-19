@@ -64,7 +64,7 @@ CDecodeFile::CDecodeFile(void)
 	current_position = 0;
 
 	isobuffer = new BYTE[ISO_BUFFER_SIZE + 4];
-	pcm_buffer = new BYTE[BUFFER_SIZE];
+//	pcm_buffer = new BYTE[BUFFER_SIZE];
 	tta = new decoder[2*MAX_NCH];
 	cache = new long[MAX_NCH];
 
@@ -83,12 +83,12 @@ CDecodeFile::CDecodeFile(CDecodeFile &s)
 	decode_pos_ms = s.decode_pos_ms;
 
 	isobuffer = new BYTE[ISO_BUFFER_SIZE + 4];
-	pcm_buffer = new BYTE[BUFFER_SIZE];
+//	pcm_buffer = new BYTE[BUFFER_SIZE];
 	tta = new decoder[2*MAX_NCH];
 	cache = new long[MAX_NCH];
 
 	memcpy_s(isobuffer, ISO_BUFFER_SIZE + 4, s.isobuffer, (ISO_BUFFER_SIZE + 4));
-	memcpy_s(pcm_buffer, BUFFER_SIZE, s.pcm_buffer, BUFFER_SIZE);
+//	memcpy_s(pcm_buffer, BUFFER_SIZE, s.pcm_buffer, BUFFER_SIZE);
 	memcpy_s(tta, 2 * MAX_NCH, s.tta, 2 * MAX_NCH);
 	memcpy_s(cache, MAX_NCH, s.cache, MAX_NCH);
 
@@ -116,7 +116,7 @@ CDecodeFile::CDecodeFile(CDecodeFile &s)
 CDecodeFile::~CDecodeFile(void)
 {
 	delete [] isobuffer;
-	delete [] pcm_buffer;
+//	delete [] pcm_buffer;
 	delete [] tta;
 	delete [] cache;
 	if (seek_table) {
@@ -211,7 +211,7 @@ void  CDecodeFile::init_buffer_read(void)
 }
 unsigned int CDecodeFile::SeekPosition(int *done)
 {
-	if (seek_needed >= ttaTag.GetLengthbymsec()) {
+	if (seek_needed >= (signed int)ttaTag.GetLengthbymsec()) {
 		decode_pos_ms = ttaTag.GetLengthbymsec();
 		*done = 1;
 	} else {
