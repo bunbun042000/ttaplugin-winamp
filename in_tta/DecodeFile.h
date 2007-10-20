@@ -36,9 +36,9 @@ public:
 
 	int				GetPaused(){return paused;}
 	void			SetPaused(int p){paused = p;}
-	int				GetDecodePosMs(){return decode_pos_ms;}
+	long double		GetDecodePosMs(){return decode_pos_ms;}
 	void		 	SetDecodePosMs(int d_pos_ms){decode_pos_ms = d_pos_ms;}
-	unsigned int	SeekPosition(int *done);
+	long double		SeekPosition(int *done);
 	void			SetSeekNeeded(int sn){seek_needed = sn;}
 	int				GetSeekNeeded(){return seek_needed;}
 	int				GetSampleRate() {return ttaTag.GetSampleRate();}
@@ -53,8 +53,6 @@ public:
 	unsigned long	GetSeekTableState(){return st_state;}
 	__int32			GetBitsperSample() {return ttaTag.GetBitsperSample();}
 	int				GetLengthbyFrame() {return ttaTag.GetLengthbyFrame();}
-	int				GetCurrentPosition() {return current_position;}
-	void			SetCurrentPosition(int pos) {current_position = pos;}
 
 
 private:
@@ -63,8 +61,8 @@ private:
 
 	int				paused;
 	long			seek_needed;
-	int				decode_pos_ms;
-	int				current_position;
+	long double		decode_pos_ms;
+	long			seek_skip;
 
 	BYTE		   *isobuffer;
 //	BYTE		   *pcm_buffer;	// PCM buffer
@@ -94,11 +92,12 @@ private:
 
 	int		player_init();
 	void	init_buffer_read();
-	int		set_position(unsigned long pos);
+	int		set_position(long double pos);
 	void	decoder_init(decoder *tta, long nch, long byte_size);
 	void	seek_table_init(unsigned long *seek_table,	unsigned long len, unsigned long data_offset);	
 	void	rice_init(adapt *rice, BYTE k0, BYTE k1);
 	void	filter_init(fltst *fs, long shift, long mode);
+	int		get_decoded_data(BYTE *buffer, long count, int *current_bitrate);
 
 	__inline int done_buffer_read(int *current_bitrate) {
 		unsigned long crc32, rbytes;

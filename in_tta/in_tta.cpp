@@ -292,7 +292,7 @@ void __cdecl stop () {
 		decoder_handle = NULL;
 	}
 
-
+	mod.SetInfo(0, 0, 0, 1);
 	mod.outMod->Close();
 	mod.SAVSADeInit();
 
@@ -319,7 +319,6 @@ int __cdecl play (char *filename) {
 
 	// setup information display
 	mod.SetInfo(playing_ttafile.GetBitrate(), playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
-//	show_bitrate(playing_ttafile);
 
 	// initialize vis stuff
 	mod.SAVSAInit(maxlatency, playing_ttafile.GetSampleRate());
@@ -337,7 +336,7 @@ int __cdecl play (char *filename) {
 }
 
 int  __cdecl getlength () { return playing_ttafile.GetLengthbymsec(); }
-int  __cdecl getoutputtime () { return (playing_ttafile.GetDecodePosMs() + (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime())); }
+int  __cdecl getoutputtime () { return (int)(playing_ttafile.GetDecodePosMs() + (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime())); }
 void __cdecl setoutputtime (int time_in_ms) {playing_ttafile.SetSeekNeeded(time_in_ms); }
 void __cdecl setvolume (int volume) { mod.outMod->SetVolume(volume); }
 void __cdecl setpan (int pan) { mod.outMod->SetPan(pan); }
@@ -356,7 +355,7 @@ void __cdecl getfileinfo (char *filename, char *title, int *length_in_ms) {
 	}
 }
 
-static void do_vis(unsigned char *data, int count, int bps, int position) {
+static void do_vis(unsigned char *data, int count, int bps, long double position) {
 	int i, bsize = bps >> 3;
 
 	// Winamp visuals may have problems accepting sample sizes larger than
@@ -370,8 +369,8 @@ static void do_vis(unsigned char *data, int count, int bps, int position) {
 		data = (unsigned char *)vis_buffer;
 	}
 
-	mod.SAAddPCMData(data, playing_ttafile.GetNumberofChannel(), 16, position);
-	mod.VSAAddPCMData(data, playing_ttafile.GetNumberofChannel(), 16, position);
+	mod.SAAddPCMData(data, playing_ttafile.GetNumberofChannel(), 16, (int)position);
+	mod.VSAAddPCMData(data, playing_ttafile.GetNumberofChannel(), 16, (int)position);
 }
 
 
@@ -382,7 +381,7 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 
 	while (!killDecoderThread) {
 		if (playing_ttafile.GetSeekNeeded() != -1) {
-			mod.outMod->Flush(playing_ttafile.SeekPosition(&done));
+			mod.outMod->Flush((int)playing_ttafile.SeekPosition(&done));
 		}
 		if (done) {
 			mod.outMod->CanWrite();
@@ -395,7 +394,7 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 			playing_ttafile.GetByteSize()) << (mod.dsp_isactive()? 1:0))) {
 			if (!(len = playing_ttafile.GetSamples(pcm_buffer, BUFFER_LENGTH, &bitrate))) done = 1;
 			else {
-				do_vis(pcm_buffer, len, playing_ttafile.GetOutputBPS(), playing_ttafile.GetDecodePosMs());
+ 				do_vis(pcm_buffer, len, playing_ttafile.GetOutputBPS(), playing_ttafile.GetDecodePosMs());
 				if (mod.dsp_isactive())
 					len = mod.dsp_dosamples((short *)pcm_buffer, len, playing_ttafile.GetOutputBPS(),
 						playing_ttafile.GetNumberofChannel(), playing_ttafile.GetSampleRate());
@@ -444,9 +443,9 @@ extern "C"
 		CDecodeFile *dec = (CDecodeFile *)handle;
 		BYTE *buf = new BYTE[BUFFER_SIZE];
 		int used = 0;
-		int n;
+		int n = 0;
 		int bitrate;
-		int decoded_frame_number = 0;
+//		int decoded_frame_number = 0;
 		int current_decode_frame_number = 0;
 		
 		if (!dec->GetLengthbyFrame()) return 0;
@@ -454,7 +453,7 @@ extern "C"
 		while (used < len && !*killswitch)
 		{
 		/* do we need to decode more? */
-			if (used >= decoded_frame_number) {
+			if (n >= current_decode_frame_number) {
 				current_decode_frame_number = dec->GetSamples(buf, BUFFER_LENGTH, &bitrate)
 					* dec->GetBitsperSample() / 8 
 					* dec->GetNumberofChannel();
@@ -468,9 +467,9 @@ extern "C"
 			{
 				memcpy(dest + used, buf, n);
 				used += n;
-				decoded_frame_number += current_decode_frame_number;
 			}
 		}
+		delete [] buf;
 		return used;
 	}
 
@@ -480,7 +479,6 @@ extern "C"
 		int done;
 		CDecodeFile *dec = (CDecodeFile *)handle;
 		dec->SetSeekNeeded(millisecs);
-//		dec->SetDecodePosMs(0);
 		dec->SeekPosition(&done);
 		return done;
 	}
@@ -488,8 +486,6 @@ extern "C"
 	__declspec( dllexport ) void winampGetExtendedRead_close(intptr_t handle)
 	{
 		CDecodeFile *dec = (CDecodeFile *)handle;
-///		FLAC_plugin__decoder_finish(e->decoder);
-//		FLAC_plugin__decoder_delete(e->decoder);
 		delete dec;
 	}
 }

@@ -159,7 +159,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				ShowProgress="2"
-				OutputFile="C:\Program Files\Winamp\Plugins\$(ProjectName).dll"
 				LinkIncremental="1"
 				ModuleDefinitionFile=".\in_tta.def"
 				GenerateDebugInformation="false"

@@ -61,7 +61,7 @@ CDecodeFile::CDecodeFile(void)
 	paused = 0;
 	seek_needed = -1;
 	decode_pos_ms = 0;
-	current_position = 0;
+	seek_skip = 0;
 
 	isobuffer = new BYTE[ISO_BUFFER_SIZE + 4];
 //	pcm_buffer = new BYTE[BUFFER_SIZE];
@@ -209,22 +209,57 @@ void  CDecodeFile::init_buffer_read(void)
     bit_count = bit_cache = 0;
     bitpos = (isobuffer + ISO_BUFFER_SIZE);
 }
-unsigned int CDecodeFile::SeekPosition(int *done)
+
+long double CDecodeFile::SeekPosition(int *done)
 {
-	if (seek_needed >= (signed int)ttaTag.GetLengthbymsec()) {
-		decode_pos_ms = ttaTag.GetLengthbymsec();
-		*done = 1;
-	} else {
-		data_pos = seek_needed / SEEK_STEP;
-		decode_pos_ms = data_pos * SEEK_STEP;
-		seek_needed = -1;
-		data_cur = -1;
+	if (seek_needed != -1){
+		if (seek_needed >= (long)ttaTag.GetLengthbymsec()) {
+			decode_pos_ms = ttaTag.GetLengthbymsec();
+			*done = 1;
+		} else {
+			data_pos = (unsigned long)seek_needed / SEEK_STEP;
+			decode_pos_ms = seek_needed;
+			seek_skip = (long)((seek_needed - (data_pos * SEEK_STEP)) / 1000. * ttaTag.GetSampleRate() + 0.5);
+			seek_needed = -1;
+			data_cur = -1;
+		}
+		set_position(data_pos);
 	}
-	set_position(decode_pos_ms);
 	return decode_pos_ms;
 }
 
-int CDecodeFile::GetSamples(BYTE *buffer, long count, int *current_bitrate) {
+int CDecodeFile::GetSamples(BYTE *buffer, long count, int *current_bitrate)
+{
+	BYTE *temp = new BYTE[count*MAX_BSIZE*MAX_NCH];
+	int skip_len = 0;
+	int len;
+
+	while (seek_skip > count) {
+		if (!(len = get_decoded_data(temp, count, current_bitrate))) {
+			seek_skip = 0;
+//			done = 1; return 0;
+			return 0;
+		}
+		skip_len += len;
+		seek_skip -= len;
+	}
+	if (!(len = get_decoded_data(temp, count, current_bitrate))) {
+		seek_skip = 0;
+//		done = 1;
+		return 0;
+	} else {
+		skip_len += len;
+		len -= seek_skip;
+		memcpy(buffer, temp + seek_skip * ttaTag.GetNumberofChannel() * ttaTag.GetByteSize(), 
+			len *ttaTag.GetNumberofChannel() * ttaTag.GetByteSize());
+		seek_skip = 0;
+		decode_pos_ms += (skip_len * 1000.L) / ttaTag.GetSampleRate();
+	}
+	return len;
+
+}
+
+int CDecodeFile::get_decoded_data(BYTE *buffer, long count, int *current_bitrate) {
 	unsigned long k, depth, unary, binary;
 	long buffer_size = count * ttaTag.GetByteSize() * ttaTag.GetNumberofChannel();
 	BYTE *p = buffer;
@@ -379,7 +414,7 @@ int CDecodeFile::GetSamples(BYTE *buffer, long count, int *current_bitrate) {
 	return res;
 }
 
-int CDecodeFile::set_position (unsigned long pos) {
+int CDecodeFile::set_position (long double pos) {
 	unsigned long seek_pos;
 
 	if (pos >= fframes) return 0;

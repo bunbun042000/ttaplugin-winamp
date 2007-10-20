@@ -38,7 +38,7 @@
 #define	TTA_VERSION		"3.0"
 #define TTA_LEVEL		1
 #define TTA1_SIGN		0x31415454
-#define FRAME_TIME		1.04489795918367346939
+#define FRAME_TIME		1.04489795918367346939L
 
 // return codes
 #define OPEN_ERROR		1		// Can't open file
@@ -51,8 +51,7 @@
 #define THREAD_ERROR	8		// Error killing thread
 
 #define ISO_BUFFER_SIZE	(1024*1024)
-#define FRAME_TIME		1.04489795918367346939
-#define SEEK_STEP		(int)(FRAME_TIME * 1000)
+#define SEEK_STEP		(FRAME_TIME * 1000)
 #define MAX_BSIZE		4
 #define MAX_BPS			(MAX_BSIZE*8)
 #define MAX_NCH			8
