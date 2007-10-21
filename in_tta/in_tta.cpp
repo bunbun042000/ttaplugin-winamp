@@ -452,7 +452,6 @@ extern "C"
 		int used = 0;
 		int n = 0;
 		int bitrate;
-//		int decoded_frame_number = 0;
 		int current_decode_frame_number = 0;
 		
 		if (!dec->GetLengthbyFrame()) return 0;
