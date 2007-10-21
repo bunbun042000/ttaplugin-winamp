@@ -37,7 +37,11 @@ public:
 	int				GetPaused(){return paused;}
 	void			SetPaused(int p){paused = p;}
 	long double		GetDecodePosMs(){return decode_pos_ms;}
-	void		 	SetDecodePosMs(int d_pos_ms){decode_pos_ms = d_pos_ms;}
+	void		 	SetDecodePosMs(int d_pos_ms)
+	{
+		decode_pos_ms = d_pos_ms;
+		set_position(decode_pos_ms);
+	}
 	long double		SeekPosition(int *done);
 	void			SetSeekNeeded(int sn){seek_needed = sn;}
 	int				GetSeekNeeded(){return seek_needed;}
@@ -65,7 +69,6 @@ private:
 	long			seek_skip;
 
 	BYTE		   *isobuffer;
-//	BYTE		   *pcm_buffer;	// PCM buffer
 	decoder		   *tta;		// decoder state
 	long		   *cache;		// decoder cache
 

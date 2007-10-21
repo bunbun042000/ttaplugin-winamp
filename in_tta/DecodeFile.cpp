@@ -255,6 +255,7 @@ int CDecodeFile::GetSamples(BYTE *buffer, long count, int *current_bitrate)
 		seek_skip = 0;
 		decode_pos_ms += (skip_len * 1000.L) / ttaTag.GetSampleRate();
 	}
+	delete [] temp;
 	return len;
 
 }
@@ -407,9 +408,6 @@ int CDecodeFile::get_decoded_data(BYTE *buffer, long count, int *current_bitrate
 			data_cur++; res++;
 			dec = tta;
 		}
-	}
-	if(res) {
-		decode_pos_ms += (res * 1000) / ttaTag.GetSampleRate();
 	}
 	return res;
 }

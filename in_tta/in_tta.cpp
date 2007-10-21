@@ -178,6 +178,11 @@ In_Module mod = {
 
 HANDLE decoderFileHANDLE;
 
+typedef struct _buffer {
+	long		data_length;
+	BYTE	   *buffer;
+} data_buf;
+static data_buf remain_data;
 
 void pause() { playing_ttafile.SetPaused(1); mod.outMod->Pause(1); }
 void unpause() { playing_ttafile.SetPaused(0); mod.outMod->Pause(0); }
@@ -434,6 +439,8 @@ extern "C"
 		*nch = transcoding_ttafile->GetNumberofChannel();
 		*srate = transcoding_ttafile->GetSampleRate();
 		*size = transcoding_ttafile->GetLengthbyFrame() * (*bps / 8) * (*nch);
+		remain_data.data_length = 0;
+		remain_data.buffer = NULL;
 	
 		return (intptr_t)transcoding_ttafile;
 	}
@@ -450,6 +457,24 @@ extern "C"
 		
 		if (!dec->GetLengthbyFrame()) return 0;
 
+		if (remain_data.data_length != 0)
+		{
+			while (min(len - used, remain_data.data_length) != 0 && !*killswitch) 
+			{
+				n = min(len - used, remain_data.data_length);
+				memcpy(dest + used, remain_data.buffer + used, n);
+				used += n;
+				remain_data.data_length -= n;
+			}
+			if(remain_data.data_length != 0)
+			{
+				return used;
+			} else {
+				delete [] remain_data.buffer;
+				remain_data.buffer = NULL;
+			}
+		}
+
 		while (used < len && !*killswitch)
 		{
 		/* do we need to decode more? */
@@ -463,12 +488,20 @@ extern "C"
 	
 			/* copy as much as we can back to winamp */
 			n = min(len - used, current_decode_frame_number);
-			if (n)
+			if (n != 0)
 			{
 				memcpy(dest + used, buf, n);
 				used += n;
 			}
 		}
+
+		if (n != 0 && n < current_decode_frame_number)
+		{
+			remain_data.data_length = current_decode_frame_number - n;
+			remain_data.buffer = new BYTE[remain_data.data_length];
+			memcpy(remain_data.buffer, buf + n, remain_data.data_length);
+		}
+
 		delete [] buf;
 		return used;
 	}
@@ -476,9 +509,9 @@ extern "C"
 	/* return nonzero on success, zero on failure. */
 	__declspec( dllexport ) int winampGetExtendedRead_setTime(intptr_t handle, int millisecs)
 	{
-		int done;
+		int done = 0;
 		CDecodeFile *dec = (CDecodeFile *)handle;
-		dec->SetSeekNeeded(millisecs);
+		dec->SetDecodePosMs(millisecs);
 		dec->SeekPosition(&done);
 		return done;
 	}
@@ -487,5 +520,10 @@ extern "C"
 	{
 		CDecodeFile *dec = (CDecodeFile *)handle;
 		delete dec;
+		if (remain_data.buffer != NULL)
+		{
+			delete [] remain_data.buffer;
+			remain_data.buffer = NULL;
+		}
 	}
 }
