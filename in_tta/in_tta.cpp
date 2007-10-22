@@ -433,12 +433,12 @@ extern "C"
 		if (!transcoding_ttafile) return 0;
 		
 		transcoding_ttafile->SetFileName((char *)filename);
-		transcoding_ttafile->SetOutputBPS(*bps);
 	
 		*bps = transcoding_ttafile->GetBitsperSample();
 		*nch = transcoding_ttafile->GetNumberofChannel();
 		*srate = transcoding_ttafile->GetSampleRate();
 		*size = transcoding_ttafile->GetLengthbyFrame() * (*bps / 8) * (*nch);
+		transcoding_ttafile->SetOutputBPS(*bps);
 		remain_data.data_length = 0;
 		remain_data.buffer = NULL;
 	
@@ -452,7 +452,7 @@ extern "C"
 		int used = 0;
 		int n = 0;
 		int bitrate;
-		int current_decode_frame_number = 0;
+		int current_decode_size = 0;
 		
 		if (!dec->GetLengthbyFrame()) return 0;
 
@@ -477,16 +477,16 @@ extern "C"
 		while (used < len && !*killswitch)
 		{
 		/* do we need to decode more? */
-			if (n >= current_decode_frame_number) {
-				current_decode_frame_number = dec->GetSamples(buf, BUFFER_LENGTH, &bitrate)
+			if (n >= current_decode_size) {
+				current_decode_size = dec->GetSamples(buf, BUFFER_LENGTH, &bitrate)
 					* dec->GetBitsperSample() / 8 
 					* dec->GetNumberofChannel();
-	 			if (current_decode_frame_number <= 0) break; /* end of stream */
+	 			if (current_decode_size <= 0) break; /* end of stream */
 			}
       
 	
 			/* copy as much as we can back to winamp */
-			n = min(len - used, current_decode_frame_number);
+			n = min(len - used, current_decode_size);
 			if (n != 0)
 			{
 				memcpy(dest + used, buf, n);
@@ -494,15 +494,15 @@ extern "C"
 			}
 		}
 
-		if (n != 0 && n < current_decode_frame_number)
+		if (n != 0 && n < current_decode_size)
 		{
-			remain_data.data_length = current_decode_frame_number - n;
+			remain_data.data_length = current_decode_size - n;
 			remain_data.buffer = new BYTE[remain_data.data_length];
 			memcpy(remain_data.buffer, buf + n, remain_data.data_length);
 		}
 
 		delete [] buf;
-		return used;
+		return (intptr_t)used;
 	}
 
 	/* return nonzero on success, zero on failure. */
@@ -512,7 +512,7 @@ extern "C"
 		CDecodeFile *dec = (CDecodeFile *)handle;
 		dec->SetDecodePosMs(millisecs);
 		dec->SeekPosition(&done);
-		return done;
+		return 1;
 	}
 
 	__declspec( dllexport ) void winampGetExtendedRead_close(intptr_t handle)
