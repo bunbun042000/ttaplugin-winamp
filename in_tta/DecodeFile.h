@@ -49,6 +49,7 @@ public:
 	int				GetBitrate() {return ttaTag.GetBitrate();}
 	__int32			GetNumberofChannel() {return ttaTag.GetNumberofChannel();}
 	unsigned long	GetLengthbymsec() {return ttaTag.GetLengthbymsec();}
+	int				GetDataLength() {return ttaTag.GetDataLength();}
 	void			SetPlayTitle(char *title){ttaTag.SetPlayTitle(title);}
 	unsigned long	GetDataPos(){return data_pos;}
 	unsigned __int8	GetByteSize() {return ttaTag.GetByteSize();}

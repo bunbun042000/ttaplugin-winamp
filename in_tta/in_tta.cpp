@@ -437,7 +437,7 @@ extern "C"
 		*bps = transcoding_ttafile->GetBitsperSample();
 		*nch = transcoding_ttafile->GetNumberofChannel();
 		*srate = transcoding_ttafile->GetSampleRate();
-		*size = transcoding_ttafile->GetLengthbyFrame() * (*bps / 8) * (*nch);
+		*size = transcoding_ttafile->GetDataLength() * (*bps / 8) * (*nch);
 		transcoding_ttafile->SetOutputBPS(*bps);
 		remain_data.data_length = 0;
 		remain_data.buffer = NULL;
