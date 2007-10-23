@@ -1,4 +1,4 @@
-in_tta.dll Ver3.2 改造版(Beta5) 
+in_tta.dll Ver3.2 改造版(Beta7) 
 ($LastChangedDate$)
 =====================================================
 
@@ -7,7 +7,7 @@ in_tta.dll Ver3.2 改造版(Beta5)
 メディアライブラリ読み込み対応を付け加え、ID3v2周りを改変し
 たものです。よって、Winamp Ver2.9以降に対応します。
 
-動作確認はWinamp5.13で行いました。
+動作確認はWinamp5.50で行いました。
 
 
 *インストール方法
@@ -16,6 +16,13 @@ in_tta.dll Ver3.2 改造版(Beta5)
 
 
 *更新履歴
+2007/10/23 Beta7公開
+	   シーク位置ずれの修正
+	   Format Conversionに対応
+
+2006/07/03 Beta6公開
+	   メディアライブラリにyear情報を付加するために小改正
+
 2006/02/23 Beta5公開
 	   Beta4での修正点が実際には修正されておらず,再修正
 
@@ -43,6 +50,11 @@ ID3v2関連では
 のソースコードを参考にしました。
   Web: http://haseta2003.hp.infoseek.co.jp/
 
+シーク関連の修正は
+h0shu さん作成のパッチを参考にしました。
+  Web: http://hoshustep.hp.infoseek.co.jp/dust.html
+
 この場をお借りしてお礼申し上げます。
 
-bunbun.
+bunbun042000.
+mailto:bunbun042000@yahoo.co.jp
