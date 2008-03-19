@@ -266,13 +266,13 @@ void __cdecl config (HWND parent) {
 }
 
 int __cdecl infodlg (char *filename, HWND parent) {
-	char *p, *fn, *caption;
+//	char *p, *fn, *caption;
 
-	fn = filename;
-	p = fn + lstrlen(fn);
-	while (*p != '\\' && p >= fn) p--;
-	if (*p == '\\') caption = ++p;
-	else caption = fn;
+//	fn = filename;
+//	p = fn + lstrlen(fn);
+//	while (*p != '\\' && p >= fn) p--;
+//	if (*p == '\\') caption = ++p;
+//	else caption = fn;
 
 //	AfxSetResourceHandle(mod.hDllInstance);
 
@@ -461,7 +461,7 @@ extern "C"
 			while (min(len - used, remain_data.data_length) != 0 && !*killswitch) 
 			{
 				n = min(len - used, remain_data.data_length);
-				memcpy(dest + used, remain_data.buffer + used, n);
+				memcpy_s(dest + used, len - used, remain_data.buffer + used, n);
 				used += n;
 				remain_data.data_length -= n;
 			}
@@ -489,7 +489,7 @@ extern "C"
 			n = min(len - used, current_decode_size);
 			if (n != 0)
 			{
-				memcpy(dest + used, buf, n);
+				memcpy_s(dest + used, len - used, buf, n);
 				used += n;
 			}
 		}
@@ -498,7 +498,7 @@ extern "C"
 		{
 			remain_data.data_length = current_decode_size - n;
 			remain_data.buffer = new BYTE[remain_data.data_length];
-			memcpy(remain_data.buffer, buf + n, remain_data.data_length);
+			memcpy_s(remain_data.buffer, remain_data.data_length, buf + n, remain_data.data_length);
 		}
 
 		delete [] buf;

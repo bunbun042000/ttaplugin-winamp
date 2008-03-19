@@ -250,7 +250,8 @@ int CDecodeFile::GetSamples(BYTE *buffer, long count, int *current_bitrate)
 	} else {
 		skip_len += len;
 		len -= seek_skip;
-		memcpy(buffer, temp + seek_skip * ttaTag.GetNumberofChannel() * ttaTag.GetByteSize(), 
+		memcpy_s(buffer, count * ttaTag.GetNumberofChannel() * ttaTag.GetByteSize(),
+			temp + seek_skip * ttaTag.GetNumberofChannel() * ttaTag.GetByteSize(), 
 			len *ttaTag.GetNumberofChannel() * ttaTag.GetByteSize());
 		seek_skip = 0;
 		decode_pos_ms += (skip_len * 1000.L) / ttaTag.GetSampleRate();

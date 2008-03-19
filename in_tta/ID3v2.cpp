@@ -459,7 +459,7 @@ __int32 CID3v2::SaveTag()
 	// all tags set to buffer
 	__int32 dwOffset = 0;
 	while(it != m_frames.end()){
-		memcpy((frames + dwOffset), it->second.SetFrame(), it->second.GetSize() + FRAME_HEADER_LENGTH);
+		memcpy_s((frames + dwOffset), totalLength - dwOffset, it->second.SetFrame(), it->second.GetSize() + FRAME_HEADER_LENGTH);
 		dwOffset += it->second.GetSize() + FRAME_HEADER_LENGTH;
 		it++;
 	}
@@ -481,11 +481,11 @@ __int32 CID3v2::SaveTag()
 	if (!header) return NULL;
 
 	//set tag header
-	memcpy(header, "ID3", 3);
+	memcpy_s(header, EncLength + HEADER_LENGTH, "ID3", 3);
 	header[3] = m_ver;
 	header[4] = m_subver;
 	header[5] = m_Flags;
-	memcpy((header + HEADER_LENGTH), tempData, EncLength);
+	memcpy_s((header + HEADER_LENGTH), EncLength, tempData, EncLength);
 	delete tempData;
 
 	char TempPath[MAX_PATHLEN];
@@ -750,7 +750,7 @@ CID3v2Frame::CID3v2Frame(const CID3v2Frame &obj)
 {
 	m_Comment = obj.m_Comment;
 	m_ID = new char[ID3v2FrameIDLength + 1];
-	memcpy(m_ID, obj.m_ID, ID3v2FrameIDLength);
+	memcpy_s(m_ID, ID3v2FrameIDLength + 1, obj.m_ID, ID3v2FrameIDLength);
 	m_ID[ID3v2FrameIDLength] = '\0';
 	m_dwSize = obj.m_dwSize;
 	m_Encoding = obj.m_Encoding;
@@ -759,7 +759,7 @@ CID3v2Frame::CID3v2Frame(const CID3v2Frame &obj)
 	m_Description = obj.m_Description;
 	if(obj.m_sLanguage != NULL){
 		m_sLanguage = new char[COMM_Lang_Length + 1];
-		memcpy(m_sLanguage, obj.m_sLanguage, COMM_Lang_Length);
+		memcpy_s(m_sLanguage, COMM_Lang_Length + 1, obj.m_sLanguage, COMM_Lang_Length);
 		m_sLanguage[COMM_Lang_Length] = '\0';
 	} else
 		m_sLanguage = NULL;
@@ -798,7 +798,7 @@ __int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __i
 	m_ID = new char[ID3v2FrameIDLength + 1];
 	if(!m_ID)
 		return 0;
-	memcpy(m_ID, pData, ID3v2FrameIDLength);
+	memcpy_s(m_ID, ID3v2FrameIDLength + 1, pData, ID3v2FrameIDLength);
 	// for Padding
 	m_ID[ID3v2FrameIDLength] = '\0';
 
@@ -821,7 +821,7 @@ __int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __i
 	if(m_ID[0] == 'W' && !strcmp(m_ID, "WXXX")) {
 		m_Comment = GetEncodingString(pData, m_dwSize, FIELD_TEXT_ISO_8859_1);
 	} else {
-		memcpy(&m_Encoding, pData, sizeof(m_Encoding));
+		memcpy_s(&m_Encoding, sizeof(unsigned __int8), pData, sizeof(m_Encoding));
 		// L'\0' or '\0'
 		__int32 dwTermLength;
 		if(m_Encoding == FIELD_TEXT_UTF_16)
@@ -848,7 +848,7 @@ __int32 CID3v2Frame::GetFrame(unsigned char *pData, __int32 dwSize, unsigned __i
 			m_sLanguage = new char[COMM_Lang_Length + 1];
 			if(!m_sLanguage)
 				return 0;
-			memcpy(m_sLanguage, pData, COMM_Lang_Length);
+			memcpy_s(m_sLanguage, COMM_Lang_Length + 1, pData, COMM_Lang_Length);
 			m_sLanguage[COMM_Lang_Length] = '\0';
 			pData += COMM_Lang_Length;
 			size -= COMM_Lang_Length;
@@ -866,7 +866,7 @@ char *CID3v2Frame::SetFrame()
 
 	char *frame = new char[m_dwSize + FRAME_HEADER_LENGTH];
 
-	memcpy(frame, m_ID, ID3v2FrameIDLength);
+	memcpy_s(frame, m_dwSize + FRAME_HEADER_LENGTH, m_ID, ID3v2FrameIDLength);
 	if(m_Version == 0x03)
 		::SetLength32(m_dwSize, frame + 4);
 	else if(m_Version == 0x04)
@@ -882,34 +882,34 @@ char *CID3v2Frame::SetFrame()
 	char *temp = frame + FRAME_HEADER_LENGTH;
 
 	if(m_ID[0] == 'W' && !strcmp(m_ID, "WXXX")) {
-		memcpy(temp, (char *)SetEncodingString(m_Comment, m_Version, FIELD_TEXT_ISO_8859_1), m_dwSize);
+		memcpy_s(temp, m_dwSize, (char *)SetEncodingString(m_Comment, m_Version, FIELD_TEXT_ISO_8859_1), m_dwSize);
 	} else {
 		temp[0] = m_Encoding;
 		temp += sizeof(m_Encoding);
 		__int32 size = m_dwSize - 1;
 		if(m_ID[0] == 'T' && strcmp(m_ID, "TXXX"))
-			memcpy(temp, (char *)SetEncodingString(m_Comment, m_Version, m_Encoding), size);
+			memcpy_s(temp, m_dwSize, (char *)SetEncodingString(m_Comment, m_Version, m_Encoding), size);
 		else if(!strcmp(m_ID, "TXXX")) {
 			__int32 dwCurrentSize = GetEncodingLength(m_Description, m_Version, m_Encoding);
-			memcpy(temp, (char *)SetEncodingString(m_Description, m_Version, m_Encoding), dwCurrentSize);
+			memcpy_s(temp, m_dwSize, (char *)SetEncodingString(m_Description, m_Version, m_Encoding), dwCurrentSize);
 			temp += dwCurrentSize;
 			size -= dwCurrentSize;
-			memcpy(temp, (char *)SetEncodingString(m_Comment, m_Version, m_Encoding), size);
+			memcpy_s(temp, m_dwSize - dwCurrentSize, (char *)SetEncodingString(m_Comment, m_Version, m_Encoding), size);
 		} else if(!strcmp(m_ID, "WXXX")) {
 			__int32 dwCurrentSize = GetEncodingLength(m_Description, m_Version, m_Encoding);
-			memcpy(temp, (char *)SetEncodingString(m_Description, m_Version, m_Encoding), dwCurrentSize);
+			memcpy_s(temp, m_dwSize, (char *)SetEncodingString(m_Description, m_Version, m_Encoding), dwCurrentSize);
 			temp += dwCurrentSize;
 			size -= dwCurrentSize;
-			memcpy(temp, (char *)SetEncodingString(m_Comment, m_Version, FIELD_TEXT_ISO_8859_1), size);
+			memcpy_s(temp, m_dwSize - dwCurrentSize, (char *)SetEncodingString(m_Comment, m_Version, FIELD_TEXT_ISO_8859_1), size);
 		} else if(!strcmp(m_ID, "COMM")) {
-			memcpy(temp, m_sLanguage, COMM_Lang_Length);
+			memcpy_s(temp, m_dwSize, m_sLanguage, COMM_Lang_Length);
 			temp += COMM_Lang_Length;
 			size -= COMM_Lang_Length;
 			__int32 dwCurrentSize = GetEncodingLength(m_Description, m_Version, m_Encoding);
-			memcpy(temp, (char *)SetEncodingString(m_Description, m_Version, m_Encoding), dwCurrentSize);
+			memcpy_s(temp, m_dwSize, (char *)SetEncodingString(m_Description, m_Version, m_Encoding), dwCurrentSize);
 			temp += dwCurrentSize;
 			size -= dwCurrentSize;
-			memcpy(temp, (char *)SetEncodingString(m_Comment, m_Version, m_Encoding), size);
+			memcpy_s(temp, m_dwSize - dwCurrentSize, (char *)SetEncodingString(m_Comment, m_Version, m_Encoding), size);
 		}
 	}
 
@@ -932,7 +932,7 @@ void CID3v2Frame::SetComment(CString description, CString str, char *sLanguage, 
 		if(m_sLanguage != NULL) 
 			delete m_sLanguage;
 		m_sLanguage = new char[COMM_Lang_Length];
-		memcpy(m_sLanguage, sLanguage, COMM_Lang_Length);
+		memcpy_s(m_sLanguage, COMM_Lang_Length, sLanguage, COMM_Lang_Length);
 		m_sLanguage[COMM_Lang_Length] = '\0';
 	}
 
@@ -1000,7 +1000,7 @@ CString CID3v2Frame::GetEncodingString(unsigned char *pData, __int32 dwRemainSiz
 			if(tempchar == NULL)
 				return "";
 
-			memcpy(tempchar, pData, dwRemainSize);
+			memcpy_s(tempchar, dwRemainSize, pData, dwRemainSize);
 			if(!(memcmp(pData, UTF16_BE, 2)))
 				UTF16toUTF16BE((WCHAR *)(tempchar + 2), (dwRemainSize - 2) / 2);
 
@@ -1029,7 +1029,7 @@ CString CID3v2Frame::GetEncodingString(unsigned char *pData, __int32 dwRemainSiz
 			char *copychar = new char[dwRemainSize];
 			if(copychar == NULL)
 				return "";
-			memcpy(copychar, pData, dwRemainSize);
+			memcpy_s(copychar, dwRemainSize, pData, dwRemainSize);
 			UTF16toUTF16BE((WCHAR *)copychar, dwRemainSize / 2);
 			__int32 dwStrSize = (wcslen((WCHAR *)(copychar + 2)) + 1) * sizeof(WCHAR);
 			if(dwRemainSize < dwStrSize)
@@ -1149,7 +1149,7 @@ unsigned char *CID3v2Frame::SetEncodingString(CString &str, unsigned __int8 vers
 			tempchar = new unsigned char[str.GetLength() + 1];
 			if(tempchar == NULL)
 				return NULL;
-			memcpy((char *)tempchar, (LPCTSTR)str, str.GetLength() + 1);
+			memcpy_s((char *)tempchar, str.GetLength() + 1, (LPCTSTR)str, str.GetLength() + 1);
 			break;
 		}
 		case FIELD_TEXT_UTF_16:	{
@@ -1163,9 +1163,9 @@ unsigned char *CID3v2Frame::SetEncodingString(CString &str, unsigned __int8 vers
 			tempchar = new unsigned char[size];
 			if(tempchar == NULL)
 				return NULL;
-			memcpy(tempchar, UTF16_LE, 2);
+			memcpy_s(tempchar, size, UTF16_LE, 2);
 			if(str == "")
-				memcpy(tempchar + 2, "\0\0", sizeof(WCHAR));
+				memcpy_s(tempchar + 2, size - 2, "\0\0", sizeof(WCHAR));
 			else {
 				::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)str, -1, (WCHAR *)(tempchar + 2), 
 					(size - 2) / sizeof(WCHAR));
@@ -1184,7 +1184,7 @@ unsigned char *CID3v2Frame::SetEncodingString(CString &str, unsigned __int8 vers
 			if(tempchar == NULL)
 				return NULL;
 			if(str == "")
-				memcpy(tempchar, "\0\0", sizeof(WCHAR));
+				memcpy_s(tempchar, size, "\0\0", sizeof(WCHAR));
 			else {
 				::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)str, -1, (WCHAR *)tempchar, size / sizeof(WCHAR));
 				UTF16toUTF16BE((WCHAR *)tempchar, m_dwSize / sizeof(WCHAR));
