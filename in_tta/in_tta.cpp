@@ -30,7 +30,7 @@
  * information.
  */
 
-#define	STRICT
+//#define	STRICT
 
 
 #include "stdafx.h"
