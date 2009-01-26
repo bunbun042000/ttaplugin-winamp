@@ -217,7 +217,7 @@ long double CDecodeFile::SeekPosition(int *done)
 			decode_pos_ms = ttaTag.GetLengthbymsec();
 			*done = 1;
 		} else {
-			data_pos = (unsigned long)seek_needed / SEEK_STEP;
+			data_pos = (unsigned long)(seek_needed / SEEK_STEP);
 			decode_pos_ms = seek_needed;
 			seek_skip = (long)((seek_needed - (data_pos * SEEK_STEP)) / 1000. * ttaTag.GetSampleRate() + 0.5);
 			seek_needed = -1;
@@ -422,7 +422,7 @@ int CDecodeFile::set_position (long double pos) {
 		return -1;
 	}
 
-	seek_pos = ttaTag.id3v2.GetTagLength() + seek_table[data_pos = pos];
+	seek_pos = (unsigned long)(ttaTag.id3v2.GetTagLength()) + seek_table[data_pos = (unsigned long)pos];
 	SetFilePointer(decoderFileHANDLE, seek_pos, NULL, FILE_BEGIN);
 
 	data_cur = 0;
