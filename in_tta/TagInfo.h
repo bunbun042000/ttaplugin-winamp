@@ -10,7 +10,7 @@
 #endif // _MSC_VER > 1000
 
 #define	MAX_MUSICTEXT	512
-#define MAX_YEAR		4
+#define MAX_YEAR		10
 
 //#include <windows.h>
 #include <mmreg.h>
