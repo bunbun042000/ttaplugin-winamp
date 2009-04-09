@@ -214,7 +214,7 @@ CString CID3v2::GetYear()
 	if(m_ver == 0x03) {
 		GetComment("TYER", Year);
 	} else if (m_ver == 0x04){
-		GetComment("TDRL", Year);
+		GetComment("TDRC", Year);
 	}
 	return Year;
 }
@@ -222,11 +222,15 @@ CString CID3v2::GetYear()
 void CID3v2::SetYear(CString &Year)
 {
 	if(m_ver == 0x03) {
-		SetComment("TYER", CString(""), Year, NULL);
+		CString tempYear;
+		tempYear = Year.Left(4);
+		SetComment("TYER", CString(""), tempYear, NULL);
+		SetComment("TDRC", CString(""), CString(""), NULL);
 		SetComment("TDRL", CString(""), CString(""), NULL);
 	} else if(m_ver == 0x04) {
 		SetComment("TYER", CString(""), CString(""), NULL);
-		SetComment("TDRL", CString(""), Year, NULL);
+		SetComment("TDRC", CString(""), Year, NULL);
+		SetComment("TDRL", CString(""), CString(""), NULL);
 	}
 }
 
