@@ -266,15 +266,6 @@ void __cdecl config (HWND parent) {
 }
 
 int __cdecl infodlg (char *filename, HWND parent) {
-//	char *p, *fn, *caption;
-
-//	fn = filename;
-//	p = fn + lstrlen(fn);
-//	while (*p != '\\' && p >= fn) p--;
-//	if (*p == '\\') caption = ++p;
-//	else caption = fn;
-
-//	AfxSetResourceHandle(mod.hDllInstance);
 
 	CFileInfo *infodlg = new CFileInfo(NULL, filename);
 	infodlg->DoModal();
