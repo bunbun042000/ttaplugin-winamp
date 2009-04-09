@@ -189,8 +189,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(OutDir)\$(ProjectName).dll &quot;C:\Program Files\Winamp\Plugins\$(ProjectName).dll&quot;"
-				ExcludedFromBuild="true"
+				CommandLine="rmdir /S /Q &quot;$(SolutionDir)\export&quot;&#x0D;&#x0A;cd &quot;$(SolutionDir)&quot;&#x0D;&#x0A;svn export .  export&#x0D;&#x0A;copy &quot;$(OutDir)\$(ProjectName).dll&quot; &quot;$(SolutionDir)\export\&quot;&#x0D;&#x0A;copy &quot;$(SolutionDir)$(ProjectName)\lgpl.txt&quot; &quot;$(SolutionDir)export\&quot;&#x0D;&#x0A;copy &quot;$(SolutionDir)$(ProjectName)\Readme&quot; &quot;$(SolutionDir)export\&quot;"
+				ExcludedFromBuild="false"
 			/>
 		</Configuration>
 	</Configurations>
