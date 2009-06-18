@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Japanese resources
+// ì˙ñ{åÍ resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
 #ifdef _WIN32
@@ -63,8 +63,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,2,0,7
- PRODUCTVERSION 3,2,0,7
+ FILEVERSION 3,2,0,8
+ PRODUCTVERSION 3,2,0,8
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -81,12 +81,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Bunbun!"
             VALUE "FileDescription", "Winamp input extension for tta audio file"
-            VALUE "FileVersion", "3.2 extended Beta7 $Rev: 65 $"
+            VALUE "FileVersion", "$Rev$"
             VALUE "InternalName", "in_tta.dll"
             VALUE "LegalCopyright", "Version 3.2, (C) 2005 Alexander Djourik. All rights reserved."
             VALUE "OriginalFilename", "in_tta.dll"
             VALUE "ProductName", "in_tta"
-            VALUE "ProductVersion", "$LastChangedDate$"
+            VALUE "ProductVersion", "$Rev$"
         END
     END
     BLOCK "VarFileInfo"
@@ -95,12 +95,12 @@ BEGIN
     END
 END
 
-#endif    // Japanese resources
+#endif    // ì˙ñ{åÍ resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// âpåÍ (ïƒçë) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -327,7 +327,7 @@ BEGIN
     IDS_ID3V1DELETE         "Do you want to delete ID3v1 Tag?"
 END
 
-#endif    // English (U.S.) resources
+#endif    // âpåÍ (ïƒçë) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
