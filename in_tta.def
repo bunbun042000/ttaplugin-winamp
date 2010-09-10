@@ -1,0 +1,6 @@
+; in_tta.def : Declares the module parameters for the DLL.
+
+LIBRARY      "in_tta"
+
+EXPORTS
+    ; Explicit exports can go here

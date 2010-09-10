@@ -1,0 +1,63 @@
+in_tta.dll Ver3.2 改造版(Beta8) 
+($LastChangedDate$)
+=====================================================
+
+*このプラグインは
+本家(http://www.true-audio.com/)配布のwinamp用プラグインに
+メディアライブラリ読み込み対応を付け加え、ID3v2周りを改変し
+たものです。よって、Winamp Ver2.9以降に対応します。
+
+動作確認はWinamp5.551で行いました。
+
+
+*インストール方法
+ WinampのフォルダにあるPluginsフォルダにin_tta.dllをコピー
+ てください。
+
+
+*更新履歴
+2009-04-09 Beta8公開
+           VC2008にてコンパイル
+           ID3 Ver2.4においてYearタグをTDRL -> TDRCに変更
+2007/10/23 Beta7公開
+	   シーク位置ずれの修正
+	   Format Conversionに対応
+
+2006/07/03 Beta6公開
+	   メディアライブラリにyear情報を付加するために小改正
+
+2006/02/23 Beta5公開
+	   Beta4での修正点が実際には修正されておらず,再修正
+
+2005/12/19 Beta4公開
+	   再生中に他のプログラムからttaファイルにアクセスできない問題点を修正
+
+2005/12/16 Beta3公開
+	   ID3v2 Ver2.3の読み込み不具合修正
+	   (フレームサイズを正しくデコードしていない問題)
+
+2005/12/14 Beta2公開
+
+*その他
+配布規定はLGPLに従います。
+この改変は私が勝手に行ったものであり、この改変版に関して
+本家に問い合わせを行わないでください。
+
+メディアライブラリ読み込み関連では
+ おたちゃん さん作成のin_mpg123.dll 改悪版
+のソースコードを参照しました。
+  Web: http://www3.cypress.ne.jp/otachan/
+
+ID3v2関連では
+はせた さん作成のSTEP(SuperTagEditor改 Plugin Version (Nightmare))
+のソースコードを参考にしました。
+  Web: http://haseta2003.hp.infoseek.co.jp/
+
+シーク関連の修正は
+h0shu さん作成のパッチを参考にしました。
+  Web: http://hoshustep.hp.infoseek.co.jp/dust.html
+
+この場をお借りしてお礼申し上げます。
+
+bunbun042000.
+mailto:bunbun042000@yahoo.co.jp
