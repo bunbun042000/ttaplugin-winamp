@@ -446,9 +446,17 @@ int CMediaLibrary::GetAlbumArtData(const wchar_t *filename, const wchar_t *type,
         return retval;
 	}
 
+	if(!bits || !len || !mime_type) {
+		return retval;
+	}
+
 	size_t origsize = wcslen(filename) + 1;
 	size_t convertedChars = 0;
-	wcstombs_s(&convertedChars, demandFile, origsize, filename, _TRUNCATE);
+	int ret = WideCharToMultiByte(CP_ACP, 0, filename, origsize, demandFile, MAX_PATHLEN - 1, NULL, NULL);
+
+	if(!ret) {
+		return retval;
+	}
 
     if (_stricmp(demandFile, Cache.FileName) != 0) {
 		::EnterCriticalSection(&CriticalSection);
@@ -469,8 +477,6 @@ int CMediaLibrary::GetAlbumArtData(const wchar_t *filename, const wchar_t *type,
 		return retval;
 	} else if(Cache.E_Image->Image != NULL) {
 
-		bits = (void **)Wasabi_Malloc(1);
-
 		*bits = (char *)Wasabi_Malloc(Cache.E_Image->size);
 		memcpy_s(*bits, Cache.E_Image->size, Cache.E_Image->Image, Cache.E_Image->size);
 		*len = Cache.E_Image->size;
@@ -478,14 +484,12 @@ int CMediaLibrary::GetAlbumArtData(const wchar_t *filename, const wchar_t *type,
 		retval = ALBUMARTPROVIDER_SUCCESS;
 
 		size_t string_len;
-		TagLib::String extension = Cache.E_Image->mimeType.substr(mimeType.find("/") + 1);
-		mime_type = (wchar_t **)Wasabi_Malloc(1);
+		TagLib::String extension = Cache.E_Image->mimeType.substr(Cache.E_Image->mimeType.find("/") + 1);
 		*mime_type = (wchar_t *)Wasabi_Malloc(extension.size() * 2 + 2);
 		mbstowcs_s(&string_len, *mime_type, extension.size() + 1, extension.toCString(), _TRUNCATE);
 	}
 
 	if (retval) {
-		Wasabi_Free(bits);
 		Wasabi_Free(*bits);
 	}
 

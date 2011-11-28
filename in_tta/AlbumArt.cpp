@@ -163,32 +163,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 
 int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t *type, void *bits, size_t len, const wchar_t *mime_type)
 {
-	int tag_size = 0, i = 0;
-    int retval = ALBUMARTPROVIDER_FAILURE;
-	TagLib::String mimeType;
-
-	if(!filename || !*filename || _wcsicmp (type, L"cover")) {
-        return retval;
-	}
-
-	TagLib::TrueAudio::File file(filename);
-	if(file.isOpen() == false) {
-		return retval;
-	}
-
-	if(file.ID3v2Tag() == NULL) {
-		return retval;
-	}
-
-	TagLib::ByteVector AlbumArt((const char *)bits, len);
-	wchar_t tempMime[MIME_LENGTH];
-	swprintf_s(tempMime, MIME_LENGTH, L"image/%s", mime_type);
-	TagLib::String mimetype;
-	mimetype = _T("image/jpeg");
-	file.ID3v2Tag()->setAlbumArt(AlbumArt, TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimetype);
-	retval = ALBUMARTPROVIDER_SUCCESS;
-
-	return retval; // read-only
+	return ALBUMARTPROVIDER_READONLY; // read-noly
 }
 
 int TTA_AlbumArtProvider::DeleteAlbumArt(const wchar_t *filename, const wchar_t *type)
