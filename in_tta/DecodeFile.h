@@ -20,20 +20,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
 #include "common.h"
-#include "..\libtta-2.0-src\libtta.h"
+#include "..\libtta++\libtta.h"
 
 //////////////////////// TTA hybrid filter ////////////////////////////
 
 
 typedef struct {
-	tta::TTA_io_callback iocb;
+	TTA_io_callback iocb;
 	HANDLE handle;
 } TTA_io_callback_wrapper;
 
 void CALLBACK tta_callback(TTAuint32 rate, TTAuint32 fnum, TTAuint32 frames);
-TTAint32 CALLBACK read_callback(tta::_tag_TTA_io_callback *io, TTAuint8 *buffer, TTAuint32 size);
-TTAint32 CALLBACK write_callback(tta::_tag_TTA_io_callback *io, TTAuint8 *buffer, TTAuint32 size);
-TTAint64 CALLBACK seek_callback(tta::_tag_TTA_io_callback *io, TTAint64 offset);
+TTAint32 CALLBACK read_callback(_tag_TTA_io_callback *io, TTAuint8 *buffer, TTAuint32 size);
+TTAint32 CALLBACK write_callback(_tag_TTA_io_callback *io, TTAuint8 *buffer, TTAuint32 size);
+TTAint64 CALLBACK seek_callback(_tag_TTA_io_callback *io, TTAint64 offset);
 
 class CDecodeFile
 {
@@ -42,21 +42,20 @@ private:
 
 	int	            paused;
 	long            seek_needed;
-	double          decode_pos_ms;
-	long            seek_skip;
+	double	        decode_pos_ms;
+	TTAuint64		pos;
 
-	long            bitrate;    // kbps
-	long            Filesize;   // total file size (in bytes)
+	long            bitrate;			// kbps
+	long            Filesize;			// total file size (in bytes)
 
 	unsigned long	data_pos;			// currently playing frame index
-	unsigned long	out_bps;			// output bps value
-
 	unsigned long	st_state;			// seek table status
 
 
 	HANDLE decoderFileHANDLE;
 
 	tta::tta_decoder *TTA;
+	TTA_info		tta_info;
 
 public:
 	TTA_io_callback_wrapper iocb_wrapper;
@@ -76,22 +75,23 @@ public:
 	long double		GetDecodePosMs(){return decode_pos_ms;}
 	void		 	SetDecodePosMs(int d_pos_ms)
 	{
+		TTAuint32 new_pos;
 		decode_pos_ms = d_pos_ms;
-		TTA->set_position(decode_pos_ms);
+		TTA->set_position((TTAuint32)(decode_pos_ms / 1000), &new_pos);
+		decode_pos_ms = new_pos * 1000;
 	}
 	long double		SeekPosition(int *done);
 	void			SetSeekNeeded(int sn){seek_needed = sn;}
 	int				GetSeekNeeded(){return seek_needed;}
-	int				GetSampleRate() {return TTA->info.sps;}
+	int				GetSampleRate() {return tta_info.sps;}
 	int				GetBitrate() {return (int) (bitrate);}
-	__int32			GetNumberofChannel() {return TTA->info.nch;}
-	unsigned long	GetLengthbymsec() {return (unsigned long)(TTA->info.samples / TTA->info.sps * 1000);}
-	int				GetDataLength() {return TTA->info.samples;}
+	__int32			GetNumberofChannel() {return tta_info.nch;}
+	unsigned long	GetLengthbymsec() {return (unsigned long)(tta_info.samples / tta_info.sps * 1000);}
+	int				GetDataLength() {return tta_info.samples;}
 	unsigned long	GetDataPos(){return data_pos;}
-	unsigned __int8	GetByteSize() {return unsigned __int8(TTA->info.depth);}
-	unsigned long	GetOutputBPS() {return out_bps;}
-	void			SetOutputBPS(unsigned long bps){out_bps = bps;}
-	__int32			GetBitsperSample() {return TTA->info.bps;}
-	int				GetLengthbyFrame() {return (int) (FRAME_TIME * TTA->info.flen);}
+	TTAuint8		GetByteSize() {return TTAuint8(tta_info.bps/8);}
+	unsigned long	GetOutputBPS() {return tta_info.bps;}
+	void			SetOutputBPS(unsigned long bps);
+	__int32			GetBitsperSample() {return tta_info.bps;}
 
 };

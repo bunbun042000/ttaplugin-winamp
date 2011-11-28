@@ -94,7 +94,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
-			ManagedExtensions="1"
+			ManagedExtensions="0"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -114,10 +114,15 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="true"
 				PreprocessorDefinitions="WIN32;NDEBUG"
-				RuntimeLibrary="2"
-				WarningLevel="3"
-				DebugInformationFormat="3"
+				ExceptionHandling="2"
+				EnableEnhancedInstructionSet="2"
+				CompileAs="2"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -130,11 +135,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/NODEFAULTLIB:LIBCMT.lib"
 				AdditionalDependencies="../Release/libtta.lib"
 				OutputFile="$(OutDir)\tta.exe"
-				LinkIncremental="1"
-				GenerateDebugInformation="true"
+				LinkTimeCodeGeneration="1"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -178,6 +181,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\config.h"
+				>
+			</File>
 			<File
 				RelativePath="..\libtta.h"
 				>

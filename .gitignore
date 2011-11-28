@@ -3,6 +3,7 @@
 *.suo
 *.obj
 *.user
+*.orig
 
 #ignore thumbnails created by windows
 Thumbs.db

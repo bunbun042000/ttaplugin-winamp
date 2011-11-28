@@ -60,7 +60,7 @@ struct TagInfo
 	Embedded_Image *E_Image;
 };
 
-class AFX_EXT_CLASS CMediaLibrary  
+class CMediaLibrary  
 {
 public:
 	CMediaLibrary();
@@ -78,6 +78,7 @@ private:
 
 	void FlushCache(void);
 	bool GetTagInfo();
+	void ReleaseImageBuffer();
 
 };
 

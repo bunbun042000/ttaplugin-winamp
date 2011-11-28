@@ -23,8 +23,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 	#error "include 'stdafx.h' before including this file for PCH"
 #endif
 
-#define TTA_VERSION "3.0"
-
 // Cin_ttaApp
 // See in_tta.cpp for the implementation of this class
 //

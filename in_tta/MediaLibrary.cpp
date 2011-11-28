@@ -45,6 +45,8 @@ CMediaLibrary::CMediaLibrary()
 
 CMediaLibrary::~CMediaLibrary()
 {
+	FlushCache();
+
 	::DeleteCriticalSection(&CriticalSection);
 
 }
@@ -70,17 +72,8 @@ void CMediaLibrary::FlushCache(void)
 	Cache.Publisher[0] = '\0';
 	Cache.Disc[0] = '\0';
 	Cache.BPM[0] = '\0';
-	if(Cache.E_Image != NULL) {
-		if(Cache.E_Image->Image != NULL) {
-			delete [] Cache.E_Image->Image;
-		} else {
-			// do nothing
-		}
-		delete Cache.E_Image; 
-	} else {
-		// do nothing
-	}
-	Cache.E_Image = NULL;
+
+	ReleaseImageBuffer();
 
 	::LeaveCriticalSection(&CriticalSection);
 }
@@ -96,6 +89,8 @@ bool CMediaLibrary::GetTagInfo()
 	if (TagLib::File::isReadable(Cache.FileName) == false) {
 		return false;
 	}
+
+	ReleaseImageBuffer();
 
 	TagLib::TrueAudio::File TagFile(Cache.FileName);
 
@@ -206,13 +201,12 @@ int CMediaLibrary::GetExtendedFileInfo(const char *fn, const char *data, char *d
 	bool FindTag;
 	int RetCode;
 
-    if (_stricmp(fn, Cache.FileName) != 0) {
-		::EnterCriticalSection(&CriticalSection);
+	::EnterCriticalSection(&CriticalSection);
 
+	if (_stricmp(fn, Cache.FileName) != 0) {
+		
 		::strncpy_s(Cache.FileName, MAX_PATHLEN - 1, fn, MAX_PATHLEN - 1);
-
 		FindTag = GetTagInfo();
-		::LeaveCriticalSection(&CriticalSection);
 
 	} else {
 		FindTag = true;
@@ -291,6 +285,7 @@ int CMediaLibrary::GetExtendedFileInfo(const char *fn, const char *data, char *d
 		RetCode = 0;
 	}
 
+	::LeaveCriticalSection(&CriticalSection);
 	return RetCode;
 }
 
@@ -300,13 +295,13 @@ int CMediaLibrary::SetExtendedFileInfo(const char *fn, const char *MetaData, con
 	bool FindTag = false;
 	int RetCode = 0;
 
-    if (_stricmp(fn, Cache.FileName) != 0) {
-		::EnterCriticalSection(&CriticalSection);
+	::EnterCriticalSection(&CriticalSection);
+
+	if (_stricmp(fn, Cache.FileName) != 0) {
 
 		::strncpy_s(Cache.FileName, MAX_PATHLEN - 1, fn, MAX_PATHLEN - 1);
 
 		FindTag = GetTagInfo();
-		::LeaveCriticalSection(&CriticalSection);
 
 	} else {
 		FindTag = true;
@@ -363,14 +358,13 @@ int CMediaLibrary::SetExtendedFileInfo(const char *fn, const char *MetaData, con
 		RetCode = 0;
 	}
 
-
+	::LeaveCriticalSection(&CriticalSection);
 	return RetCode;
 }
 
 int CMediaLibrary::WriteExtendedFileInfo()
 {
 
-    ::EnterCriticalSection(&CriticalSection);
 
 	if (*Cache.FileName == NULL) {
 		return 0;
@@ -380,6 +374,8 @@ int CMediaLibrary::WriteExtendedFileInfo()
 	if (TagLib::File::isWritable(Cache.FileName) == false) {
 		return 0;
 	}
+
+    ::EnterCriticalSection(&CriticalSection);
 
 	TagLib::TrueAudio::File TagFile(Cache.FileName);
 
@@ -457,22 +453,24 @@ int CMediaLibrary::GetAlbumArtData(const wchar_t *filename, const wchar_t *type,
 		return retval;
 	}
 
-    if (_stricmp(demandFile, Cache.FileName) != 0) {
-		::EnterCriticalSection(&CriticalSection);
+	::EnterCriticalSection(&CriticalSection);
+
+	if (_stricmp(demandFile, Cache.FileName) != 0) {
 
 		::strncpy_s(Cache.FileName, MAX_PATHLEN - 1, (LPCTSTR)demandFile, MAX_PATHLEN - 1);
 
 		FindTag = GetTagInfo();
-		::LeaveCriticalSection(&CriticalSection);
 	} else {
 		FindTag = true;
 	}
 
 	if(!FindTag) {
+		::LeaveCriticalSection(&CriticalSection);
 		return retval;
 	}
 
 	if (Cache.E_Image == NULL) {
+		::LeaveCriticalSection(&CriticalSection);
 		return retval;
 	} else if(Cache.E_Image->Image != NULL) {
 
@@ -492,5 +490,21 @@ int CMediaLibrary::GetAlbumArtData(const wchar_t *filename, const wchar_t *type,
 		Wasabi_Free(*bits);
 	}
 
+	::LeaveCriticalSection(&CriticalSection);
     return retval;
+}
+
+void CMediaLibrary::ReleaseImageBuffer()
+{
+	if(Cache.E_Image != NULL) {
+		if(Cache.E_Image->Image != NULL) {
+			delete [] Cache.E_Image->Image;
+		} else {
+			// do nothing
+		}
+		delete Cache.E_Image; 
+	} else {
+		// do nothing
+	}
+	Cache.E_Image = NULL;
 }

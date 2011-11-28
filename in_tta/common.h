@@ -23,13 +23,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define COMMON_H_
 
 #include "stdafx.h"
-#include "..\libtta-2.0-src\libtta.h"
+#include "..\libtta++\libtta.h"
 
-static const double FRAME_TIME = 1.04489795918367346939;
 static const __int32 BUFFER_LENGTH = 576;
 static const __int32 BUFFER_SIZE = BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
 static const __int32 MAX_PATHLEN = 512;
-static const double SEEK_STEP = FRAME_TIME * 1000;
 static const unsigned __int8 FIELD_TEXT_ISO_8859_1	= 0x00;
 static const unsigned __int8 FIELD_TEXT_UTF_16		= 0x01;
 static const unsigned __int8 FIELD_TEXT_UTF_16BE	= 0x02;

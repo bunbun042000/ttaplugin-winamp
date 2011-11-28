@@ -1,60 +1,48 @@
-========================================================================
-    MICROSOFT FOUNDATION CLASS LIBRARY : in_tta Project Overview
-========================================================================
+in_tta.dll Ver3.2 Modified(Beta11) 
+=====================================================
 
+*This plugin 
+is based on TAU Software(http://en.true-audio.com/)
+TTA plug-in ver 3.2 for Winamp 2,5.
+The modification is ID3v2 Tag read/write function using 
+taglib(http://developer.kde.org/~wheeler/taglib.html).
+And add read metadata (include album art) for MediaLibray.
+From Beta9, decode engine was replaced by
+TTA encoder/decoder/decoder multiplatform library, C++ version
+(http://en.true-audio.com/)
+This plugin performs Winamp Ver.2.9 or newer.
 
-AppWizard has created this in_tta DLL for you.  This DLL not only
-demonstrates the basics of using the Microsoft Foundation classes but
-is also a starting point for writing your DLL.
+*Install
+ Please copy in_tta.dll to Plugins folder in Winamp and also copy tag.dll(https://github.com/downloads/bunbun042000/taglib-modified/tag.dll) to Plugins folder in Winamp and Winamp base folder.
 
-This file contains a summary of what you will find in each of the files that
-make up your in_tta DLL.
+*Release Notes
+2011-11-21 Beta11 Change base library to libtta++2.1.
+                  Change taglib included to use external taglib dll.
+                  Fix memory leak when reading album art.
+2011-11-17 Beta10 Change base taglib 1.7.0.
+                  Change compiler to VS2010.
+2010-11-29 Beta9  Add reading album art.
+2009-04-09 Beta8  Change compiler to VC2008.
+                  Change Year tag from TDRL to TDRC in ID3 Ver2.4.
+2007/10/23 Beta7  Fix incorrect Seek position.
+                  (Thanks to h0shu (http://hoshustep.hp.infoseek.co.jp/dust.html))
+                  Add format conversion function.
+2006/07/03 Beta6  Change read year metadata.
+2006/02/23 Beta5  Fix incorrect Beta4
+2005/12/19 Beta4  Fix problem that other program cannot access playing tta file.
+2005/12/16 Beta3  Fix reading ID3v2 Ver2.3 (incorrect decoding frame size)
+2005/12/14 Beta2  Initial release.
 
-in_tta.vcproj
-    This is the main project file for VC++ projects generated using an Application Wizard. 
-    It contains information about the version of Visual C++ that generated the file, and 
-    information about the platforms, configurations, and project features selected with the
-    Application Wizard.
+*Copying
+This libray is distributed under LGPL2.1
 
-in_tta.h
-    This is the main header file for the DLL.  It declares the
-    Cin_ttaApp class.
+*Acknowledgement
 
-in_tta.cpp
-    This is the main DLL source file.  It contains the class Cin_ttaApp.
+Refer in_mpg123.dll source code made by Otachan(http://www3.cypress.ne.jp/otachan/)in reading metadata for media library.
 
-in_tta.rc
-    This is a listing of all of the Microsoft Windows resources that the
-    program uses.  It includes the icons, bitmaps, and cursors that are stored
-    in the RES subdirectory.  This file can be directly edited in Microsoft
-    Visual C++.
+Refer STEP(SuperTagEditor-kai Plugin Version (Nightmare)) source code made by Haseta(http://haseta2003.hp.infoseek.co.jp/) in ID3v2 related.
 
-res\in_tta.rc2
-    This file contains resources that are not edited by Microsoft 
-    Visual C++.  You should place all resources not editable by
-    the resource editor in this file.
+Refer patch made by h0shu(http://hoshustep.hp.infoseek.co.jp/dust.html) in fixing seek problem.
 
-in_tta.def
-    This file contains information about the DLL that must be
-    provided to run with Microsoft Windows.  It defines parameters
-    such as the name and description of the DLL.  It also exports
-    functions from the DLL.
-
-/////////////////////////////////////////////////////////////////////////////
-Other standard files:
-
-StdAfx.h, StdAfx.cpp
-    These files are used to build a precompiled header (PCH) file
-    named in_tta.pch and a precompiled types file named StdAfx.obj.
-
-Resource.h
-    This is the standard header file, which defines new resource IDs.
-    Microsoft Visual C++ reads and updates this file.
-
-/////////////////////////////////////////////////////////////////////////////
-Other notes:
-
-AppWizard uses "TODO:" to indicate parts of the source code you
-should add to or customize.
-
-/////////////////////////////////////////////////////////////////////////////
+Yamagata Fumihiro
+mailto:bunbun042000@gmail.com

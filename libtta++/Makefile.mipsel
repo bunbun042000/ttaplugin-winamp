@@ -6,7 +6,7 @@ G++     = $(ROOTFS)/host/bin/mipsel-linux-g++
 AR      = $(ROOTFS)/host/bin/mipsel-linux-ar
 CFLAGS  = -Wall -mips32r2 -mtune=24kf -O2 -funroll-loops -fomit-frame-pointer
 SRC	= libtta.cpp
-LIB	= libtta
+LIB	= libtta++
 
 all:	$(SRC)
 	$(G++) -c $(CFLAGS) $(SRC) -o $(LIB).o

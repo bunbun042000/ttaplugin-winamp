@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "common.h"
-#include "..\libtta-2.0-src\libtta.h"
+#include "..\libtta++\libtta.h"
 
 CString GetEncodingString(const _TCHAR *string)
 {

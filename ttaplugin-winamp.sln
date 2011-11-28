@@ -2,8 +2,11 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "in_tta", "in_tta\in_tta.vcxproj", "{67DE0204-5F5F-48A7-93F8-9D403EB9CEE0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B3DF599C-1C8F-451D-91E4-DD766210DA1F} = {B3DF599C-1C8F-451D-91E4-DD766210DA1F}
+	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtta", "libtta-2.0-src\libtta.vcxproj", "{B3DF599C-1C8F-451D-91E4-DD766210DA1F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtta", "libtta++\libtta.vcxproj", "{B3DF599C-1C8F-451D-91E4-DD766210DA1F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

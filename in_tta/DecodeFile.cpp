@@ -19,9 +19,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "stdafx.h"
 #include "DecodeFile.h"
-#include "..\libtta-2.0-src\libtta.h"
+#include "..\libtta++\libtta.h"
 
-TTAint32 CALLBACK read_callback(tta::TTA_io_callback *io, TTAuint8 *buffer, TTAuint32 size) {
+TTAint32 CALLBACK read_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint32 size) {
 	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io; 
 	TTAint32 result;
 
@@ -33,7 +33,7 @@ TTAint32 CALLBACK read_callback(tta::TTA_io_callback *io, TTAuint8 *buffer, TTAu
 	return 0;
 } // read_callback
 
-TTAint32 CALLBACK write_callback(tta::TTA_io_callback *io, TTAuint8 *buffer, TTAuint32 size) {
+TTAint32 CALLBACK write_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint32 size) {
 	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io; 
 	TTAint32 result;
 
@@ -45,7 +45,7 @@ TTAint32 CALLBACK write_callback(tta::TTA_io_callback *io, TTAuint8 *buffer, TTA
 	return 0;
 } // write_callback
 
-TTAint64 CALLBACK seek_callback(tta::TTA_io_callback *io, TTAint64 offset) {
+TTAint64 CALLBACK seek_callback(TTA_io_callback *io, TTAint64 offset) {
 	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io; 
 	return ::SetFilePointer(iocb->handle, (LONG)offset, NULL, FILE_BEGIN);
 } // seek_callback
@@ -56,7 +56,6 @@ CDecodeFile::CDecodeFile(void)
 	paused = 0;
 	seek_needed = -1;
 	decode_pos_ms = 0;
-	seek_skip = 0;
 	bitrate = 0;
 	Filesize = 0;
 	st_state = 0;
@@ -79,11 +78,7 @@ CDecodeFile::CDecodeFile(CDecodeFile &s)
 	decode_pos_ms = s.decode_pos_ms;
 	bitrate = s.bitrate;
 	Filesize = s.Filesize;
-	seek_skip = s.seek_skip;
-
 	data_pos = s.data_pos;
-	out_bps = s.out_bps;
-
 	st_state = s.st_state;
 
 	decoderFileHANDLE = INVALID_HANDLE_VALUE;
@@ -125,14 +120,13 @@ int CDecodeFile::SetFileName(const char *filename)
 	iocb_wrapper.handle = decoderFileHANDLE;
 	iocb_wrapper.iocb.read = &read_callback;
 	iocb_wrapper.iocb.seek = &seek_callback;
-	TTA = new tta::tta_decoder((tta::TTA_io_callback *) &iocb_wrapper);
-	TTA->decoder_init();
+	TTA = new tta::tta_decoder((TTA_io_callback *) &iocb_wrapper);
+	TTA->init_get_info(&tta_info, pos);
 
 	paused = 0;
 	decode_pos_ms = 0;
 	seek_needed = -1;
-	out_bps = (TTA->info.bps > MAX_BPS)? MAX_BPS : TTA->info.bps;
-	bitrate = (long)((Filesize - TTA->info.offset) / (TTA->info.frames * TTA->info.depth) * TTA->info.bps / 1000);
+	bitrate = (long)((Filesize) / (tta_info.samples / tta_info.sps * tta_info.bps) / 1000);
 
 	if (TTA->seek_allowed){
 		st_state = 1;
@@ -147,54 +141,44 @@ int CDecodeFile::SetFileName(const char *filename)
 
 long double CDecodeFile::SeekPosition(int *done)
 {
+	TTAuint32 new_pos;
 
 	if (seek_needed >= (long)GetLengthbymsec()) {
 		decode_pos_ms = (double)(GetLengthbymsec());
 		*done = 1;
 	} else {
-		data_pos = (unsigned long)(seek_needed / SEEK_STEP);
-		decode_pos_ms = data_pos * SEEK_STEP;
-		seek_skip = (long)((seek_needed - (data_pos * SEEK_STEP)) / 1000. * TTA->info.sps + 0.5);
+		decode_pos_ms = seek_needed;
 		seek_needed = -1;
 	}
-	TTA->set_position(decode_pos_ms / 1000.);
+	TTA->set_position((TTAuint32)(decode_pos_ms / 1000.), &new_pos);
 
 	return decode_pos_ms;
 }
 
-int CDecodeFile::GetSamples(BYTE *buffer, long count, int *current_bitrate)
+int CDecodeFile::GetSamples(BYTE *buffer, long buffersize, int *current_bitrate)
 {
-	BYTE *temp = new BYTE[count * TTA->info.depth * TTA->info.nch];
+	BYTE *temp = new BYTE[buffersize];
 	int skip_len = 0;
 	int len = 0;
 
-	while (seek_skip > count) {
-		len = TTA->decode_stream(temp, count);
-
-		if (len == 0) {
-			seek_skip = 0;
-			return 0;
-		}
-		
-		skip_len += len;
-		seek_skip -= len;
-	}
-	len = TTA->decode_stream(temp, count);
+	len = TTA->process_stream(temp, buffersize);
 	if (len == 0) {
-		seek_skip = 0;
 		return 0;
 	} else {
 		skip_len += len;
-		len -= seek_skip;
-		memcpy_s(buffer, count * TTA->info.nch * TTA->info.depth,
-			temp + seek_skip * TTA->info.nch * TTA->info.depth, 
-			len * TTA->info.nch * TTA->info.depth);
-		seek_skip = 0;
-		decode_pos_ms += (skip_len * 1000.) / TTA->info.sps;
+		memcpy_s(buffer, buffersize,
+			temp, len * tta_info.nch * tta_info.bps / 8);
+		decode_pos_ms += (skip_len * 1000.) / tta_info.sps;
 	}
 
-	*current_bitrate = TTA->info.rate;
+	*current_bitrate = TTA->get_rate();
 	delete [] temp;
 	return len;
 
+}
+
+void CDecodeFile::SetOutputBPS(unsigned long bps)
+{
+	tta_info.bps = bps;
+	TTA->init_set_info(&tta_info);
 }
