@@ -4,29 +4,12 @@
  *               with MediaLibrary Extension version
  * Developed by: Alexander Djourik <ald@true-audio.com>
  *               Pavel Zhilin <pzh@true-audio.com>
- *               (MediaLibrary Extension Bunbun <bunbun042000@yahoo.co.jp> )
+ *               (MediaLibrary Extension Yamagata Fumihiro <bunbun042000@gmail.com> )
  *
  * Copyright (c) 2005 Alexander Djourik. All rights reserved.
  *
  */
 
-/* This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * Please see the file COPYING in this directory for full copyright
- * information.
- */
 
 #include "stdafx.h"
 #include "in_tta.h"
@@ -106,6 +89,11 @@ static BYTE pcm_buffer[BUFFER_SIZE];
 
 #define  PLUGIN_VERSION "3.2 extended beta10"
 #define  PROJECT_URL "<git://github.com/bunbun042000/ttaplugin-winamp.git>"
+#define  LIBTTA_VERSION "based on libtta ver. 2.0"
+#define  ORIGINAL_CREADIT01 "Plugin is written by Alexander Djourik, Pavel Zhilin and Anton Gorbunov.\n"
+#define  ORIGINAL_CREADIT02 "Copyright (c) 2003 Alexander Djourik.\n"
+#define  ORIGINAL_CREADIT03 "All rights reserved.\n"
+#define  CREADIT01 "Modified by Yamagata Fumihiro, 2005-2011"
 
 static HANDLE decoder_handle = NULL;
 static DWORD WINAPI __stdcall DecoderThread (void *p);
@@ -223,8 +211,11 @@ static BOOL CALLBACK about_dialog(HWND dialog, UINT message,
 	switch (message) {
 	case WM_INITDIALOG:
 		SetDlgItemText(dialog, IDC_PLUGIN_VERSION,
-			"TTA Audio Decoder version " TTA_VERSION "\n"
-			"Winamp plug-in version " PLUGIN_VERSION "\n" PROJECT_URL);
+			"Winamp plug-in version " PLUGIN_VERSION "\n" 
+			LIBTTA_VERSION "\n" PROJECT_URL);
+		SetDlgItemText(dialog, IDC_PLUGIN_CREADIT,
+			ORIGINAL_CREADIT01 ORIGINAL_CREADIT02 ORIGINAL_CREADIT03
+			CREADIT01);
 		return TRUE;
 	case WM_COMMAND:
 		switch (LOWORD(wparam)) {

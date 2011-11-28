@@ -59,6 +59,7 @@
 #define IDC_ID3V2_TRACKNO               2033
 #define IDC_ID3V2_SYNCHRONIZATIOn       2034
 #define IDC_RICHEDIT21                  2036
+#define IDC_PLUGIN_CREADIT              2037
 #define IDI_INFO_ICON                   10002
 #define IDD_TAGINFO                     10004
 
@@ -68,7 +69,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        2005
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2037
+#define _APS_NEXT_CONTROL_VALUE         2038
 #define _APS_NEXT_SYMED_VALUE           2000
 #endif
 #endif

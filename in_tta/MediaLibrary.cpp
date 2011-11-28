@@ -1,6 +1,6 @@
 /*
 The ttaplugin-winamp project.
-Copyright (C) 2005-2010  bunbun04200
+Copyright (C) 2005-2011 Yamagata Fumihiro
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -150,7 +150,6 @@ bool CMediaLibrary::GetTagInfo()
 		_tcsncpy_s(Cache.OrgArtist, MAX_MUSICTEXT - 1, (LPCTSTR)temp, _TRUNCATE);
 		temp = GetEncodingString(TagFile.ID3v2Tag()->copyright().toCString(true));
 		_tcsncpy_s(Cache.Copyright, MAX_MUSICTEXT - 1, (LPCTSTR)temp, _TRUNCATE);
-//		char			Encoder[MAX_MUSICTEXT];
 		temp = GetEncodingString(TagFile.ID3v2Tag()->publisher().toCString(true));
 		_tcsncpy_s(Cache.Publisher, MAX_MUSICTEXT - 1, (LPCTSTR)temp, _TRUNCATE);
 		temp = GetEncodingString(TagFile.ID3v2Tag()->disc().toCString(true));
