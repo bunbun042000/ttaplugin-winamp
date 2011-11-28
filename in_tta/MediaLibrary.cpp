@@ -28,8 +28,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <taglib/id3v2tag.h>
 #include <taglib/id3v1tag.h>
 #include <taglib/attachedpictureframe.h>
-#include "AlbumArt.h"
-#include <Agave/AlbumArt/svc_albumArtProvider.h>
 
 //////////////////////////////////////////////////////////////////////
 // Create / Destroy
@@ -55,7 +53,7 @@ void CMediaLibrary::FlushCache(void)
 {
 	::EnterCriticalSection(&CriticalSection);
 
-	*Cache.FileName = '\0';
+	Cache.FileName[0] = '\0';
 	GetTagTime = 0;
 	Cache.Title[0] = '\0';
 	Cache.Artist[0] = '\0';
@@ -79,7 +77,7 @@ void CMediaLibrary::FlushCache(void)
 bool CMediaLibrary::GetTagInfo()
 {
 
-	if (*Cache.FileName == NULL) {
+	if (Cache.FileName[0] == '\0') {
 		return false;
 	} else { 
 		// do nothing
@@ -351,7 +349,7 @@ int CMediaLibrary::SetExtendedFileInfo(const char *fn, const char *MetaData, con
 int CMediaLibrary::WriteExtendedFileInfo()
 {
 	
-	if (*Cache.FileName == NULL) {
+	if (Cache.FileName[0] == '\0') {
 		return 0;
 	}
 
@@ -363,6 +361,11 @@ int CMediaLibrary::WriteExtendedFileInfo()
     ::EnterCriticalSection(&CriticalSection);
 
 	TagLib::TrueAudio::File TagFile(Cache.FileName);
+	if (!TagFile.isValid()) {
+		return 0;
+	} else {
+		// do nothing
+	}
 
 	if (NULL != TagFile.ID3v2Tag()) {
 		TagLib::String temp;

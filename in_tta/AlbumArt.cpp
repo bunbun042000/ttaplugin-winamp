@@ -51,7 +51,7 @@ protected:
 	RECVS_DISPATCH;
 };
 
-	extern In_Module mod; // TODO: change if you called yours something else
+extern In_Module mod; // TODO: change if you called yours something else
 
 #define WASABI_API_MEMMGR memmgr
 
@@ -107,6 +107,8 @@ void Wasabi_Free(void *memory_block)
 class TTA_AlbumArtProvider : public svc_albumArtProvider
 {
 public:
+	TTA_AlbumArtProvider();
+	virtual ~TTA_AlbumArtProvider();
 	bool IsMine(const wchar_t *filename);
 	int ProviderType();
 	// implementation note: use WASABI_API_MEMMGR to alloc bits and mimetype, so that the recipient can free through that
@@ -115,7 +117,20 @@ public:
 	int DeleteAlbumArt(const wchar_t *filename, const wchar_t *type);
 protected:
 	RECVS_DISPATCH;
+	CRITICAL_SECTION	CriticalSection;
 };
+
+TTA_AlbumArtProvider::TTA_AlbumArtProvider() : svc_albumArtProvider()
+{
+	::InitializeCriticalSection(&CriticalSection);
+
+}
+
+TTA_AlbumArtProvider::~TTA_AlbumArtProvider()
+{
+	::DeleteCriticalSection(&CriticalSection);
+
+}
 
 static const wchar_t *GetLastCharactercW(const wchar_t *string)
 {
@@ -191,11 +206,13 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 		// do nothing
 	}
 
+	::EnterCriticalSection(&CriticalSection);
+
 	TagLib::TrueAudio::File TagFile(filename);
 	if (false == TagFile.isValid()) {
 		return retval;
 	} else {
-		// do nothign
+		// do nothing
 	}
 
 	// read Album Art
@@ -205,8 +222,16 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 	if(AlbumArt != TagLib::ByteVector::null) {
 		*len = AlbumArt.size();
 		*bits = (char *)Wasabi_Malloc(*len);
+		if (NULL == *bits) {
+			::LeaveCriticalSection(&CriticalSection);
+			return retval;
+		} else {
+			// do nothing
+		}
+
 		errno_t err = memcpy_s(*bits, AlbumArt.size(), AlbumArt.data(), AlbumArt.size());
 		if (err) {
+			::LeaveCriticalSection(&CriticalSection);
 			return retval;
 		} else {
 			// do nothing
@@ -217,13 +242,37 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 		size_t string_len;
 		TagLib::String extension = mimeType.substr(mimeType.find("/") + 1);
 		*mime_type = (wchar_t *)Wasabi_Malloc(extension.size() * 2 + 2);
+		if (NULL == *mime_type) {
+			if (NULL != *bits) {
+				Wasabi_Free(*bits);
+			} else {
+				// do nothing
+			}
+			::LeaveCriticalSection(&CriticalSection);
+			return retval;
+		} else {
+			// do nothing
+		}
+
 		mbstowcs_s(&string_len, *mime_type, extension.size() + 1, extension.toCString(), _TRUNCATE);
+
+		if (retval) {
+			if (NULL != *bits) {
+				Wasabi_Free(*bits);
+			} else {
+				// do nothing
+			}
+			if (NULL != *mime_type) {
+				Wasabi_Free(*bits);
+			} else {
+				// do nothing
+			}
+		}
+	} else {
+		// do nothing
 	}
 
-	if (retval) {
-		Wasabi_Free(*bits);
-	}
-
+	::LeaveCriticalSection(&CriticalSection);
     return retval;
 }
 
@@ -251,8 +300,11 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 		// do nothing
 	}
 
+	::EnterCriticalSection(&CriticalSection);
+
 	// If target file cannot access
 	if (TagLib::File::isWritable(demandFile) == false) {
+		::LeaveCriticalSection(&CriticalSection);
 		return retval;
 	} else {
 		// do nothing
@@ -265,6 +317,7 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 		AlbumArt.setData(NULL, 0);
 
 	} else if(bits || !len || !mime_type) {
+		::LeaveCriticalSection(&CriticalSection);
 		return retval;
 	} else {
 		mimeType = _T("image/");
@@ -276,6 +329,7 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 
 	TagLib::TrueAudio::File TagFile(demandFile);
 	if (!TagFile.isValid()) {
+		::LeaveCriticalSection(&CriticalSection);
 		return retval;
 	} else {
 		// do nothing
@@ -285,6 +339,8 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 
 	TagFile.ID3v2Tag()->setAlbumArt(AlbumArt, artType, mimeType);
 	TagFile.save();
+
+	::LeaveCriticalSection(&CriticalSection);
 
 	return retval;
 
