@@ -120,6 +120,14 @@ int CDecodeFile::SetFileName(const char *filename)
 	iocb_wrapper.handle = decoderFileHANDLE;
 	iocb_wrapper.iocb.read = &read_callback;
 	iocb_wrapper.iocb.seek = &seek_callback;
+
+	if (TTA != NULL) {
+		delete TTA;
+		TTA = NULL;
+	} else {
+		// nothing todo
+	}
+
 	TTA = new tta::tta_decoder((TTA_io_callback *) &iocb_wrapper);
 	TTA->init_get_info(&tta_info, pos);
 
