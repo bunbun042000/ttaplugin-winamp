@@ -162,8 +162,8 @@ void CFileInfo::OnBnClickedOk()
 		fileinfo->ID3v1Tag()->setArtist(m_sID3v1_Artists.GetBuffer());
 		fileinfo->ID3v1Tag()->setAlbum(m_sID3v1_Album.GetBuffer());
 		fileinfo->ID3v1Tag()->setComment(m_sID3v1_Comment.GetBuffer());
-		fileinfo->ID3v1Tag()->setYear((LPCTSTR)m_sID3v1_Year);
-		fileinfo->ID3v1Tag()->setTrack((LPCTSTR)m_sID3v1_TrackNo);
+		fileinfo->ID3v1Tag()->setYear(_ttoi((LPCTSTR)m_sID3v1_Year));
+		fileinfo->ID3v1Tag()->setTrack(_ttoi((LPCTSTR)m_sID3v1_TrackNo));
 
 		CString current;
 		unsigned __int8 index;
@@ -207,9 +207,9 @@ void CFileInfo::OnBnClickedOk()
 		tempStr = TagLib::String(SetEncodingString(m_sID3v2_Album), TagLib::String::UTF8);
 		fileinfo->ID3v2Tag()->setAlbum(tempStr);
 		tempStr = TagLib::String(SetEncodingString(m_sID3v2_TrackNo), TagLib::String::UTF8);
-		fileinfo->ID3v2Tag()->setTrack(tempStr);
+		fileinfo->ID3v2Tag()->setStringTrack(tempStr);
 		tempStr = TagLib::String(SetEncodingString(m_sID3v2_Year), TagLib::String::UTF8);
-		fileinfo->ID3v2Tag()->setYear(tempStr);
+		fileinfo->ID3v2Tag()->setStringYear(tempStr);
 		tempStr = TagLib::String(SetEncodingString(m_sID3v2_Genre), TagLib::String::UTF8);
 		fileinfo->ID3v2Tag()->setGenre(tempStr);
 		tempStr = TagLib::String(SetEncodingString(m_sID3v2_Comment), TagLib::String::UTF8);
@@ -297,8 +297,8 @@ BOOL CFileInfo::OnInitDialog()
 		m_sID3v1_Artists = fileinfo->ID3v1Tag()->artist().toCString(false);
 		m_sID3v1_Album = fileinfo->ID3v1Tag()->album().toCString(false);
 		m_sID3v1_Comment = fileinfo->ID3v1Tag()->comment().toCString(false);
-		m_sID3v1_Year = fileinfo->ID3v1Tag()->year().toCString(false);
-		m_sID3v1_TrackNo = fileinfo->ID3v1Tag()->track().toCString(false);
+		m_sID3v1_Year.Format(_T("%d"), fileinfo->ID3v1Tag()->year());
+		m_sID3v1_TrackNo.Format(_T("%d"), fileinfo->ID3v1Tag()->track());
 		SetID3v1Genre(fileinfo->ID3v1Tag()->genre().toCString(false));
 	} else {
 		m_bID3v1_save = FALSE;
@@ -322,8 +322,8 @@ BOOL CFileInfo::OnInitDialog()
 			m_sID3v2_Artists = GetEncodingString(fileinfo->ID3v2Tag()->artist().toCString(true));
 			m_sID3v2_Title = GetEncodingString(fileinfo->ID3v2Tag()->title().toCString(true));
 			m_sID3v2_Album = GetEncodingString(fileinfo->ID3v2Tag()->album().toCString(true));
-			m_sID3v2_TrackNo = GetEncodingString(fileinfo->ID3v2Tag()->track().toCString(true));
-			m_sID3v2_Year = GetEncodingString(fileinfo->ID3v2Tag()->year().toCString(true));
+			m_sID3v2_TrackNo = GetEncodingString(fileinfo->ID3v2Tag()->stringTrack().toCString(true));
+			m_sID3v2_Year = GetEncodingString(fileinfo->ID3v2Tag()->stringYear().toCString(true));
 			m_sID3v2_Genre = GetEncodingString(fileinfo->ID3v2Tag()->genre().toCString(true));
 			m_sID3v2_Comment = GetEncodingString(fileinfo->ID3v2Tag()->comment().toCString(true));
 			m_sID3v2_Copyrights = GetEncodingString(fileinfo->ID3v2Tag()->copyright().toCString(true));

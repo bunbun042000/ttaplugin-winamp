@@ -28,9 +28,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <taglib/tstring.h>
 #include "common.h"
 #include "..\Winamp SDK\Winamp\wa_ipc.h"
+#include <taglib/tstring.h>
 
 static const __int32 MAX_MUSICTEXT = 512;
 static const __int32 MAX_YEAR = 10;

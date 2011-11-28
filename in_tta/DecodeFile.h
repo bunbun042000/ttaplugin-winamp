@@ -1,7 +1,7 @@
 #pragma once
 
-#include "..\libtta-2.0-src\libtta.h"
 #include "common.h"
+#include "..\libtta-2.0-src\libtta.h"
 //#include "..\include\ttadec.h"
 
 

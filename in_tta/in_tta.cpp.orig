@@ -104,8 +104,13 @@ CMediaLibrary m_Tag;
 static long	vis_buffer[BUFFER_SIZE * MAX_NCH];	// vis buffer
 static BYTE pcm_buffer[BUFFER_SIZE];
 
+<<<<<<< HEAD
+#define  PLUGIN_VERSION "3.2 extended beta8 $Rev: 83 $"
+#define  PROJECT_URL "<http://www.sourceforge.net>"
+=======
 #define  PLUGIN_VERSION "3.2 extended beta10"
 #define  PROJECT_URL "<git://github.com/bunbun042000/ttaplugin-winamp.git>"
+>>>>>>> a55e3fd... modify for taglib 1.7.0 and VC10.
 
 static HANDLE decoder_handle = NULL;
 static DWORD WINAPI __stdcall DecoderThread (void *p);

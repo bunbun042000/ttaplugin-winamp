@@ -138,11 +138,11 @@ bool CMediaLibrary::GetTagInfo()
 		_tcsncpy_s(Cache.Comment, MAX_MUSICTEXT -1, (LPCTSTR)temp, _TRUNCATE);
 		temp = GetEncodingString(TagFile.ID3v2Tag()->album().toCString(true));
 		_tcsncpy_s(Cache.Album, MAX_MUSICTEXT - 1, (LPCTSTR)temp, _TRUNCATE);
-		temp = GetEncodingString(TagFile.ID3v2Tag()->year().toCString(true));
+		temp = GetEncodingString(TagFile.ID3v2Tag()->stringYear().toCString(true));
 		_tcsncpy_s(Cache.Year, MAX_YEAR + 1, (LPCTSTR)temp, _TRUNCATE);
 		temp = GetEncodingString(TagFile.ID3v2Tag()->genre().toCString(true));
 		_tcsncpy_s(Cache.Genre, MAX_MUSICTEXT - 1, (LPCTSTR)temp, _TRUNCATE);
-		temp = GetEncodingString(TagFile.ID3v2Tag()->track().toCString(true));
+		temp = GetEncodingString(TagFile.ID3v2Tag()->stringTrack().toCString(true));
 		_tcsncpy_s(Cache.Track, MAX_MUSICTEXT - 1, (LPCTSTR)temp, _TRUNCATE);
 		temp = GetEncodingString(TagFile.ID3v2Tag()->composers().toCString(true));
 		_tcsncpy_s(Cache.Composer, MAX_MUSICTEXT - 1, (LPCTSTR)temp, _TRUNCATE);
@@ -187,11 +187,11 @@ bool CMediaLibrary::GetTagInfo()
 		_tcsncpy_s(Cache.Comment, MAX_MUSICTEXT -1, (LPCTSTR)temp, _TRUNCATE);
 		temp = TagFile.ID3v1Tag()->album().toCString(false);
 		_tcsncpy_s(Cache.Album, MAX_MUSICTEXT - 1, (LPCTSTR)temp, _TRUNCATE);
-		temp = TagFile.ID3v1Tag()->year().toCString(false);
+		temp.Format(_T("%d"), TagFile.ID3v1Tag()->year());
 		_tcsncpy_s(Cache.Year, MAX_YEAR + 1, (LPCTSTR)temp, _TRUNCATE);
 		temp = TagFile.ID3v1Tag()->genre().toCString(false);
 		_tcsncpy_s(Cache.Genre, MAX_MUSICTEXT - 1, (LPCTSTR)temp, _TRUNCATE);
-		temp = TagFile.ID3v1Tag()->track().toCString(false);
+		temp.Format(_T("%d"), TagFile.ID3v1Tag()->track());
 		_tcsncpy_s(Cache.Track, MAX_MUSICTEXT - 1, (LPCTSTR)temp, _TRUNCATE);
 
 	} else { 
@@ -397,11 +397,11 @@ int CMediaLibrary::WriteExtendedFileInfo()
 		temp = TagLib::String(SetEncodingString(Cache.Album), TagLib::String::UTF8);
 		TagFile.ID3v2Tag()->setAlbum(temp);
 		temp = TagLib::String(SetEncodingString(Cache.Year), TagLib::String::UTF8);
-		TagFile.ID3v2Tag()->setYear(temp);
+		TagFile.ID3v2Tag()->setStringYear(temp);
 		temp = TagLib::String(SetEncodingString(Cache.Genre), TagLib::String::UTF8);
 		TagFile.ID3v2Tag()->setGenre(temp);
 		temp = TagLib::String(SetEncodingString(Cache.Track), TagLib::String::UTF8);
-		TagFile.ID3v2Tag()->setTrack(temp);
+		TagFile.ID3v2Tag()->setStringTrack(temp);
 		temp = TagLib::String(SetEncodingString(Cache.Composer), TagLib::String::UTF8);
 		TagFile.ID3v2Tag()->setComposers(temp);
 		temp = TagLib::String(SetEncodingString(Cache.OrgArtist), TagLib::String::UTF8);
@@ -420,8 +420,8 @@ int CMediaLibrary::WriteExtendedFileInfo()
 		TagFile.ID3v1Tag()->setArtist(Cache.Artist);
 		TagFile.ID3v1Tag()->setAlbum(Cache.Album);
 		TagFile.ID3v1Tag()->setComment(Cache.Comment);
-		TagFile.ID3v1Tag()->setYear(Cache.Year);
-		TagFile.ID3v1Tag()->setTrack(Cache.Track);
+		TagFile.ID3v1Tag()->setYear(_ttoi(Cache.Year));
+		TagFile.ID3v1Tag()->setTrack(_ttoi(Cache.Track));
 		TagFile.ID3v1Tag()->setGenre(Cache.Genre);
 	} else { 
 		// do nothing.
