@@ -229,14 +229,12 @@ static BOOL CALLBACK about_dialog(HWND dialog, UINT message,
 
 void config(HWND hwndParent) 
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	DialogBox(mod.hDllInstance, MAKEINTRESOURCE(IDD_CONFIG),
 		hwndParent, config_dialog);
 }
 
 void about(HWND hwndParent)
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	DialogBox(mod.hDllInstance, MAKEINTRESOURCE(IDD_ABOUT),
 		hwndParent, about_dialog);
 }
@@ -244,22 +242,18 @@ void about(HWND hwndParent)
 
 void init()
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	decoderFileHANDLE = INVALID_HANDLE_VALUE;
 	Wasabi_Init();
 }
 
 void quit()
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	Wasabi_Quit();
 }
 
 
 void getfileinfo(const char *file, char *title, int *length_in_ms)
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
 	if (!file || !*file) { // currently playing file
 	} else {
 		SetPlayingTitle(file, title);
@@ -271,20 +265,16 @@ void getfileinfo(const char *file, char *title, int *length_in_ms)
 
 int infodlg(const char *filename, HWND parent)
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
 	return 0;
 }
 
 int isourfile(const char *filename)
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	return 0;
 } 
 
 int play(const char *fn)
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	int maxlatency;
 	unsigned long decoder_thread_id;
 	int return_number;
@@ -324,29 +314,23 @@ int play(const char *fn)
 
 void pause() 
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	playing_ttafile.SetPaused(1);
 	mod.outMod->Pause(1);
 }
 
 void unpause() 
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	playing_ttafile.SetPaused(0);
 	mod.outMod->Pause(0);
 }
 
 int ispaused()
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	return playing_ttafile.GetPaused(); 
 }
 
 void stop()
 {
-
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
 	if (decoder_handle) {
 		killDecoderThread = 1;
 		if (WaitForSingleObject(decoder_handle, INFINITE) == WAIT_TIMEOUT) {
@@ -366,45 +350,37 @@ void stop()
 
 int getlength()
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	return playing_ttafile.GetLengthbymsec();
 }
 
 int getoutputtime()
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	return (int)(playing_ttafile.GetDecodePosMs() 
 		+ (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime())); 
 }
 
 void setoutputtime(int time_in_ms)
 {
-		AFX_MANAGE_STATE(AfxGetStaticModuleState());
 		playing_ttafile.SetSeekNeeded(time_in_ms); 
 }
 
 void setvolume(int volume)
 {
-		AFX_MANAGE_STATE(AfxGetStaticModuleState());
 		mod.outMod->SetVolume(volume);
 }
 
 void setpan(int pan)
 {
-		AFX_MANAGE_STATE(AfxGetStaticModuleState());
 		mod.outMod->SetPan(pan);
 }
 void eq_set(int on, char data[10], int preamp)
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
 	// do nothing.
 }
 
 
 static void do_vis(unsigned char *data, int count, int bps, long double position)
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	int i, bsize = bps >> 3;
 
@@ -503,14 +479,12 @@ extern "C"
 {
 	__declspec(dllexport) In_Module* __cdecl winampGetInModule2(void)
 	{
-		AFX_MANAGE_STATE(AfxGetStaticModuleState());
 		return &mod;
 	}
 
 	__declspec(dllexport) int __cdecl
 	winampGetExtendedFileInfo(const char *fn, const char *data, char *dest, size_t destlen)
 	{
-		AFX_MANAGE_STATE(AfxGetStaticModuleState());
 		return m_Tag.GetExtendedFileInfo(fn, data, dest, destlen);
 	}
 
@@ -531,18 +505,15 @@ extern "C"
 
 	__declspec( dllexport ) int winampSetExtendedFileInfo(const char *fn, const char *data, const char *val)
 	{
-		AFX_MANAGE_STATE(AfxGetStaticModuleState());
 		return m_Tag.SetExtendedFileInfo(fn, data, val);
 	}
 
 	__declspec(dllexport) int winampWriteExtendedFileInfo()
 	{
-		AFX_MANAGE_STATE(AfxGetStaticModuleState());
 		return m_Tag.WriteExtendedFileInfo();
 	}
 	__declspec(dllexport) intptr_t winampGetExtendedRead_open(const char *filename, int *size, int *bps, int *nch, int *srate)
 	{
-		AFX_MANAGE_STATE(AfxGetStaticModuleState());
 		
 		transcoding_ttafile.SetFileName((char *)filename);
 	
@@ -558,7 +529,6 @@ extern "C"
 
 	__declspec( dllexport ) intptr_t winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
 	{
-		AFX_MANAGE_STATE(AfxGetStaticModuleState());
 		CDecodeFile *dec = (CDecodeFile *)handle;
 		BYTE *buf = new BYTE[BUFFER_SIZE];
 		int dest_used = 0;
@@ -621,7 +591,6 @@ extern "C"
 	// return nonzero on success, zero on failure
 	__declspec( dllexport ) int winampGetExtendedRead_setTime(intptr_t handle, int millisecs)
 	{
-		AFX_MANAGE_STATE(AfxGetStaticModuleState());
 		int done = 0;
 		CDecodeFile *dec = (CDecodeFile *)handle;
 		dec->SetDecodePosMs(millisecs);
@@ -631,7 +600,6 @@ extern "C"
 
 	__declspec( dllexport ) void winampGetExtendedRead_close(intptr_t handle)
 	{
-		AFX_MANAGE_STATE(AfxGetStaticModuleState());
 		if (remain_data.buffer != NULL) {
 			delete [] remain_data.buffer;
 			remain_data.buffer = NULL;
