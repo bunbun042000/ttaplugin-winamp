@@ -112,7 +112,7 @@ bool CMediaLibrary::GetTagInfo()
 	}
 
 	CString temp;
-	temp.Format(IDS_TTAFORMAT,
+	temp.Format(_T("Format\t\t: TTA%d\nSample\t\t: %dbit\nSample Rate\t: %dHz\nBit Rate\t\t: %dkbit/s\nNum. of Chan.\t: %d (%s)\nLength\t\t: %s"),
 		TagFile.audioProperties()->ttaVersion(), 
 		(int)TagFile.audioProperties()->bitsPerSample(), 
 		TagFile.audioProperties()->sampleRate(),

@@ -172,10 +172,6 @@ IDI_INFO_ICON           ICON                    "info.ico"
 // String Table
 //
 
-STRINGTABLE
-BEGIN
-    IDS_TTAFORMAT           "Format\t\t: TTA%d\nSample\t\t: %dbit\nSample Rate\t: %dHz\nBit Rate\t\t: %dkbit/s\nNum. of Chan.\t: %d (%s)\nLength\t\t: %s"
-END
 
 #endif    // âpåÍ (ïƒçë) resources
 /////////////////////////////////////////////////////////////////////////////
