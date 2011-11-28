@@ -1,8 +1,7 @@
 // in_tta.cpp : Defines the initialization routines for the DLL.
 //
-// $LastChangedDate$
 /* Description:	 TTA input plug-in for upper Winamp 2.91
- *               MediaLibrary Extension version
+ *               with MediaLibrary Extension version
  * Developed by: Alexander Djourik <ald@true-audio.com>
  *               Pavel Zhilin <pzh@true-audio.com>
  *               (MediaLibrary Extension Bunbun <bunbun042000@yahoo.co.jp> )
@@ -10,7 +9,6 @@
  * Copyright (c) 2005 Alexander Djourik. All rights reserved.
  *
  */
-// „ÉÅEÇπ„ÉÅE
 
 /* This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,26 +28,17 @@
  * information.
  */
 
-//#define	STRICT
-
-
 #include "stdafx.h"
 #include "in_tta.h"
-#include <windows.h>
-#include <mmreg.h>
-#include <process.h>
 
-#include "..\Winamp SDK\Winamp\in2.h"
-#include "id3genre.h"
-#include "resource.h"
-#include "crc32.h"
-#include "..\Winamp SDK\Winamp\wa_ipc.h"
-#include "TagInfo.h"
-#include "TtaTag.h"
+#include "../Winamp SDK/Winamp/in2.h"
+#include "../Winamp SDK/Agave/Language/api_language.h"
 #include "FileInfo.h"
 #include "DecodeFile.h"
-#include "ttadec.h"
-
+#include "MediaLibrary.h"
+#include <Shlwapi.h>
+#include <taglib/tag.h>
+#include "AlbumArt.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -110,12 +99,10 @@ Cin_ttaApp theApp;
 
 // For Support Transcoder input (2007/10/15)
 CDecodeFile playing_ttafile;
+CMediaLibrary m_Tag;
 
-static long	vis_buffer[BUFFER_SIZE*MAX_NCH];	// vis buffer
+static long	vis_buffer[BUFFER_SIZE * MAX_NCH];	// vis buffer
 static BYTE pcm_buffer[BUFFER_SIZE];
-
-CTagInfo m_Tag;
-CTtaTag  dlgTag;
 
 #define  PLUGIN_VERSION "3.2 extended beta8 $Rev: 83 $"
 #define  PROJECT_URL "<http://www.sourceforge.net>"
@@ -123,32 +110,34 @@ CTtaTag  dlgTag;
 static HANDLE decoder_handle = NULL;
 static DWORD WINAPI __stdcall DecoderThread (void *p);
 static volatile int killDecoderThread = 0;
+HANDLE decoderFileHANDLE;
 
-void __cdecl config(HWND parent);
-void __cdecl init();
-void __cdecl about(HWND parent);
-void __cdecl quit () {}
-void __cdecl getfileinfo(const char *filename, char *title, int *length_in_ms);
-int __cdecl infodlg(const char *filename, HWND parent);
-void __cdecl pause();
-void __cdecl unpause();
-int __cdecl ispaused() { return playing_ttafile.GetPaused(); }
-int __cdecl isourfile(const char *filename) { return 0; } 
-int __cdecl play(const char *filename);
-void __cdecl stop();
-int  __cdecl getlength();
-int  __cdecl getoutputtime();
-void __cdecl setoutputtime(int time_in_ms);
-void __cdecl setvolume(int volume);
-void __cdecl setpan(int pan);
-void __cdecl eq_set(int on, char data[10], int preamp);
+void config(HWND hwndParent);
+void about(HWND hwndParent);
+void init();
+void quit();
+void getfileinfo(const char *file, char *title, int *length_in_ms);
+int  infodlg(const char *file, HWND hwndParent);
+int  isourfile(const char *fn);
+int  play(const char *fn);
+void pause();
+void unpause();
+int  ispaused();
+void stop();
+int  getlength();
+int  getoutputtime();
+void setoutputtime(int time_in_ms);
+void setvolume(int volume);
+void setpan(int pan);
+void eq_set(int on, char data[10], int preamp);
 
+void SetPlayingTitle(const char *filename, char *title);
 
 In_Module mod = {
 	IN_VER,
 	"TTA Audio Decoder v" PLUGIN_VERSION " (x86)",
-	0,	// hMainWindow
-	0,	// hDllInstance
+	NULL,	// hMainWindow
+	NULL,	// hDllInstance
 	"TTA\0TTA Audio File (*.TTA)\0",
 	1,	// is_seekable
 	1,	// uses output
@@ -169,29 +158,22 @@ In_Module mod = {
 	setoutputtime,
 	setvolume,
 	setpan,
-	0,0,0,0,0,0,0,0,0, // vis stuff
-	0,0,	// dsp
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, // vis stuff
+	NULL, NULL,	// dsp
 	eq_set,
 	NULL,	// setinfo
-	0		// out_mod
+	NULL		// out_mod
 };
-
-HANDLE decoderFileHANDLE;
 
 typedef struct _buffer {
 	long		data_length;
 	BYTE	   *buffer;
 } data_buf;
+
 static data_buf remain_data;
 
-void pause() { playing_ttafile.SetPaused(1); mod.outMod->Pause(1); }
-void unpause() { playing_ttafile.SetPaused(0); mod.outMod->Pause(0); }
-
-void __cdecl init () {
-	decoderFileHANDLE = INVALID_HANDLE_VALUE;
-}
-
-static void tta_error (int error, char *filename) {
+static void tta_error(int error, char *filename)
+{
 	char message[1024];
 	char *name = NULL;
 
@@ -202,14 +184,14 @@ static void tta_error (int error, char *filename) {
 	}
 
 	switch (error) {
-	case OPEN_ERROR:	wsprintf(message, "Can't open file:\n%s", name); break;
-	case FORMAT_ERROR:	wsprintf(message, "Unknown TTA format version:\n%s", name); break;
-	case PLAYER_ERROR:	wsprintf(message, "Not supported file format:\n%s", name); break;
-	case FILE_ERROR:	wsprintf(message, "File is corrupted:\n%s", name); break;
-	case READ_ERROR:	wsprintf(message, "Can't read from file:\n%s", name); break;
-	case WRITE_ERROR:	wsprintf(message, "Can't write to file:\n%s", name); break;
-	case MEMORY_ERROR:	wsprintf(message, "Insufficient memory available"); break;
-	case THREAD_ERROR:	wsprintf(message, "Error killing thread"); break;
+	case tta::TTA_OPEN_ERROR:	wsprintf(message, "Can't open file:\n%s", name); break;
+	case tta::TTA_FORMAT_ERROR:	wsprintf(message, "Unknown TTA format version:\n%s", name); break;
+//	case tta::TTA_FILE_ERROR:	wsprintf(message, "Not supported file format:\n%s", name); break;
+	case tta::TTA_FILE_ERROR:	wsprintf(message, "File is corrupted:\n%s", name); break;
+	case tta::TTA_READ_ERROR:	wsprintf(message, "Can't read from file:\n%s", name); break;
+	case tta::TTA_WRITE_ERROR:	wsprintf(message, "Can't write to file:\n%s", name); break;
+	case tta::TTA_MEMORY_ERROR:	wsprintf(message, "Insufficient memory available"); break;
+//	case tta::TTA_THREAD_ERROR:	wsprintf(message, "Error killing thread"); break;
 	default:			wsprintf(message, "Unknown TTA decoder error"); break;
 	}
 
@@ -217,8 +199,27 @@ static void tta_error (int error, char *filename) {
 		MB_OK|MB_ICONERROR|MB_SYSTEMMODAL);
 }
 
-static BOOL CALLBACK about_dialog (HWND dialog, UINT message,
-	WPARAM wparam, LPARAM lparam) {
+static BOOL CALLBACK config_dialog(HWND dialog, UINT message,
+	WPARAM wparam, LPARAM lparam)
+{
+
+	switch (message) {
+	case WM_INITDIALOG:
+		return TRUE;
+	case WM_COMMAND:
+		switch (LOWORD(wparam)) {
+		case IDOK:
+		case IDCANCEL:
+			EndDialog(dialog, wparam);
+			return TRUE;
+		}
+		break;
+	}
+	return FALSE;
+}
+static BOOL CALLBACK about_dialog(HWND dialog, UINT message,
+	WPARAM wparam, LPARAM lparam)
+{
 	switch (message) {
 	case WM_INITDIALOG:
 		SetDlgItemText(dialog, IDC_PLUGIN_VERSION,
@@ -237,74 +238,76 @@ static BOOL CALLBACK about_dialog (HWND dialog, UINT message,
 	return FALSE;
 }
 
-void __cdecl about (HWND parent) {
-	DialogBox(mod.hDllInstance, MAKEINTRESOURCE(IDD_ABOUT),
-		parent, about_dialog);
-}
-
-static BOOL CALLBACK config_dialog (HWND dialog, UINT message,
-	WPARAM wparam, LPARAM lparam) {
-
-	switch (message) {
-	case WM_INITDIALOG:
-		return TRUE;
-	case WM_COMMAND:
-		switch (LOWORD(wparam)) {
-		case IDOK:
-		case IDCANCEL:
-			EndDialog(dialog, wparam);
-			return TRUE;
-		}
-		break;
-	}
-	return FALSE;
-}
-
-void __cdecl config (HWND parent) {
+void config(HWND hwndParent) 
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	DialogBox(mod.hDllInstance, MAKEINTRESOURCE(IDD_CONFIG),
-		parent, config_dialog);
+		hwndParent, config_dialog);
 }
 
-int __cdecl infodlg (const char *filename, HWND parent) {
+void about(HWND hwndParent)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	DialogBox(mod.hDllInstance, MAKEINTRESOURCE(IDD_ABOUT),
+		hwndParent, about_dialog);
+}
 
-	CFileInfo *infodlg = new CFileInfo(NULL, filename);
-	infodlg->DoModal();
 
-	delete infodlg;
+void init()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	decoderFileHANDLE = INVALID_HANDLE_VALUE;
+	Wasabi_Init();
+}
 
+void quit()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	Wasabi_Quit();
+}
+
+
+void getfileinfo(const char *file, char *title, int *length_in_ms)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	if (!file || !*file) { // currently playing file
+//		*length_in_ms = playing_ttafile.GetLengthbymsec();
+//		SetPlayingTitle(playing_ttafile.GetFileName(), title);  
+	} else {
+		SetPlayingTitle(file, title);
+		TagLib::FileName fn(file);
+		TagLib::TrueAudio::File f(fn);
+		*length_in_ms = f.audioProperties()->length() * 1000;
+	}
+}
+
+int infodlg(const char *filename, HWND parent)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+//	CFileInfo *infodlg = new CFileInfo(NULL, filename);
+//	infodlg->DoModal();
+
+//	delete infodlg;
 	return 0;
 }
 
+int isourfile(const char *filename)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	return 0;
+} 
 
-void __cdecl stop () {
-
-	if (decoder_handle) {
-		killDecoderThread = 1;
-		if (WaitForSingleObject(decoder_handle, INFINITE) == WAIT_TIMEOUT) {
-			tta_error(THREAD_ERROR, NULL);
-			TerminateThread(decoder_handle, 0);
-		}
-		CloseHandle(decoder_handle);
-		decoder_handle = NULL;
-	}
-
-	mod.SetInfo(0, 0, 0, 1);
-	mod.outMod->Close();
-	mod.SAVSADeInit();
-
-	if (decoderFileHANDLE != INVALID_HANDLE_VALUE)
-		CloseHandle(decoderFileHANDLE);
-}
-
-int __cdecl play (const char *filename) {
+int play(const char *fn)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	int maxlatency;
 	unsigned long decoder_thread_id;
 	int return_number;
 
-	return_number = playing_ttafile.SetFileName(filename);
+	return_number = playing_ttafile.SetFileName(fn);
 	if(return_number) return return_number;
-
-	mod.is_seekable = playing_ttafile.GetSeekTableState();
 
 	maxlatency = mod.outMod->Open(playing_ttafile.GetSampleRate(), 
 		playing_ttafile.GetNumberofChannel(), playing_ttafile.GetOutputBPS(), -1, -1);
@@ -331,27 +334,91 @@ int __cdecl play (const char *filename) {
 	return 0;
 }
 
-int  __cdecl getlength () { return playing_ttafile.GetLengthbymsec(); }
-int  __cdecl getoutputtime () { return (int)(playing_ttafile.GetDecodePosMs() + (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime())); }
-void __cdecl setoutputtime (int time_in_ms) {playing_ttafile.SetSeekNeeded(time_in_ms); }
-void __cdecl setvolume (int volume) { mod.outMod->SetVolume(volume); }
-void __cdecl setpan (int pan) { mod.outMod->SetPan(pan); }
-void __cdecl eq_set (int on, char data[10], int preamp) {}
-
-
-void __cdecl getfileinfo (const char *filename, char *title, int *length_in_ms) {
-	if (!filename || !*filename) { // currently playing file
-		*length_in_ms = playing_ttafile.GetLengthbymsec();
-		playing_ttafile.SetPlayTitle(title);
-	} else {
-		CTtaTag ttaTag;
-		ttaTag.ReadTag(filename);
-		*length_in_ms = ttaTag.GetLengthbymsec();
-		ttaTag.SetPlayTitle(title);
-	}
+void pause() 
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	playing_ttafile.SetPaused(1);
+	mod.outMod->Pause(1);
 }
 
-static void do_vis(unsigned char *data, int count, int bps, long double position) {
+void unpause() 
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	playing_ttafile.SetPaused(0);
+	mod.outMod->Pause(0);
+}
+
+int ispaused()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	return playing_ttafile.GetPaused(); 
+}
+
+void stop()
+{
+
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	if (decoder_handle) {
+		killDecoderThread = 1;
+		if (WaitForSingleObject(decoder_handle, INFINITE) == WAIT_TIMEOUT) {
+//			tta_error(THREAD_ERROR, NULL);
+			TerminateThread(decoder_handle, 0);
+		}
+		CloseHandle(decoder_handle);
+		decoder_handle = NULL;
+	}
+
+	mod.SetInfo(0, 0, 0, 1);
+	mod.outMod->Close();
+	mod.SAVSADeInit();
+
+	if (decoderFileHANDLE != INVALID_HANDLE_VALUE)
+		CloseHandle(decoderFileHANDLE);
+}
+
+int getlength()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	return playing_ttafile.GetLengthbymsec();
+}
+
+int getoutputtime()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	return (int)(playing_ttafile.GetDecodePosMs() 
+		+ (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime())); 
+}
+
+void setoutputtime(int time_in_ms)
+{
+		AFX_MANAGE_STATE(AfxGetStaticModuleState());
+		playing_ttafile.SetSeekNeeded(time_in_ms); 
+}
+
+void setvolume(int volume)
+{
+		AFX_MANAGE_STATE(AfxGetStaticModuleState());
+		mod.outMod->SetVolume(volume);
+}
+
+void setpan(int pan)
+{
+		AFX_MANAGE_STATE(AfxGetStaticModuleState());
+		mod.outMod->SetPan(pan);
+}
+void eq_set(int on, char data[10], int preamp)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	// do nothing.
+}
+
+
+static void do_vis(unsigned char *data, int count, int bps, long double position)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	int i, bsize = bps >> 3;
 
 	// Winamp visuals may have problems accepting sample sizes larger than
@@ -388,36 +455,125 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 		} else if (mod.outMod->CanWrite() >= 
 			((BUFFER_LENGTH * playing_ttafile.GetNumberofChannel() * 
 			playing_ttafile.GetByteSize()) << (mod.dsp_isactive()? 1:0))) {
-			if (!(len = playing_ttafile.GetSamples(pcm_buffer, BUFFER_LENGTH, &bitrate))) done = 1;
-			else {
+			if (!(len = playing_ttafile.GetSamples(pcm_buffer, BUFFER_LENGTH, &bitrate))) { 
+				done = 1;
+			} else {
  				do_vis(pcm_buffer, len, playing_ttafile.GetOutputBPS(), playing_ttafile.GetDecodePosMs());
-				if (mod.dsp_isactive())
+				if (mod.dsp_isactive()) {
 					len = mod.dsp_dosamples((short *)pcm_buffer, len, playing_ttafile.GetOutputBPS(),
 						playing_ttafile.GetNumberofChannel(), playing_ttafile.GetSampleRate());
+				}
 				mod.outMod->Write((char *)pcm_buffer, len * playing_ttafile.GetNumberofChannel() * (playing_ttafile.GetOutputBPS() >> 3));
 			}
 			mod.SetInfo(bitrate, playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
-		} else Sleep(20);
+		} else {
+			Sleep(20);
+		}
 	}
 
 	return 0;
 }
 
+void SetPlayingTitle(const char *filename, char *title)
+{
+	if (filename != NULL) { 
+		if (TagLib::TrueAudio::File::isReadable(filename)) {
+
+			TagLib::FileName fn(filename);
+			TagLib::TrueAudio::File File(fn);
+
+			if (!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty()) || !(File.tag()->album().isEmpty())) {
+				if(!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty())) {
+					wsprintf(title, _T("%s - %s"), 
+						File.tag()->artist(),
+						File.tag()->title());
+				} else if (!(File.tag()->artist().isEmpty()) || !(File.tag()->album().isEmpty())) {
+					wsprintf(title, _T("%s - %s"), 
+						File.tag()->artist(),
+						File.tag()->album());
+				} else if (!(File.tag()->artist().isEmpty())) {
+					wsprintf(title, _T("%s"), 
+						File.tag()->artist());
+				} else if (!(File.tag()->title().isEmpty())) {
+					wsprintf(title, _T("%s"), 
+						File.tag()->title());
+				}
+			} else {
+				_TCHAR p[MAX_PATHLEN];
+				::GetFileTitle(filename, p, MAX_PATHLEN - 1);
+				lstrcpyn(title, p, _tcschr(p, '.') - p);
+			}
+		} else {
+			// do nothing.
+		}
+	} else {
+		// do nothing
+	}
+}
+
+
 extern "C"
 {
 	__declspec(dllexport) In_Module* __cdecl winampGetInModule2(void)
 	{
+		AFX_MANAGE_STATE(AfxGetStaticModuleState());
 		return &mod;
 	}
 
 	__declspec(dllexport) int __cdecl
-	winampGetExtendedFileInfo(extendedFileInfoStruct ExtendedFileInfo)
+	winampGetExtendedFileInfo(const char *fn, const char *data, char *dest, size_t destlen)
 	{
-		return m_Tag.GetExtendedFileInfo(mod.hMainWindow, &ExtendedFileInfo);
+		AFX_MANAGE_STATE(AfxGetStaticModuleState());
+		return m_Tag.GetExtendedFileInfo(fn, data, dest, destlen);
 	}
 
-	__declspec( dllexport ) intptr_t winampGetExtendedRead_open(const char *filename, int *size, int *bps, int *nch, int *srate)
+	__declspec(dllexport) int winampUseUnifiedFileInfoDlg(const char * fn)
 	{
+  // this will be called when Winamp is requested to show a File Info dialog for the selected file(s)
+  // and this will allow you to override or forceable ignore the handling of a file or format
+  // e.g. this will allow streams/urls to be ignored
+	if (!_tcsncicmp(fn, _T("file://"), 7)) {
+		fn += 7;
+	}
+	if (PathIsURL(fn)) { 
+		return 0;
+	}
+	return 1;
+	}
+
+//	__declspec(dllexport) HWND winampAddUnifiedFileInfoPane(int n, const char * filename, HWND parent, char *name, size_t namelen)
+//	{
+//	if (n == 0)
+//		{
+//    // If you don't want Winamp to write the information via the winampSetExtendedFileInfo(W) handler
+//    // and instead you want to do this then set the following property on the parent HWND.
+//    // Once set then this will be effective for all of the pages which have been added.
+//    SetPropW(parent,L"INBUILT_NOWRITEINFO", (HANDLE)1);
+//    lstrcpyn(name,L"ID3v1",namelen);
+//    return WASABI_API_CREATEDIALOGPARAM(IDD_INFO_ID3V1, parent, id3v1_dlgproc, (LPARAM)filename);
+//		}
+//	if (n == 1)
+//		{
+//		lstrcpyn(name,L"ID3v2",namelen);
+//		return WASABI_API_CREATEDIALOGPARAM(IDD_INFO_ID3V2, parent, id3v2_dlgproc, (LPARAM)filename);
+//		}
+//	return NULL;
+//	}
+
+	__declspec( dllexport ) int winampSetExtendedFileInfo(const char *fn, const char *data, const char *val)
+	{
+		AFX_MANAGE_STATE(AfxGetStaticModuleState());
+		return m_Tag.SetExtendedFileInfo(fn, data, val);
+	}
+
+	__declspec(dllexport) int winampWriteExtendedFileInfo()
+	{
+		AFX_MANAGE_STATE(AfxGetStaticModuleState());
+		return m_Tag.WriteExtendedFileInfo();
+	}
+	__declspec(dllexport) intptr_t winampGetExtendedRead_open(const char *filename, int *size, int *bps, int *nch, int *srate)
+	{
+		AFX_MANAGE_STATE(AfxGetStaticModuleState());
 		CDecodeFile *transcoding_ttafile;
 		transcoding_ttafile = new CDecodeFile;
 
@@ -438,6 +594,7 @@ extern "C"
 
 	__declspec( dllexport ) intptr_t winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
 	{
+		AFX_MANAGE_STATE(AfxGetStaticModuleState());
 		CDecodeFile *dec = (CDecodeFile *)handle;
 		BYTE *buf = new BYTE[BUFFER_SIZE];
 		int used = 0;
@@ -499,6 +656,7 @@ extern "C"
 	/* return nonzero on success, zero on failure. */
 	__declspec( dllexport ) int winampGetExtendedRead_setTime(intptr_t handle, int millisecs)
 	{
+		AFX_MANAGE_STATE(AfxGetStaticModuleState());
 		int done = 0;
 		CDecodeFile *dec = (CDecodeFile *)handle;
 		dec->SetDecodePosMs(millisecs);
@@ -508,6 +666,7 @@ extern "C"
 
 	__declspec( dllexport ) void winampGetExtendedRead_close(intptr_t handle)
 	{
+		AFX_MANAGE_STATE(AfxGetStaticModuleState());
 		CDecodeFile *dec = (CDecodeFile *)handle;
 		delete dec;
 		if (remain_data.buffer != NULL)

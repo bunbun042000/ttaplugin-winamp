@@ -8,11 +8,7 @@
 	#error "include 'stdafx.h' before including this file for PCH"
 #endif
 
-#include "resource.h"		// main symbols
-#include "TtaTag.h"
-
-#define MAX_PATHLEN		512
-#define GENRES	148
+#define TTA_VERSION "3.0"
 
 // Cin_ttaApp
 // See in_tta.cpp for the implementation of this class
