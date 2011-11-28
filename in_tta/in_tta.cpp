@@ -255,12 +255,17 @@ void quit()
 
 void getfileinfo(const char *file, char *title, int *length_in_ms)
 {
-	if (!file || !*file) { // currently playing file
+	if (!file || !*file) { 
+		// invalid filename
 	} else {
 		SetPlayingTitle(file, title);
 		TagLib::FileName fn(file);
 		TagLib::TrueAudio::File f(fn);
-		*length_in_ms = f.audioProperties()->length() * 1000;
+		if (f.isValid() == true) {
+			*length_in_ms = f.audioProperties()->length() * 1000;
+		} else {
+			// cannot get fileinfo
+		}
 	}
 }
 
@@ -445,8 +450,9 @@ void SetPlayingTitle(const char *filename, char *title)
 
 			TagLib::FileName fn(filename);
 			TagLib::TrueAudio::File File(fn);
-
-			if (!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty()) || !(File.tag()->album().isEmpty())) {
+			if (File.isValid() == false) {
+				// cannot get file info
+			} else if (!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty()) || !(File.tag()->album().isEmpty())) {
 				if(!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty())) {
 					wsprintf(title, _T("%s - %s"), 
 						File.tag()->artist(),
