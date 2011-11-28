@@ -194,22 +194,25 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
     int retval = ALBUMARTPROVIDER_FAILURE;
 	TagLib::String mimeType;
 
+	::EnterCriticalSection(&CriticalSection);
+
 	if(!filename || !*filename || _wcsicmp (type, L"cover")) {
+		::LeaveCriticalSection(&CriticalSection);
         return retval;
 	} else {
 		// do nothing
 	}
 
 	if(!bits || !len || !mime_type) {
+		::LeaveCriticalSection(&CriticalSection);
 		return retval;
 	} else {
 		// do nothing
 	}
 
-	::EnterCriticalSection(&CriticalSection);
-
 	TagLib::TrueAudio::File TagFile(filename);
 	if (false == TagFile.isValid()) {
+		::LeaveCriticalSection(&CriticalSection);
 		return retval;
 	} else {
 		// do nothing
@@ -286,7 +289,10 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 	int size = 0;
 	TagLib::ID3v2::AttachedPictureFrame::Type artType = TagLib::ID3v2::AttachedPictureFrame::Other;
 
+	::EnterCriticalSection(&CriticalSection);
+
 	if(!filename || !*filename) {
+		::LeaveCriticalSection(&CriticalSection);
         return retval;
 	}
 
@@ -295,12 +301,11 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 	int ret = WideCharToMultiByte(CP_ACP, 0, filename, origsize, demandFile, MAX_PATHLEN - 1, NULL, NULL);
 
 	if(!ret) {
+		::LeaveCriticalSection(&CriticalSection);
 		return retval;
 	} else {
 		// do nothing
 	}
-
-	::EnterCriticalSection(&CriticalSection);
 
 	// If target file cannot access
 	if (TagLib::File::isWritable(demandFile) == false) {

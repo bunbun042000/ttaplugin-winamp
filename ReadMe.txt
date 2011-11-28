@@ -17,6 +17,7 @@ This plugin performs Winamp Ver.2.9 or newer.
 
 *Release Notes
 2011-11-27 Beta12 Fix freeze when invalid file will open.
+                  Fix hung up when reading file with no album art.
 2011-11-21 Beta11 Change base library to libtta++2.1.
                   Change taglib included to use external taglib dll.
                   Fix memory leak when reading album art.
