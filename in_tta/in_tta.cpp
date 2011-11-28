@@ -58,7 +58,7 @@ Cin_ttaApp theApp;
 CDecodeFile playing_ttafile;
 CMediaLibrary m_Tag;
 
-static CDecodeFile transcoding_ttafile;
+CDecodeFile transcoding_ttafile;
 
 static long	vis_buffer[BUFFER_SIZE * MAX_NCH];	// vis buffer
 static BYTE pcm_buffer[BUFFER_SIZE];
@@ -242,6 +242,7 @@ void about(HWND hwndParent)
 
 void init()
 {
+	theApp.InitInstance();
 	decoderFileHANDLE = INVALID_HANDLE_VALUE;
 	Wasabi_Init();
 }
@@ -361,17 +362,17 @@ int getoutputtime()
 
 void setoutputtime(int time_in_ms)
 {
-		playing_ttafile.SetSeekNeeded(time_in_ms); 
+	playing_ttafile.SetSeekNeeded(time_in_ms); 
 }
 
 void setvolume(int volume)
 {
-		mod.outMod->SetVolume(volume);
+	mod.outMod->SetVolume(volume);
 }
 
 void setpan(int pan)
 {
-		mod.outMod->SetPan(pan);
+	mod.outMod->SetPan(pan);
 }
 void eq_set(int on, char data[10], int preamp)
 {
@@ -488,7 +489,7 @@ extern "C"
 		return m_Tag.GetExtendedFileInfo(fn, data, dest, destlen);
 	}
 
-	__declspec(dllexport) int winampUseUnifiedFileInfoDlg(const char * fn)
+	__declspec(dllexport) int __cdecl winampUseUnifiedFileInfoDlg(const char * fn)
 	{
   // this will be called when Winamp is requested to show a File Info dialog for the selected file(s)
   // and this will allow you to override or forceable ignore the handling of a file or format
@@ -503,16 +504,16 @@ extern "C"
 	}
 
 
-	__declspec( dllexport ) int winampSetExtendedFileInfo(const char *fn, const char *data, const char *val)
+	__declspec( dllexport ) int __cdecl winampSetExtendedFileInfo(const char *fn, const char *data, const char *val)
 	{
 		return m_Tag.SetExtendedFileInfo(fn, data, val);
 	}
 
-	__declspec(dllexport) int winampWriteExtendedFileInfo()
+	__declspec(dllexport) int __cdecl winampWriteExtendedFileInfo()
 	{
 		return m_Tag.WriteExtendedFileInfo();
 	}
-	__declspec(dllexport) intptr_t winampGetExtendedRead_open(const char *filename, int *size, int *bps, int *nch, int *srate)
+	__declspec(dllexport) intptr_t __cdecl winampGetExtendedRead_open(const char *filename, int *size, int *bps, int *nch, int *srate)
 	{
 		
 		transcoding_ttafile.SetFileName((char *)filename);
@@ -527,7 +528,7 @@ extern "C"
 		return (intptr_t)&transcoding_ttafile;
 	}
 
-	__declspec( dllexport ) intptr_t winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
+	__declspec( dllexport ) intptr_t __cdecl winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
 	{
 		CDecodeFile *dec = (CDecodeFile *)handle;
 		BYTE *buf = new BYTE[BUFFER_SIZE];
@@ -589,7 +590,7 @@ extern "C"
 	}
 
 	// return nonzero on success, zero on failure
-	__declspec( dllexport ) int winampGetExtendedRead_setTime(intptr_t handle, int millisecs)
+	__declspec( dllexport ) int __cdecl winampGetExtendedRead_setTime(intptr_t handle, int millisecs)
 	{
 		int done = 0;
 		CDecodeFile *dec = (CDecodeFile *)handle;
@@ -598,7 +599,7 @@ extern "C"
 		return 1;
 	}
 
-	__declspec( dllexport ) void winampGetExtendedRead_close(intptr_t handle)
+	__declspec( dllexport ) void __cdecl winampGetExtendedRead_close(intptr_t handle)
 	{
 		if (remain_data.buffer != NULL) {
 			delete [] remain_data.buffer;
