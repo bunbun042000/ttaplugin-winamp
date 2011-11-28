@@ -19,22 +19,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "stdafx.h"
 #include <stdio.h>
-#include "../Winamp SDK/Wasabi/api/service/api_service.h"
-#include "../Winamp SDK/Agave/Config/api_config.h"
-#include "../Winamp SDK/Wasabi/api/memmgr/api_memmgr.h"
-#include "../Winamp SDK/Winamp/in2.h"
-#include "../Winamp SDK/Winamp/wa_ipc.h"
-#include "../Winamp SDK/Wasabi/api/service/waservicefactory.h"
-#include "../Winamp SDK/Agave/AlbumArt/svc_albumArtProvider.h"
+#include <Wasabi/api/service/api_service.h>
+#include <Agave/Config/api_config.h>
+#include <Wasabi/api/memmgr/api_memmgr.h>
+#include <Winamp/in2.h>
+#include <Winamp/wa_ipc.h>
+#include <Wasabi/api/service/waservicefactory.h>
+#include <Agave/AlbumArt/svc_albumArtProvider.h>
 #include "AlbumArt.h"
 #include <taglib/trueaudiofile.h>
 #include <taglib/id3v2tag.h>
 #include <taglib/attachedpictureframe.h>
 #include <taglib/tag.h>
-#include "MediaLibrary.h"
+#include "common.h"
 
 static const int MIME_LENGTH = 64;
-extern CMediaLibrary m_Tag;
 
 class AlbumArtFactory : public waServiceFactory
 {
@@ -175,17 +174,125 @@ int TTA_AlbumArtProvider::ProviderType()
 
 int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t *type, void **bits, size_t *len, wchar_t **mime_type)
 {
-	return m_Tag.GetAlbumArtData(filename, type, bits, len, mime_type);
+	bool FindTag = false;
+	size_t tag_size = 0;
+    int retval = ALBUMARTPROVIDER_FAILURE;
+	TagLib::String mimeType;
+
+	if(!filename || !*filename || _wcsicmp (type, L"cover")) {
+        return retval;
+	} else {
+		// do nothing
+	}
+
+	if(!bits || !len || !mime_type) {
+		return retval;
+	} else {
+		// do nothing
+	}
+
+	TagLib::TrueAudio::File TagFile(filename);
+	if (false == TagFile.isValid()) {
+		return retval;
+	} else {
+		// do nothign
+	}
+
+	// read Album Art
+	TagLib::ByteVector AlbumArt = 
+		TagFile.ID3v2Tag()->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
+
+	if(AlbumArt != TagLib::ByteVector::null) {
+		*len = AlbumArt.size();
+		*bits = (char *)Wasabi_Malloc(*len);
+		errno_t err = memcpy_s(*bits, AlbumArt.size(), AlbumArt.data(), AlbumArt.size());
+		if (err) {
+			return retval;
+		} else {
+			// do nothing
+		}
+
+		retval = ALBUMARTPROVIDER_SUCCESS;
+
+		size_t string_len;
+		TagLib::String extension = mimeType.substr(mimeType.find("/") + 1);
+		*mime_type = (wchar_t *)Wasabi_Malloc(extension.size() * 2 + 2);
+		mbstowcs_s(&string_len, *mime_type, extension.size() + 1, extension.toCString(), _TRUNCATE);
+	}
+
+	if (retval) {
+		Wasabi_Free(*bits);
+	}
+
+    return retval;
 }
 
 int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t *type, void *bits, size_t len, const wchar_t *mime_type)
 {
-	return ALBUMARTPROVIDER_READONLY; // read-noly
+
+	bool FindTag = false;
+    int retval = ALBUMARTPROVIDER_FAILURE;
+	TagLib::String mimeType(_T(""));
+	char demandFile[MAX_PATHLEN];
+	int size = 0;
+	TagLib::ID3v2::AttachedPictureFrame::Type artType = TagLib::ID3v2::AttachedPictureFrame::Other;
+
+	if(!filename || !*filename) {
+        return retval;
+	}
+
+	size_t origsize = wcslen(filename) + 1;
+	size_t convertedChars = 0;
+	int ret = WideCharToMultiByte(CP_ACP, 0, filename, origsize, demandFile, MAX_PATHLEN - 1, NULL, NULL);
+
+	if(!ret) {
+		return retval;
+	} else {
+		// do nothing
+	}
+
+	// If target file cannot access
+	if (TagLib::File::isWritable(demandFile) == false) {
+		return retval;
+	} else {
+		// do nothing
+	}
+
+	TagLib::ByteVector AlbumArt;
+
+	if (!bits) {
+		//delete AlbumArt
+		AlbumArt.setData(NULL, 0);
+
+	} else if(bits || !len || !mime_type) {
+		return retval;
+	} else {
+		mimeType = _T("image/");
+		mimeType += mime_type;
+		size = len;
+		artType = TagLib::ID3v2::AttachedPictureFrame::FrontCover;
+		AlbumArt.setData((const char *)bits, (TagLib::uint)size);
+	}
+
+	TagLib::TrueAudio::File TagFile(demandFile);
+	if (!TagFile.isValid()) {
+		return retval;
+	} else {
+		// do nothing
+	}
+
+	retval = ALBUMARTPROVIDER_SUCCESS;
+
+	TagFile.ID3v2Tag()->setAlbumArt(AlbumArt, artType, mimeType);
+	TagFile.save();
+
+	return retval;
+
 }
 
 int TTA_AlbumArtProvider::DeleteAlbumArt(const wchar_t *filename, const wchar_t *type)
 {
-	return ALBUMARTPROVIDER_READONLY; // read-noly
+	return SetAlbumArtData(filename, type, NULL, 0, L"image/jpeg");
 }
 
 #define CBCLASS TTA_AlbumArtProvider

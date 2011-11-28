@@ -15,8 +15,8 @@
 ; !include "Sections.nsh"
 
 ; common defines for a generic DrO installer :o)
-!define VERSION "3.2 Beta11"
-!define ALT_VER "3_2_Beta11"
+!define VERSION "3.2 Beta12"
+!define ALT_VER "3_2_Beta12"
 !define PLUG "ttaplugin-winamp"
 !define PLUG_ALT "ttaplugin-winamp"
 !define PLUG_FILE "in_tta"
@@ -110,7 +110,7 @@ Section ""
   ; likely to apply otherwise just alter the path as needed
   File "..\Release\${PLUG_FILE}.dll"
 	SetOutPath "$INSTDIR"
-  File "..\libraries\bin\${TAGLIB_DLL}.dll"
+  File "..\..\libraries\bin\${TAGLIB_DLL}.dll"
 
   SetOverwrite off
 SectionEnd

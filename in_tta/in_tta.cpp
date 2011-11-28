@@ -63,7 +63,7 @@ CDecodeFile transcoding_ttafile;
 static long	vis_buffer[BUFFER_SIZE * MAX_NCH];	// vis buffer
 static BYTE pcm_buffer[BUFFER_SIZE];
 
-#define  PLUGIN_VERSION "3.2 extended beta11"
+#define  PLUGIN_VERSION "3.2 extended Beta12"
 #define  PROJECT_URL "<git://github.com/bunbun042000/ttaplugin-winamp.git>"
 #define  LIBTTA_VERSION "based on libtta++2.1"
 #define  ORIGINAL_CREADIT01 "Plugin is written by Alexander Djourik, Pavel Zhilin and Anton Gorbunov.\n"

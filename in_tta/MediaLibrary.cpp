@@ -29,7 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <taglib/id3v1tag.h>
 #include <taglib/attachedpictureframe.h>
 #include "AlbumArt.h"
-#include "../Winamp SDK/Agave/AlbumArt/svc_albumArtProvider.h"
+#include <Agave/AlbumArt/svc_albumArtProvider.h>
 
 //////////////////////////////////////////////////////////////////////
 // Create / Destroy
@@ -73,8 +73,6 @@ void CMediaLibrary::FlushCache(void)
 	Cache.Disc[0] = '\0';
 	Cache.BPM[0] = '\0';
 
-	ReleaseImageBuffer();
-
 	::LeaveCriticalSection(&CriticalSection);
 }
 
@@ -83,17 +81,24 @@ bool CMediaLibrary::GetTagInfo()
 
 	if (*Cache.FileName == NULL) {
 		return false;
+	} else { 
+		// do nothing
 	}
 
 	// If target file cannot access
 	if (TagLib::File::isReadable(Cache.FileName) == false) {
 		return false;
+	} else {
+		// do nothing
 	}
-
-	ReleaseImageBuffer();
 
 	TagLib::TrueAudio::File TagFile(Cache.FileName);
 
+	if (!TagFile.isValid()) {
+		return false;
+	} else {
+		// do nothing
+	}
 
 	Cache.Length = (unsigned long) (TagFile.audioProperties()->length() * 1000.L);
 
@@ -152,25 +157,6 @@ bool CMediaLibrary::GetTagInfo()
 		temp = GetEncodingString(TagFile.ID3v2Tag()->BPM().toCString(true));
 		_tcsncpy_s(Cache.BPM, MAX_MUSICTEXT - 1, (LPCTSTR)temp, _TRUNCATE);
 
-		// read Album Art
-		TagLib::String mimeType;
-		TagLib::ByteVector AlbumArt = 
-			TagFile.ID3v2Tag()->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
-		if(AlbumArt != TagLib::ByteVector::null) {
-			size_t tag_size = AlbumArt.size();
-
-			if (tag_size) {
-				Cache.E_Image = new Embedded_Image;
-				Cache.E_Image->Image = new char[tag_size];
-				memcpy_s(Cache.E_Image->Image, tag_size, AlbumArt.data(), tag_size);
-				Cache.E_Image->size = tag_size;
-				Cache.E_Image->mimeType = mimeType;
-			} else {
-				Cache.E_Image = NULL;
-			}
-		} else {
-			Cache.E_Image = NULL;
-		}
 
 	} else if (NULL != TagFile.ID3v1Tag()) {
 		temp = TagFile.ID3v1Tag()->title().toCString(false);
@@ -364,8 +350,7 @@ int CMediaLibrary::SetExtendedFileInfo(const char *fn, const char *MetaData, con
 
 int CMediaLibrary::WriteExtendedFileInfo()
 {
-
-
+	
 	if (*Cache.FileName == NULL) {
 		return 0;
 	}
@@ -427,84 +412,4 @@ int CMediaLibrary::WriteExtendedFileInfo()
 	::LeaveCriticalSection(&CriticalSection);
 
 	return 1;
-}
-
-int CMediaLibrary::GetAlbumArtData(const wchar_t *filename, const wchar_t *type, void **bits, size_t *len, wchar_t **mime_type)
-{
-	bool FindTag = false;
-	size_t tag_size = 0;
-    int retval = ALBUMARTPROVIDER_FAILURE;
-	TagLib::String mimeType;
-	char demandFile[MAX_PATHLEN];
-
-	if(!filename || !*filename || _wcsicmp (type, L"cover")) {
-        return retval;
-	}
-
-	if(!bits || !len || !mime_type) {
-		return retval;
-	}
-
-	size_t origsize = wcslen(filename) + 1;
-	size_t convertedChars = 0;
-	int ret = WideCharToMultiByte(CP_ACP, 0, filename, origsize, demandFile, MAX_PATHLEN - 1, NULL, NULL);
-
-	if(!ret) {
-		return retval;
-	}
-
-	::EnterCriticalSection(&CriticalSection);
-
-	if (_stricmp(demandFile, Cache.FileName) != 0) {
-
-		::strncpy_s(Cache.FileName, MAX_PATHLEN - 1, (LPCTSTR)demandFile, MAX_PATHLEN - 1);
-
-		FindTag = GetTagInfo();
-	} else {
-		FindTag = true;
-	}
-
-	if(!FindTag) {
-		::LeaveCriticalSection(&CriticalSection);
-		return retval;
-	}
-
-	if (Cache.E_Image == NULL) {
-		::LeaveCriticalSection(&CriticalSection);
-		return retval;
-	} else if(Cache.E_Image->Image != NULL) {
-
-		*bits = (char *)Wasabi_Malloc(Cache.E_Image->size);
-		memcpy_s(*bits, Cache.E_Image->size, Cache.E_Image->Image, Cache.E_Image->size);
-		*len = Cache.E_Image->size;
-
-		retval = ALBUMARTPROVIDER_SUCCESS;
-
-		size_t string_len;
-		TagLib::String extension = Cache.E_Image->mimeType.substr(Cache.E_Image->mimeType.find("/") + 1);
-		*mime_type = (wchar_t *)Wasabi_Malloc(extension.size() * 2 + 2);
-		mbstowcs_s(&string_len, *mime_type, extension.size() + 1, extension.toCString(), _TRUNCATE);
-	}
-
-	if (retval) {
-		Wasabi_Free(*bits);
-	}
-
-	::LeaveCriticalSection(&CriticalSection);
-    return retval;
-}
-
-void CMediaLibrary::ReleaseImageBuffer()
-{
-	if(Cache.E_Image != NULL) {
-		if(Cache.E_Image->Image != NULL) {
-			delete [] Cache.E_Image->Image;
-		} else {
-			// do nothing
-		}
-		delete Cache.E_Image; 
-	} else {
-		// do nothing
-	}
-	Cache.E_Image = NULL;
 }

@@ -34,4 +34,4 @@ _ReSharper*/
 [Tt]est[Rr]esult*
 *~
 
-libraries/lib/tag_c.lib
+libraries/*
