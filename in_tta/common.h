@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#include "stdafx.h"
 #include "..\libtta++\libtta.h"
+#include <string>
 
 static const __int32 BUFFER_LENGTH = 576;
 static const __int32 BUFFER_SIZE = BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
@@ -36,8 +36,12 @@ static const unsigned __int8 FIELD_TEXT_MAX        = FIELD_TEXT_UTF_8;
 static const unsigned __int8 UTF16_LE[] = {0xfe, 0xff};
 static const unsigned __int8 UTF16_BE[] = {0xff, 0xfe};
 
-CString GetEncodingString(const _TCHAR *string);
-const char *SetEncodingString(CString &str, unsigned __int8 version = 0x04, unsigned __int8 Encoding = FIELD_TEXT_UTF_8);
-const char *SetEncodingString(const _TCHAR *string, unsigned __int8 version = 0x04, unsigned __int8 Encoding = FIELD_TEXT_UTF_8);
+std::string GetEncodingString(const char *string);
+const char *SetEncodingString(std::string &str, unsigned __int8 version = 0x04, unsigned __int8 Encoding = FIELD_TEXT_UTF_8);
+const char *SetEncodingString(const char *string, unsigned __int8 version = 0x04, unsigned __int8 Encoding = FIELD_TEXT_UTF_8);
+
+std::wstring GetEncodingString(const wchar_t *string);
+const wchar_t *SetEncodingString(std::wstring &str, unsigned __int8 version = 0x04, unsigned __int8 Encoding = FIELD_TEXT_UTF_8);
+const wchar_t *SetEncodingString(const wchar_t *string, unsigned __int8 version = 0x04, unsigned __int8 Encoding = FIELD_TEXT_UTF_8);
 
 #endif

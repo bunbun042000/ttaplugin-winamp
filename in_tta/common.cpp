@@ -20,14 +20,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "common.h"
 #include "..\libtta++\libtta.h"
 
-CString GetEncodingString(const _TCHAR *string)
+std::string GetEncodingString(const char *string)
 {
-	CString sTempChar;
+	std::string sTempChar;
 
 	__int32 dwStrSize = strlen(string) + 1;
 	__int32 size = ::MultiByteToWideChar(CP_UTF8, 0, string, dwStrSize, NULL, 0);
 	size++;
-	WCHAR *tempchar = new WCHAR[size];
+	wchar_t *tempchar = new wchar_t[size];
 	if(tempchar == NULL)
 		return "";
 	::MultiByteToWideChar(CP_UTF8, 0, string, dwStrSize, tempchar, size - 1);
@@ -47,13 +47,13 @@ CString GetEncodingString(const _TCHAR *string)
 	return sTempChar;
 }
 
-void UTF16toUTF16BE(WCHAR *str, int len)
+void UTF16toUTF16BE(wchar_t *str, int len)
 {
 	for(int i = 0; i < len; i++)
 		str[i] = (str[i] << 8) | (str[i] >> 8);
 }
 
-const char *SetEncodingString(CString &str, unsigned __int8 version, unsigned __int8 Encoding)
+const char *SetEncodingString(std::string &str, unsigned __int8 version, unsigned __int8 Encoding)
 {
 	if((Encoding > FIELD_TEXT_MAX) || (version != 0x03 && version != 0x04)) 
 		return NULL;
@@ -72,19 +72,19 @@ const char *SetEncodingString(CString &str, unsigned __int8 version, unsigned __
 				tempchar[0] = '\0';
 				break;
 			}
-			tempchar = new char[str.GetLength() + 1];
+			tempchar = new char[str.length() + 1];
 			if(tempchar == NULL)
 				return NULL;
-			memcpy_s((char *)tempchar, str.GetLength() + 1, (LPCTSTR)str, str.GetLength() + 1);
+			memcpy_s((char *)tempchar, str.length() + 1, str.c_str(), str.length() + 1);
 			break;
 		}
 		case FIELD_TEXT_UTF_16:	{
 			__int32 size;
 			if(str == "") 
-				size = 2 * sizeof(WCHAR);
+				size = 2 * sizeof(wchar_t);
 			else {
-				size = ::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)str, -1, 0, 0);
-				size = (size + 1) * sizeof(WCHAR);
+				size = ::MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, 0, 0);
+				size = (size + 1) * sizeof(wchar_t);
 			}
 			tempchar = new char[size];
 			if(tempchar == NULL)
@@ -93,28 +93,28 @@ const char *SetEncodingString(CString &str, unsigned __int8 version, unsigned __
 			if(str == "")
 				memcpy_s(tempchar + 2, size - 2, "\0\0", sizeof(WCHAR));
 			else {
-				::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)str, -1, (WCHAR *)(tempchar + 2), 
-					(size - 2) / sizeof(WCHAR));
+				::MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, (wchar_t *)(tempchar + 2), 
+					(size - 2) / sizeof(wchar_t));
 			}
 			break;
 		}
 		case FIELD_TEXT_UTF_16BE: {
 			__int32 size;
 			if(str == "")
-				size = sizeof(WCHAR);
+				size = sizeof(wchar_t);
 			else {
-				size = ::MultiByteToWideChar(CP_ACP, 0, str, -1, 0, 0);
-				size = (size  + 1) * sizeof(WCHAR);
+				size = ::MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, 0, 0);
+				size = (size  + 1) * sizeof(wchar_t);
 			}
 			tempchar = new char[size];
 			if(tempchar == NULL) {
 				return NULL;
 			}
 			if(str == "") {
-				memcpy_s(tempchar, size, "\0\0", sizeof(WCHAR));
+				memcpy_s(tempchar, size, "\0\0", sizeof(wchar_t));
 			} else {
-				::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)str, -1, (WCHAR *)tempchar, size / sizeof(WCHAR));
-				UTF16toUTF16BE((WCHAR *)tempchar, size / sizeof(WCHAR));
+				::MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, (wchar_t *)tempchar, size / sizeof(wchar_t));
+				UTF16toUTF16BE((wchar_t *)tempchar, size / sizeof(wchar_t));
 			}
 			break;
 		}
@@ -124,13 +124,13 @@ const char *SetEncodingString(CString &str, unsigned __int8 version, unsigned __
 			if(str == "")
 				size = sizeof(unsigned char);
 			else {
-				__int32 tempsize = ::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)str, -1, 0, 0);
-				tempsize = tempsize * sizeof(WCHAR);
+				__int32 tempsize = ::MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, 0, 0);
+				tempsize = tempsize * sizeof(wchar_t);
 				tempDataUTF16 = new unsigned char[tempsize];
 				if(tempDataUTF16 == NULL)
 					return NULL;
-				::MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)str, -1, (WCHAR *)tempDataUTF16, tempsize / sizeof(WCHAR));
-				size = ::WideCharToMultiByte(CP_UTF8, 0, (WCHAR *)tempDataUTF16, -1, NULL, 0, NULL, NULL);
+				::MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, (wchar_t *)tempDataUTF16, tempsize / sizeof(wchar_t));
+				size = ::WideCharToMultiByte(CP_UTF8, 0, (wchar_t *)tempDataUTF16, -1, NULL, 0, NULL, NULL);
 				size += sizeof(unsigned char);
 			}
 			tempchar = new char[size];
@@ -139,15 +139,15 @@ const char *SetEncodingString(CString &str, unsigned __int8 version, unsigned __
 			if(str == "")
 				tempchar[0] = '\0';
 			else
-				::WideCharToMultiByte(CP_UTF8, 0, (WCHAR *)tempDataUTF16, -1, (char *)tempchar, size, NULL, NULL);
+				::WideCharToMultiByte(CP_UTF8, 0, (wchar_t *)tempDataUTF16, -1, (char *)tempchar, size, NULL, NULL);
 			break;
 		}
 	}
 	return tempchar;
 }
 
-const char *SetEncodingString(const _TCHAR *string, unsigned char version, unsigned char Encoding)
+const char *SetEncodingString(const char *string, unsigned char version, unsigned char Encoding)
 {
-	CString temp = string;
+	std::string temp = string;
 	return SetEncodingString(temp, version, Encoding);
 }
