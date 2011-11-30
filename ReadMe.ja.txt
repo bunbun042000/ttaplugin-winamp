@@ -11,7 +11,7 @@ in_tta.dll Ver3.2 (Beta12)
 
 *インストール方法
  WinampのフォルダにあるPluginsフォルダにin_tta.dllをコピー
- てください。また、PluginsフォルダとWinampのベースフォルダにtag.dll
+ てください。また、Winampのベースフォルダにtag.dll
 (https://github.com/downloads/bunbun042000/taglib-modified/tag.dll)をコピーしてください。
 
 *更新履歴
