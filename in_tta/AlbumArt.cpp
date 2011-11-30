@@ -17,7 +17,6 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "stdafx.h"
 #include <stdio.h>
 #include <Wasabi/api/service/api_service.h>
 #include <Agave/Config/api_config.h>
@@ -193,6 +192,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 	size_t tag_size = 0;
     int retval = ALBUMARTPROVIDER_FAILURE;
 	TagLib::String mimeType;
+	char demandFile[MAX_PATHLEN];
 
 	::EnterCriticalSection(&CriticalSection);
 
@@ -210,7 +210,11 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 		// do nothing
 	}
 
-	TagLib::TrueAudio::File TagFile(filename);
+	size_t origsize = wcslen(filename) + 1;
+	size_t convertedChars = 0;
+	int ret = WideCharToMultiByte(CP_ACP, 0, filename, origsize, demandFile, MAX_PATHLEN - 1, NULL, NULL);
+
+	TagLib::TrueAudio::File TagFile(demandFile);
 	if (false == TagFile.isValid()) {
 		::LeaveCriticalSection(&CriticalSection);
 		return retval;
@@ -284,7 +288,7 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 
 	bool FindTag = false;
     int retval = ALBUMARTPROVIDER_FAILURE;
-	TagLib::String mimeType(_T(""));
+	TagLib::String mimeType(L"");
 	char demandFile[MAX_PATHLEN];
 	int size = 0;
 	TagLib::ID3v2::AttachedPictureFrame::Type artType = TagLib::ID3v2::AttachedPictureFrame::Other;
@@ -325,7 +329,7 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 		::LeaveCriticalSection(&CriticalSection);
 		return retval;
 	} else {
-		mimeType = _T("image/");
+		mimeType = L"image/";
 		mimeType += mime_type;
 		size = len;
 		artType = TagLib::ID3v2::AttachedPictureFrame::FrontCover;

@@ -19,23 +19,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #pragma once
 
-#ifndef __AFXWIN_H__
-	#error "include 'stdafx.h' before including this file for PCH"
-#endif
+//#ifndef __AFXWIN_H__
+//	#error "include 'stdafx.h' before including this file for PCH"
+//#endif
 
 // Cin_ttaApp
 // See in_tta.cpp for the implementation of this class
 //
 
-class Cin_ttaApp : public CWinApp
-{
-public:
-	Cin_ttaApp();
-
-// Overrides
-public:
-	virtual BOOL InitInstance();
-
-	DECLARE_MESSAGE_MAP()
-};
+//class Cin_ttaApp : public CWinApp
+//{
+//public:
+//	Cin_ttaApp();
+//
+//// Overrides
+//public:
+//	virtual BOOL InitInstance();
+//
+//	DECLARE_MESSAGE_MAP()
+//};
 

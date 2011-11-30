@@ -38,7 +38,7 @@ TTAint64 CALLBACK seek_callback(_tag_TTA_io_callback *io, TTAint64 offset);
 class CDecodeFile
 {
 private:
-	CString			FileName;
+	std::string		FileName;
 
 	int	            paused;
 	long            seek_needed;
@@ -65,7 +65,7 @@ public:
 	~CDecodeFile(void);
 
 	int				SetFileName(const char *filename);
-	const char	   *GetFileName(){return (LPCTSTR)FileName;}
+	const char	   *GetFileName(){return FileName.c_str();}
 	int				Play();
 	int				Stop();
 	int				GetSamples(BYTE *buffer, long count, int *current_bitrate);

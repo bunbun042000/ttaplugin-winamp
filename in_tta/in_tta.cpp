@@ -10,8 +10,26 @@
  *
  */
 
+/*
+The ttaplugin-winamp project.
+Copyright (C) 2005-2011 Yamagata Fumihiro
 
-#include "stdafx.h"
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+//#include "StdAfx.h"
 #include "in_tta.h"
 
 #include "../Winamp SDK/Winamp/in2.h"
@@ -25,34 +43,30 @@
 #include <taglib/tstring.h>
 #include "resource.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
-BEGIN_MESSAGE_MAP(Cin_ttaApp, CWinApp)
-END_MESSAGE_MAP()
+//BEGIN_MESSAGE_MAP(Cin_ttaApp, CWinApp)
+//END_MESSAGE_MAP()
 
 
 // Cin_ttaApp construction
 
-Cin_ttaApp::Cin_ttaApp()
-{
+//Cin_ttaApp::Cin_ttaApp()
+//{
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
-}
+//}
 
 
 // Cin_ttaApp initialization
 
-BOOL Cin_ttaApp::InitInstance()
-{
-	CWinApp::InitInstance();
-
-	return TRUE;
-}
+//BOOL Cin_ttaApp::InitInstance()
+//{
+//	CWinApp::InitInstance();
+//
+//	return TRUE;
+//}
 // The one and only Cin_ttaApp object
 
-Cin_ttaApp theApp;
+//Cin_ttaApp theApp;
 
 // For Support Transcoder input (2007/10/15)
 CDecodeFile playing_ttafile;
@@ -242,7 +256,7 @@ void about(HWND hwndParent)
 
 void init()
 {
-	theApp.InitInstance();
+//	theApp.InitInstance();
 	decoderFileHANDLE = INVALID_HANDLE_VALUE;
 	Wasabi_Init();
 }
@@ -454,24 +468,24 @@ void SetPlayingTitle(const char *filename, char *title)
 				// cannot get file info
 			} else if (!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty()) || !(File.tag()->album().isEmpty())) {
 				if(!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty())) {
-					wsprintf(title, _T("%s - %s"), 
+					wsprintf(title, "%s - %s", 
 						File.tag()->artist(),
 						File.tag()->title());
 				} else if (!(File.tag()->artist().isEmpty()) || !(File.tag()->album().isEmpty())) {
-					wsprintf(title, _T("%s - %s"), 
+					wsprintf(title, "%s - %s", 
 						File.tag()->artist(),
 						File.tag()->album());
 				} else if (!(File.tag()->artist().isEmpty())) {
-					wsprintf(title, _T("%s"), 
+					wsprintf(title, "%s", 
 						File.tag()->artist());
 				} else if (!(File.tag()->title().isEmpty())) {
-					wsprintf(title, _T("%s"), 
+					wsprintf(title, "%s", 
 						File.tag()->title());
 				}
 			} else {
-				_TCHAR p[MAX_PATHLEN];
+				char p[MAX_PATHLEN];
 				::GetFileTitle(filename, p, MAX_PATHLEN - 1);
-				lstrcpyn(title, p, _tcschr(p, '.') - p);
+				lstrcpyn(title, p, strchr(p, '.') - p);
 			}
 		} else {
 			// do nothing.
@@ -500,10 +514,10 @@ extern "C"
   // this will be called when Winamp is requested to show a File Info dialog for the selected file(s)
   // and this will allow you to override or forceable ignore the handling of a file or format
   // e.g. this will allow streams/urls to be ignored
-	if (!_tcsncicmp(fn, _T("file://"), 7)) {
+	if (!_strnicmp(fn, "file://", 7)) {
 		fn += 7;
 	}
-	if (PathIsURL(fn)) { 
+	if (PathIsURLA(fn)) { 
 		return 0;
 	}
 	return 1;
@@ -537,7 +551,7 @@ extern "C"
 	__declspec( dllexport ) intptr_t __cdecl winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
 	{
 		CDecodeFile *dec = (CDecodeFile *)handle;
-		BYTE *buf = new BYTE[BUFFER_SIZE];
+		unsigned char *buf = new unsigned char[BUFFER_SIZE];
 		int dest_used = 0;
 		int n = 0;
 		int bitrate;

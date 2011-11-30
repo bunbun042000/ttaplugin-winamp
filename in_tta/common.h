@@ -40,8 +40,5 @@ std::string GetEncodingString(const char *string);
 const char *SetEncodingString(std::string &str, unsigned __int8 version = 0x04, unsigned __int8 Encoding = FIELD_TEXT_UTF_8);
 const char *SetEncodingString(const char *string, unsigned __int8 version = 0x04, unsigned __int8 Encoding = FIELD_TEXT_UTF_8);
 
-std::wstring GetEncodingString(const wchar_t *string);
-const wchar_t *SetEncodingString(std::wstring &str, unsigned __int8 version = 0x04, unsigned __int8 Encoding = FIELD_TEXT_UTF_8);
-const wchar_t *SetEncodingString(const wchar_t *string, unsigned __int8 version = 0x04, unsigned __int8 Encoding = FIELD_TEXT_UTF_8);
 
 #endif
