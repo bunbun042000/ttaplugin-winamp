@@ -31,12 +31,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 static const __int32 MAX_MUSICTEXT = 512;
 static const __int32 MAX_YEAR = 10;
 
-typedef struct _Embedded_Image {
-	char          *Image;
-	size_t         size;
-	TagLib::String mimeType;
-} Embedded_Image;
-
 struct TagInfo
 {
 	unsigned long	Length;
@@ -57,7 +51,6 @@ struct TagInfo
 	char            Publisher[MAX_MUSICTEXT];
 	char            Disc[MAX_MUSICTEXT];
 	char            BPM[MAX_MUSICTEXT];
-	Embedded_Image *E_Image;
 };
 
 class CMediaLibrary  
@@ -78,7 +71,6 @@ private:
 
 	void FlushCache(void);
 	bool GetTagInfo();
-	void ReleaseImageBuffer();
 
 };
 
