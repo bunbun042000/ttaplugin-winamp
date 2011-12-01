@@ -17,7 +17,8 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#pragma once
+#ifndef DECODEFILE_H
+#define DECODEFILE_H
 
 #include "common.h"
 #include "..\libtta++\libtta.h"
@@ -95,3 +96,5 @@ public:
 	__int32			GetBitsperSample() {return tta_info.bps;}
 
 };
+
+#endif

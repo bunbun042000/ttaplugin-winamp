@@ -197,7 +197,7 @@
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <StructMemberAlignment>1Byte</StructMemberAlignment>
+      <StructMemberAlignment>Default</StructMemberAlignment>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <PrecompiledHeader>
@@ -205,15 +205,16 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)..\libraries\lib;$(SolutionDir)libtta++\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>tag.lib;libtta.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>tag.lib;libtta.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <GenerateMapFile>true</GenerateMapFile>
+      <GenerateMapFile>false</GenerateMapFile>
       <AssemblyDebug>false</AssemblyDebug>
       <SubSystem>NotSet</SubSystem>
-      <OptimizeReferences>false</OptimizeReferences>
+      <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -232,7 +233,6 @@
     <ClCompile Include="AlbumArt.cpp" />
     <ClCompile Include="common.cpp" />
     <ClCompile Include="DecodeFile.cpp" />
-    <ClCompile Include="id3v2tag_extend.cpp" />
     <ClCompile Include="in_tta.cpp" />
     <ClCompile Include="MediaLibrary.cpp" />
   </ItemGroup>
@@ -240,11 +240,8 @@
     <ClInclude Include="AlbumArt.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="DecodeFile.h" />
-    <ClInclude Include="id3v2tag_extend.h" />
-    <ClInclude Include="in_tta.h" />
     <ClInclude Include="MediaLibrary.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="in_tta.rc" />

@@ -16,9 +16,6 @@
     <ClCompile Include="MediaLibrary.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="id3v2tag_extend.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlbumArt.h">
@@ -30,19 +27,10 @@
     <ClInclude Include="DecodeFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="in_tta.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MediaLibrary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="id3v2tag_extend.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StdAfx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

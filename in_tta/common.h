@@ -17,8 +17,6 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#pragma once
-
 #ifndef COMMON_H_
 #define COMMON_H_
 
@@ -39,6 +37,5 @@ static const unsigned __int8 UTF16_BE[] = {0xff, 0xfe};
 std::string GetEncodingString(const char *string);
 const char *SetEncodingString(std::string &str, unsigned __int8 version = 0x04, unsigned __int8 Encoding = FIELD_TEXT_UTF_8);
 const char *SetEncodingString(const char *string, unsigned __int8 version = 0x04, unsigned __int8 Encoding = FIELD_TEXT_UTF_8);
-
 
 #endif

@@ -29,11 +29,9 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-//#include "StdAfx.h"
-#include "in_tta.h"
 
-#include "../Winamp SDK/Winamp/in2.h"
-#include "../Winamp SDK/Agave/Language/api_language.h"
+#include <Winamp/in2.h>
+#include <Agave/Language/api_language.h>
 #include "DecodeFile.h"
 #include "MediaLibrary.h"
 #include <Shlwapi.h>
@@ -42,31 +40,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <taglib/trueaudiofile.h>
 #include <taglib/tstring.h>
 #include "resource.h"
-
-//BEGIN_MESSAGE_MAP(Cin_ttaApp, CWinApp)
-//END_MESSAGE_MAP()
-
-
-// Cin_ttaApp construction
-
-//Cin_ttaApp::Cin_ttaApp()
-//{
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
-//}
-
-
-// Cin_ttaApp initialization
-
-//BOOL Cin_ttaApp::InitInstance()
-//{
-//	CWinApp::InitInstance();
-//
-//	return TRUE;
-//}
-// The one and only Cin_ttaApp object
-
-//Cin_ttaApp theApp;
 
 // For Support Transcoder input (2007/10/15)
 CDecodeFile playing_ttafile;

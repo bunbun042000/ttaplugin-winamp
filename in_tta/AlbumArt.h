@@ -17,9 +17,12 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#pragma once
+#ifndef ALBUMART_H
+#define ALBUMART_H
 
 void Wasabi_Init();
 void Wasabi_Quit();
 void *Wasabi_Malloc(size_t size_in_bytes);
 void Wasabi_Free(void *memory_block);
+
+#endif
