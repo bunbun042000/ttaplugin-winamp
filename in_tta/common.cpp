@@ -151,3 +151,106 @@ const char *SetEncodingString(const char *string, unsigned char version, unsigne
 	std::string temp = string;
 	return SetEncodingString(temp, version, Encoding);
 }
+
+const char *SetEncodingString(std::wstring &str, const char *locale, unsigned __int8 version, unsigned __int8 Encoding)
+{
+	return SetEncodingString(wcstostring(str.c_str(), locale), version, Encoding);
+}
+
+const char *SetEncodingString(const wchar_t *wstr, const char *locale, unsigned __int8 version, unsigned __int8 Encoding)
+{
+	std::string temp = wcstostring(wstr, locale);
+	return SetEncodingString(temp, version, Encoding);
+}
+
+std::wstring GetWideString(const char *string)
+{
+	return mbstowstring(GetEncodingString(string));
+}
+
+std::wstring mbstowstring(const std::string &multibytestring, const char *locale)
+{
+
+	if ("" == multibytestring || NULL == locale) {
+		return std::wstring(L"");
+	} else {
+		// do nothing
+	}
+
+	char *return_locale = setlocale(LC_ALL, locale);
+
+	if (NULL == return_locale) {
+		return std::wstring(L"");
+	} else {
+		// do nothing
+	}
+
+	size_t origsize = multibytestring.length() + 1;
+	size_t demandSize = 0;
+	errno_t err = mbstowcs_s(&demandSize, NULL, 0, multibytestring.c_str(), _TRUNCATE);
+
+	if (0 != err || 0 == demandSize) {
+		return std::wstring(L"");
+	} else {
+		//do nothing
+	}
+
+	wchar_t *return_widechar = new wchar_t[demandSize];
+
+	size_t convertedChars = 0;
+	mbstowcs_s(&convertedChars, return_widechar, demandSize, multibytestring.c_str(), _TRUNCATE);
+	if (demandSize != convertedChars) {
+		return std::wstring(L"");
+	} else {
+		// do nothing
+	}
+
+	return std::wstring(return_widechar);
+
+}
+
+std::wstring mbstowstring(const char *multibytestring, const char *locale)
+{
+	const std::string mbstring(multibytestring);
+	return mbstowstring(mbstring, locale);
+}
+
+std::string wcstostring(const wchar_t *widestring, const char *locale)
+{
+
+	if (NULL == widestring || NULL == locale) {
+		return std::string("");
+	} else {
+		// do nothing
+	}
+
+	char *return_locale = setlocale(LC_ALL, locale);
+
+	if (NULL == return_locale) {
+		return std::string("");
+	} else {
+		// do nothing
+	}
+
+	size_t origsize = wcslen(widestring) + 1;
+	size_t demandSize = 0;
+	errno_t err = wcstombs_s(&demandSize, NULL, 0, widestring, _TRUNCATE);
+
+	if (0 != err || 0 == demandSize) {
+		return std::string("");
+	} else {
+		//do nothing
+	}
+
+	char *returnchar = new char[demandSize];
+
+	size_t convertedChars = 0;
+	wcstombs_s(&convertedChars, returnchar, demandSize, widestring, _TRUNCATE);
+	if (demandSize != convertedChars) {
+		return std::string("");
+	} else {
+		// do nothing
+	}
+
+	return std::string(returnchar);
+}
