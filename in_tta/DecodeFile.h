@@ -73,7 +73,7 @@ public:
 
 	int				GetPaused(){return paused;}
 	void			SetPaused(int p){paused = p;}
-	long double		GetDecodePosMs(){return decode_pos_ms;}
+	double			GetDecodePosMs(){return decode_pos_ms;}
 	void		 	SetDecodePosMs(int d_pos_ms)
 	{
 		TTAuint32 new_pos;

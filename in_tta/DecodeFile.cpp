@@ -133,7 +133,7 @@ int CDecodeFile::SetFileName(const char *filename)
 	paused = 0;
 	decode_pos_ms = 0;
 	seek_needed = -1;
-	bitrate = (long)((Filesize) / (tta_info.samples / tta_info.sps * tta_info.bps) / 1000);
+	bitrate = (long)((Filesize) / (tta_info.samples / tta_info.sps) * tta_info.bps / tta_info.nch / 1000);
 
 	if (TTA->seek_allowed){
 		st_state = 1;

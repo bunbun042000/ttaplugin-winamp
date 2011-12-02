@@ -29,26 +29,21 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <Shlwapi.h>
+#include <stdlib.h>
 
 #include <Winamp/in2.h>
 #include <Agave/Language/api_language.h>
-#include "DecodeFile.h"
-#include "MediaLibrary.h"
-#include <Shlwapi.h>
+
 #include <taglib/tag.h>
-#include "AlbumArt.h"
 #include <taglib/trueaudiofile.h>
 #include <taglib/tstring.h>
+
+#include "AlbumArt.h"
+#include "DecodeFile.h"
+#include "MediaLibrary.h"
+
 #include "resource.h"
-
-// For Support Transcoder input (2007/10/15)
-CDecodeFile playing_ttafile;
-CMediaLibrary m_Tag;
-
-CDecodeFile transcoding_ttafile;
-
-static long	vis_buffer[BUFFER_SIZE * MAX_NCH];	// vis buffer
-static BYTE pcm_buffer[BUFFER_SIZE];
 
 #define  PLUGIN_VERSION "3.2 extended Beta12"
 #define  PROJECT_URL "<git://github.com/bunbun042000/ttaplugin-winamp.git>"
@@ -58,6 +53,15 @@ static BYTE pcm_buffer[BUFFER_SIZE];
 #define  ORIGINAL_CREADIT03 "All rights reserved.\n"
 #define  CREADIT01 "Modified by Yamagata Fumihiro, 2005-2011\n"
 #define  CREADIT02 "Copyright (C)2005-2011 Yamagata Fumihiro.\n"
+
+// For Support Transcoder input (2007/10/15)
+CDecodeFile playing_ttafile;
+CMediaLibrary m_Tag;
+
+CDecodeFile transcoding_ttafile;
+
+static long	vis_buffer[BUFFER_SIZE * MAX_NCH];	// vis buffer
+static BYTE pcm_buffer[BUFFER_SIZE];
 
 static HANDLE decoder_handle = NULL;
 static DWORD WINAPI __stdcall DecoderThread (void *p);
@@ -122,7 +126,7 @@ typedef struct _buffer {
 	BYTE	   *buffer;
 } data_buf;
 
-static data_buf remain_data; // for transcoding (buffer for data that is decoded but not copied)
+static data_buf remain_data; // for transcoding (buffer for data that is decoded but is not copied)
 
 static void tta_error(int error, char *filename)
 {
@@ -401,13 +405,18 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 	while (!killDecoderThread) {
 		if (playing_ttafile.GetSeekNeeded() != -1) {
 			mod.outMod->Flush((int)playing_ttafile.SeekPosition(&done));
+		} else {
+			// do nothing
 		}
+
 		if (done) {
 			mod.outMod->CanWrite();
 			if (!mod.outMod->IsPlaying()) {
 				PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
 				return 0;
-			} else Sleep(10);
+			} else {
+				Sleep(10);
+			}
 		} else if (mod.outMod->CanWrite() >= 
 			((BUFFER_LENGTH * playing_ttafile.GetNumberofChannel() * 
 			playing_ttafile.GetByteSize()) << (mod.dsp_isactive()? 1:0))) {
@@ -418,10 +427,14 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 				if (mod.dsp_isactive()) {
 					len = mod.dsp_dosamples((short *)pcm_buffer, len, playing_ttafile.GetOutputBPS(),
 						playing_ttafile.GetNumberofChannel(), playing_ttafile.GetSampleRate());
+				} else {
+					// do nothing
 				}
 				mod.outMod->Write((char *)pcm_buffer, len * playing_ttafile.GetNumberofChannel() * (playing_ttafile.GetOutputBPS() >> 3));
 			}
+
 			mod.SetInfo(bitrate, playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
+
 		} else {
 			Sleep(20);
 		}
@@ -506,6 +519,7 @@ extern "C"
 	{
 		return m_Tag.WriteExtendedFileInfo();
 	}
+
 	__declspec(dllexport) intptr_t __cdecl winampGetExtendedRead_open(const char *filename, int *size, int *bps, int *nch, int *srate)
 	{
 		
