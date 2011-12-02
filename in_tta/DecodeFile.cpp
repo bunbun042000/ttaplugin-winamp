@@ -144,6 +144,17 @@ int CDecodeFile::SetFileName(const char *filename)
 	return 0;
 }
 
+int CDecodeFile::SetFileName(const wchar_t *filename)
+{
+	// check for required data presented
+	if (!filename) {
+		return -1;
+	}
+
+	std::string fn = wcstostring(filename, ".ACP");
+
+	return SetFileName(fn.c_str());
+}
 
 
 long double CDecodeFile::SeekPosition(int *done)

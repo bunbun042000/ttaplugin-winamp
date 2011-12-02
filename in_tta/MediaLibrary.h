@@ -49,24 +49,52 @@ struct TagInfo
 	char            BPM[MAX_MUSICTEXT];
 };
 
+struct TagInfoW
+{
+	unsigned long	Length;
+	wchar_t			Format[MAX_MUSICTEXT];
+	wchar_t			FileName[MAX_PATHLEN];
+	wchar_t			Title[MAX_MUSICTEXT];
+	wchar_t			Artist[MAX_MUSICTEXT];
+	wchar_t			AlbumArtist[MAX_MUSICTEXT];
+	wchar_t			Comment[MAX_MUSICTEXT];
+	wchar_t			Album[MAX_MUSICTEXT];
+	wchar_t			Year[MAX_MUSICTEXT];
+	wchar_t			Genre[MAX_MUSICTEXT];
+	wchar_t			Track[MAX_MUSICTEXT];
+	wchar_t			Composer[MAX_MUSICTEXT];
+	wchar_t			OrgArtist[MAX_MUSICTEXT];
+	wchar_t			Copyright[MAX_MUSICTEXT];
+	wchar_t			Encoder[MAX_MUSICTEXT];
+	wchar_t			Publisher[MAX_MUSICTEXT];
+	wchar_t			Disc[MAX_MUSICTEXT];
+	wchar_t			BPM[MAX_MUSICTEXT];
+};
+
 class CMediaLibrary  
 {
 public:
 	CMediaLibrary();
 	virtual ~CMediaLibrary();
 	__int32  GetExtendedFileInfo(const char *fn, const char *data, char *dest, size_t destlen);
+	__int32	 GetExtendedFileInfo(const wchar_t *fn, const char *data, wchar_t *dest, size_t destlen);
 	__int32  SetExtendedFileInfo(const char *fn, const char *MetaData, const char *val);
+	__int32  SetExtendedFileInfo(const wchar_t *fn, const char *MetaData, const wchar_t *val);
 	__int32  WriteExtendedFileInfo();
-	int GetAlbumArtData(const wchar_t *filename, const wchar_t *type, void **bits, size_t *len, wchar_t **mime_type);
 
 private:
 
 	CRITICAL_SECTION	CriticalSection;
-	TagInfo		        Cache;
 	DWORD				GetTagTime;
+	TagInfo		        Cache;
+	TagInfoW			CacheW;
+	bool				is_wchar;
 
-	void FlushCache(void);
-	bool GetTagInfo();
+	void				FlushCache(void);
+	bool				GetTagInfo();
+	bool				GetTagInfoW();
+	__int32				privateWriteExtendedFileInfo();
+	__int32				privateWriteExtendedFileInfoW();
 
 };
 

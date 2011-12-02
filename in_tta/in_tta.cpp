@@ -32,6 +32,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <Shlwapi.h>
 #include <stdlib.h>
 
+#define UNICODE_INPUT_PLUGIN // Unicode version.
+
 #include <Winamp/in2.h>
 #include <Agave/Language/api_language.h>
 
@@ -72,10 +74,10 @@ void config(HWND hwndParent);
 void about(HWND hwndParent);
 void init();
 void quit();
-void getfileinfo(const char *file, char *title, int *length_in_ms);
-int  infodlg(const char *file, HWND hwndParent);
-int  isourfile(const char *fn);
-int  play(const char *fn);
+void getfileinfo(const wchar_t *file, wchar_t *title, int *length_in_ms);
+int  infodlg(const wchar_t *file, HWND hwndParent);
+int  isourfile(const wchar_t *fn);
+int  play(const wchar_t *fn);
 void pause();
 void unpause();
 int  ispaused();
@@ -87,7 +89,7 @@ void setvolume(int volume);
 void setpan(int pan);
 void eq_set(int on, char data[10], int preamp);
 
-void SetPlayingTitle(const char *filename, char *title);
+void SetPlayingTitle(const wchar_t *filename, wchar_t *title);
 
 In_Module mod = {
 	IN_VER,
@@ -244,14 +246,21 @@ void quit()
 }
 
 
-void getfileinfo(const char *file, char *title, int *length_in_ms)
+void getfileinfo(const wchar_t *file, wchar_t *title, int *length_in_ms)
 {
 	if (!file || !*file) { 
 		// invalid filename
+		if (NULL != playing_ttafile.GetFileName()) {
+			SetPlayingTitle(mbstowstring(playing_ttafile.GetFileName(), ".ACP").c_str(), title);
+			*length_in_ms = playing_ttafile.GetLengthbymsec();
+		} else {
+			// No playing file exists. so do nothing 
+		}
 	} else {
 		SetPlayingTitle(file, title);
-		TagLib::FileName fn(file);
-		TagLib::TrueAudio::File f(fn);
+
+		std::string demandFile = wcstostring(file, ".ACP");
+		TagLib::TrueAudio::File f(demandFile.c_str());
 		if (f.isValid() == true) {
 			*length_in_ms = f.audioProperties()->length() * 1000;
 		} else {
@@ -260,17 +269,17 @@ void getfileinfo(const char *file, char *title, int *length_in_ms)
 	}
 }
 
-int infodlg(const char *filename, HWND parent)
+int infodlg(const wchar_t *filename, HWND parent)
 {
 	return 0;
 }
 
-int isourfile(const char *filename)
+int isourfile(const wchar_t *filename)
 {
 	return 0;
 } 
 
-int play(const char *fn)
+int play(const wchar_t *fn)
 {
 	int maxlatency;
 	unsigned long decoder_thread_id;
@@ -443,35 +452,39 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 	return 0;
 }
 
-void SetPlayingTitle(const char *filename, char *title)
+void SetPlayingTitle(const wchar_t *filename, wchar_t *title)
 {
-	if (filename != NULL) { 
-		if (TagLib::TrueAudio::File::isReadable(filename)) {
 
-			TagLib::FileName fn(filename);
+	if (filename != NULL) { 
+
+		std::string demandFile = wcstostring(filename, ".ACP");
+
+		if (TagLib::TrueAudio::File::isReadable(demandFile.c_str())) {
+
+			TagLib::FileName fn(demandFile.c_str());
 			TagLib::TrueAudio::File File(fn);
 			if (File.isValid() == false) {
 				// cannot get file info
 			} else if (!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty()) || !(File.tag()->album().isEmpty())) {
 				if(!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty())) {
-					wsprintf(title, "%s - %s", 
-						File.tag()->artist(),
-						File.tag()->title());
+					wsprintfW(title, L"%s - %s", 
+						mbstowstring(GetEncodingString(File.tag()->artist().toCString(true)), ".ACP").c_str(),
+						mbstowstring(GetEncodingString(File.tag()->title().toCString(true)), ".ACP").c_str());
 				} else if (!(File.tag()->artist().isEmpty()) || !(File.tag()->album().isEmpty())) {
-					wsprintf(title, "%s - %s", 
-						File.tag()->artist(),
-						File.tag()->album());
+					wsprintfW(title, L"%s - %s", 
+						mbstowstring(GetEncodingString(File.tag()->artist().toCString(true)), ".ACP").c_str(),
+						mbstowstring(GetEncodingString(File.tag()->album().toCString(true)), ".ACP").c_str());
 				} else if (!(File.tag()->artist().isEmpty())) {
-					wsprintf(title, "%s", 
-						File.tag()->artist());
+					wsprintfW(title, L"%s", 
+						mbstowstring(GetEncodingString(File.tag()->artist().toCString(true)), ".ACP").c_str());
 				} else if (!(File.tag()->title().isEmpty())) {
-					wsprintf(title, "%s", 
-						File.tag()->title());
+					wsprintfW(title, L"%s", 
+						mbstowstring(GetEncodingString(File.tag()->title().toCString(true)), ".ACP").c_str());
 				}
 			} else {
-				char p[MAX_PATHLEN];
-				::GetFileTitle(filename, p, MAX_PATHLEN - 1);
-				lstrcpyn(title, p, strchr(p, '.') - p);
+				wchar_t p[MAX_PATHLEN];
+				::GetFileTitleW(filename, p, MAX_PATHLEN - 1);
+				lstrcpynW(title, p, wcschr(p, L'.') - p);
 			}
 		} else {
 			// do nothing.
@@ -494,6 +507,11 @@ extern "C"
 	{
 		return m_Tag.GetExtendedFileInfo(fn, data, dest, destlen);
 	}
+	__declspec(dllexport) int __cdecl
+	winampGetExtendedFileInfoW(const wchar_t *filename, const char *tag, wchar_t *data, size_t destlen)
+	{
+		return m_Tag.GetExtendedFileInfo(filename, tag, data, destlen);
+	}
 
 	__declspec(dllexport) int __cdecl winampUseUnifiedFileInfoDlg(const char * fn)
 	{
@@ -511,6 +529,11 @@ extern "C"
 
 
 	__declspec( dllexport ) int __cdecl winampSetExtendedFileInfo(const char *fn, const char *data, const char *val)
+	{
+		return m_Tag.SetExtendedFileInfo(fn, data, val);
+	}
+
+	__declspec( dllexport ) int __cdecl winampSetExtendedFileInfoW(const wchar_t *fn, const char *data, const wchar_t *val)
 	{
 		return m_Tag.SetExtendedFileInfo(fn, data, val);
 	}
