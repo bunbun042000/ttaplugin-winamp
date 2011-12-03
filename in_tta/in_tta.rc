@@ -61,8 +61,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,2,0,12
- PRODUCTVERSION 3,2,0,12
+ FILEVERSION 3,2,0,13
+ PRODUCTVERSION 3,2,0,13
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -79,12 +79,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Yamagata Fumihiro"
             VALUE "FileDescription", "Winamp input extension for tta audio file"
-            VALUE "FileVersion", "Beta12"
+            VALUE "FileVersion", "Beta13"
             VALUE "InternalName", "in_tta.dll"
-            VALUE "LegalCopyright", "Version 3.2, (C) 2005 Alexander Djourik. All rights reserved. Beta12 (C) 2005-2011 Yamagta Fumihiro. All right reserved."
+            VALUE "LegalCopyright", "Version 3.2, (C) 2005 Alexander Djourik. All rights reserved. Beta13 (C) 2005-2011 Yamagta Fumihiro. All right reserved."
             VALUE "OriginalFilename", "in_tta.dll"
             VALUE "ProductName", "in_tta"
-            VALUE "ProductVersion", "Beta12"
+            VALUE "ProductVersion", "Beta13"
         END
     END
     BLOCK "VarFileInfo"
