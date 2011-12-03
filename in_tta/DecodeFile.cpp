@@ -190,6 +190,13 @@ int  CDecodeFile::GetSamples(int *decoded_length, BYTE *buffer, long buffersize,
 	int skip_len = 0;
 	int len = 0;
 
+	if (INVALID_HANDLE_VALUE == decoderFileHANDLE) {
+		*decoded_length = 0;
+		return TTA_NO_ERROR;
+	} else {
+		// do nothing
+	}
+
 	try {
 		len = TTA->process_stream(temp, buffersize);
 	}

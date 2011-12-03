@@ -602,22 +602,23 @@ extern "C"
 		while (dest_used < len && !*killswitch) {
 		// do we need to decode more?
 			if (n >= decoded_bytes) {
-				 decoder_err = dec->GetSamples(&decoded_bytes, buf, BUFFER_SIZE, &bitrate)
-					* dec->GetBitsperSample() / 8 * dec->GetNumberofChannel();
+				 decoder_err = dec->GetSamples(&decoded_bytes, buf, BUFFER_SIZE, &bitrate);
 				 if (TTA_NO_ERROR != decoder_err) {
 					 tta_error(decoder_err, dec->GetFileName());
+					 dest_used = -1;
 					 break;
-				 } else if (decoded_bytes <= 0) {
-					break; // end of stream
-				} else {
-					n = min(len - dest_used, decoded_bytes);
-					if (n > 0) {
-						memcpy_s(dest + dest_used, len - dest_used, buf, n);
-						dest_used += n;
-					} else {
-						// do nothing
-					}
-				}
+				 } else if (0 == decoded_bytes) {
+					 break; // end of stream
+				 } else {
+					 decoded_bytes = decoded_bytes * dec->GetBitsperSample() / 8 * dec->GetNumberofChannel();
+					 n = min(len - dest_used, decoded_bytes);
+					 if (n > 0) {
+						 memcpy_s(dest + dest_used, len - dest_used, buf, n);
+						 dest_used += n;
+					 } else {
+						 // do nothing
+					 }
+				 }
 			} else {
 				// do nothing
 			}
