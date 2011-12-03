@@ -47,7 +47,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "resource.h"
 
-#define  PLUGIN_VERSION "3.2 extended Beta12"
+#define  PLUGIN_VERSION "3.2 extended Beta13"
 #define  PROJECT_URL "<git://github.com/bunbun042000/ttaplugin-winamp.git>"
 #define  LIBTTA_VERSION "based on libtta++2.1"
 #define  ORIGINAL_CREADIT01 "Plugin is written by Alexander Djourik, Pavel Zhilin and Anton Gorbunov.\n"
@@ -602,22 +602,23 @@ extern "C"
 		while (dest_used < len && !*killswitch) {
 		// do we need to decode more?
 			if (n >= decoded_bytes) {
-				 decoder_err = dec->GetSamples(&decoded_bytes, buf, BUFFER_SIZE, &bitrate)
-					* dec->GetBitsperSample() / 8 * dec->GetNumberofChannel();
+				 decoder_err = dec->GetSamples(&decoded_bytes, buf, BUFFER_SIZE, &bitrate);
 				 if (TTA_NO_ERROR != decoder_err) {
 					 tta_error(decoder_err, dec->GetFileName());
+					 dest_used = -1;
 					 break;
-				 } else if (decoded_bytes <= 0) {
-					break; // end of stream
-				} else {
-					n = min(len - dest_used, decoded_bytes);
-					if (n > 0) {
-						memcpy_s(dest + dest_used, len - dest_used, buf, n);
-						dest_used += n;
-					} else {
-						// do nothing
-					}
-				}
+				 } else if (0 == decoded_bytes) {
+					 break; // end of stream
+				 } else {
+					 decoded_bytes = decoded_bytes * dec->GetBitsperSample() / 8 * dec->GetNumberofChannel();
+					 n = min(len - dest_used, decoded_bytes);
+					 if (n > 0) {
+						 memcpy_s(dest + dest_used, len - dest_used, buf, n);
+						 dest_used += n;
+					 } else {
+						 // do nothing
+					 }
+				 }
 			} else {
 				// do nothing
 			}
