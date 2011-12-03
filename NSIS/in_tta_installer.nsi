@@ -15,8 +15,8 @@
 ; !include "Sections.nsh"
 
 ; common defines for a generic DrO installer :o)
-!define VERSION "3.2 Beta12"
-!define ALT_VER "3_2_Beta12"
+!define VERSION "3.2 Beta13"
+!define ALT_VER "3_2_Beta13"
 !define PLUG "ttaplugin-winamp"
 !define PLUG_ALT "ttaplugin-winamp"
 !define PLUG_FILE "in_tta"

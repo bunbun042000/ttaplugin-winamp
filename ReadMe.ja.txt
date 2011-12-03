@@ -1,4 +1,4 @@
-in_tta.dll Ver3.2 (Beta12) 
+in_tta.dll Ver3.2 (Beta13) 
 =====================================================
 
 *このプラグインは
@@ -15,6 +15,8 @@ in_tta.dll Ver3.2 (Beta12)
 (https://github.com/downloads/bunbun042000/taglib-modified/tag.dll)をコピーしてください。
 
 *更新履歴
+2011-12-03 Beta13 Unicode Plugin version
+                  デコーダー例外処理を追加
 2011-11-27 Beta12 不正なファイル名を渡された際にフリーズする問題を修正
                   アルバムアートなしのファイルを読み込むとフリーズすることがある問題を修正
 2011-11-21 Beta11 ベースライブラリをlibtta++2.1に変更
