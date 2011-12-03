@@ -130,35 +130,41 @@ typedef struct _buffer {
 
 static data_buf remain_data; // for transcoding (buffer for data that is decoded but is not copied)
 
-static void tta_error(int error, char *filename)
+static void tta_error(int error, const char *filename)
 {
 	char message[1024];
-	char *name = NULL;
+	std::string tempname(filename);
+	std::string name;
 
-	if (filename) {
-		char *p = filename + lstrlen(filename);
-		while (*p != '\\' && p >= filename) p--;
-		if (*p == '\\') name = ++p; else name = filename;
+	if (!tempname.empty()) {
+		name = tempname.substr(tempname.find_last_of('\\'));
+	} else {
+		name = "";
 	}
+//	if (filename) {
+//		char *p = filename + lstrlen(filename);
+//		while (*p != '\\' && p >= filename) p--;
+//		if (*p == '\\') name = ++p; else name = filename;
+//	}
 
 	switch (error) {
 		case TTA_OPEN_ERROR:	
-			wsprintf(message, "Can't open file:\n%s", name);
+			wsprintf(message, "Can't open file:\n%s", name.c_str());
 			break;
 		case TTA_FORMAT_ERROR:
-			wsprintf(message, "Unknown TTA format version:\n%s", name);
+			wsprintf(message, "Unknown TTA format version:\n%s", name.c_str());
 			break;
 		case TTA_NOT_SUPPORTED:
-			wsprintf(message, "Not supported file format:\n%s", name);
+			wsprintf(message, "Not supported file format:\n%s", name.c_str());
 			break;
 		case TTA_FILE_ERROR:
-			wsprintf(message, "File is corrupted:\n%s", name);
+			wsprintf(message, "File is corrupted:\n%s", name.c_str());
 			break;
 		case TTA_READ_ERROR:
-			wsprintf(message, "Can't read from file:\n%s", name);
+			wsprintf(message, "Can't read from file:\n%s", name.c_str());
 			break;
 		case TTA_WRITE_ERROR:
-			wsprintf(message, "Can't write to file:\n%s", name);
+			wsprintf(message, "Can't write to file:\n%s", name.c_str());
 			break;
 		case TTA_MEMORY_ERROR:	
 			wsprintf(message, "Insufficient memory available");
@@ -410,6 +416,7 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 	int done = 0;
 	int len;
 	int bitrate = playing_ttafile.GetBitrate();
+	int decoder_err;
 
 	while (!killDecoderThread) {
 		if (playing_ttafile.GetSeekNeeded() != -1) {
@@ -429,7 +436,11 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 		} else if (mod.outMod->CanWrite() >= 
 			((BUFFER_LENGTH * playing_ttafile.GetNumberofChannel() * 
 			playing_ttafile.GetByteSize()) << (mod.dsp_isactive()? 1:0))) {
-			if (!(len = playing_ttafile.GetSamples(pcm_buffer, BUFFER_SIZE, &bitrate))) { 
+				decoder_err = playing_ttafile.GetSamples(&len, pcm_buffer, BUFFER_SIZE, &bitrate);
+			if (decoder_err != TTA_NO_ERROR) {
+				tta_error(decoder_err, playing_ttafile.GetFileName());
+				done = 1;
+			} else if (len == 0) {
 				done = 1;
 			} else {
  				do_vis(pcm_buffer, len, playing_ttafile.GetOutputBPS(), playing_ttafile.GetDecodePosMs());
@@ -566,6 +577,7 @@ extern "C"
 		int n = 0;
 		int bitrate;
 		int32_t decoded_bytes = 0;
+		int decoder_err;
 
 		// restore remain (not copied) data
 		if (remain_data.data_length != 0) {
@@ -590,9 +602,12 @@ extern "C"
 		while (dest_used < len && !*killswitch) {
 		// do we need to decode more?
 			if (n >= decoded_bytes) {
-				decoded_bytes = dec->GetSamples(buf, BUFFER_SIZE, &bitrate)
+				 decoder_err = dec->GetSamples(&decoded_bytes, buf, BUFFER_SIZE, &bitrate)
 					* dec->GetBitsperSample() / 8 * dec->GetNumberofChannel();
-	 			if (decoded_bytes <= 0) {
+				 if (TTA_NO_ERROR != decoder_err) {
+					 tta_error(decoder_err, dec->GetFileName());
+					 break;
+				 } else if (decoded_bytes <= 0) {
 					break; // end of stream
 				} else {
 					n = min(len - dest_used, decoded_bytes);

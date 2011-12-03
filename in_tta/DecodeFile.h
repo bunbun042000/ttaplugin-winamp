@@ -68,9 +68,10 @@ public:
 	int				SetFileName(const char *filename);
 	int				SetFileName(const wchar_t *filename);
 	const char	   *GetFileName(){return FileName.c_str();}
-	int				Play();
-	int				Stop();
-	int				GetSamples(BYTE *buffer, long count, int *current_bitrate);
+//	int				Play();
+//	int				Stop();
+	int				GetSamples(int *decoded_length, BYTE *buffer, long buffersize, int *current_bitrate);
+	void			CloseFile();
 
 	int				GetPaused(){return paused;}
 	void			SetPaused(int p){paused = p;}

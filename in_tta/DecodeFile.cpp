@@ -104,14 +104,14 @@ int CDecodeFile::SetFileName(const char *filename)
 {
 	// check for required data presented
 	if (!filename) {
-		return -1;
+		return TTA_OPEN_ERROR;
 	}
 
 	FileName = filename;
 	decoderFileHANDLE = ::CreateFile(FileName.c_str(), GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (decoderFileHANDLE == INVALID_HANDLE_VALUE || decoderFileHANDLE == NULL) {
-		return -1;
+		return TTA_OPEN_ERROR;
 	}
 
 	Filesize = ::GetFileSize(decoderFileHANDLE, NULL);
@@ -127,9 +127,20 @@ int CDecodeFile::SetFileName(const char *filename)
 		// nothing todo
 	}
 
-	TTA = new tta::tta_decoder((TTA_io_callback *) &iocb_wrapper);
-	TTA->init_get_info(&tta_info, pos);
-
+	try {
+		TTA = new tta::tta_decoder((TTA_io_callback *) &iocb_wrapper);
+		TTA->init_get_info(&tta_info, pos);
+	} 
+	
+	catch (tta::tta_exception ex) {
+		if (TTA) {
+			delete TTA;
+		} else {
+			// do nothign
+		}
+		return ex.code();
+	}
+	
 	paused = 0;
 	decode_pos_ms = 0;
 	seek_needed = -1;
@@ -141,14 +152,14 @@ int CDecodeFile::SetFileName(const char *filename)
 		st_state = 0;
 	}
 
-	return 0;
+	return TTA_NO_ERROR;
 }
 
 int CDecodeFile::SetFileName(const wchar_t *filename)
 {
 	// check for required data presented
 	if (!filename) {
-		return -1;
+		return TTA_OPEN_ERROR;
 	}
 
 	std::string fn = wcstostring(filename, ".ACP");
@@ -173,25 +184,36 @@ long double CDecodeFile::SeekPosition(int *done)
 	return decode_pos_ms;
 }
 
-int CDecodeFile::GetSamples(BYTE *buffer, long buffersize, int *current_bitrate)
+int  CDecodeFile::GetSamples(int *decoded_length, BYTE *buffer, long buffersize, int *current_bitrate)
 {
 	BYTE *temp = new BYTE[buffersize];
 	int skip_len = 0;
 	int len = 0;
 
-	len = TTA->process_stream(temp, buffersize);
-	if (len == 0) {
-		return 0;
-	} else {
-		skip_len += len;
-		memcpy_s(buffer, buffersize,
-			temp, len * tta_info.nch * tta_info.bps / 8);
-		decode_pos_ms += (skip_len * 1000.) / tta_info.sps;
+	try {
+		len = TTA->process_stream(temp, buffersize);
 	}
 
-	*current_bitrate = TTA->get_rate();
+	catch (tta::tta_exception ex) {
+		delete [] temp;
+		CloseFile();
+		return ex.code();
+	}
+
+	if (len != 0) {
+		skip_len += len;
+		memcpy_s(buffer, buffersize, temp, len * tta_info.nch * tta_info.bps / 8);
+		decode_pos_ms += (skip_len * 1000.) / tta_info.sps;
+		*current_bitrate = TTA->get_rate();	
+	} else {
+		CloseFile();
+	}
+
+	*decoded_length = len;
+	
 	delete [] temp;
-	return len;
+
+	return TTA_NO_ERROR;
 
 }
 
@@ -199,4 +221,25 @@ void CDecodeFile::SetOutputBPS(unsigned long bps)
 {
 	tta_info.bps = bps;
 	TTA->init_set_info(&tta_info);
+}
+
+void CDecodeFile::CloseFile()
+{
+	::CloseHandle(decoderFileHANDLE);
+	delete TTA;
+
+	paused = 0;
+	seek_needed = -1;
+	decode_pos_ms = 0;
+	bitrate = 0;
+	Filesize = 0;
+	st_state = 0;
+
+	decoderFileHANDLE = INVALID_HANDLE_VALUE;
+	iocb_wrapper.handle = INVALID_HANDLE_VALUE;
+	iocb_wrapper.iocb.read = NULL;
+	iocb_wrapper.iocb.seek = NULL;
+	iocb_wrapper.iocb.write = NULL;
+	TTA = NULL;
+
 }
