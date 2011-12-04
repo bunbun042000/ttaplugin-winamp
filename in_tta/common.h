@@ -37,14 +37,5 @@ static const unsigned __int8 UTF16_BE[] = {0xff, 0xfe};
 std::string GetEncodingString(const char *string);
 const char *SetEncodingString(std::string &str, unsigned __int8 version = 0x04, unsigned __int8 Encoding = FIELD_TEXT_UTF_8);
 const char *SetEncodingString(const char *string, unsigned __int8 version = 0x04, unsigned __int8 Encoding = FIELD_TEXT_UTF_8);
-const char *SetEncodingString(std::wstring &str, const char *locale = ".ACP", unsigned __int8 version = 0x04, unsigned __int8 Encoding = FIELD_TEXT_UTF_8);
-const char *SetEncodingString(const wchar_t *wstr, const char *locale = ".ACP", unsigned __int8 version = 0x04, unsigned __int8 Encoding = FIELD_TEXT_UTF_8);
-
-std::wstring GetWideString(const char *string);
-
-std::wstring mbstowstring(const std::string &multibytestring, const char *locale = ".ACP");
-std::wstring mbstowstring(const char *multibytestring, const char *locale = ".ACP");
-
-std::string  wcstostring(const wchar_t *wstring, const char *locale = ".ACP");
 
 #endif

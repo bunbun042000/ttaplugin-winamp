@@ -144,7 +144,10 @@ int CDecodeFile::SetFileName(const char *filename)
 	paused = 0;
 	decode_pos_ms = 0;
 	seek_needed = -1;
-	bitrate = (long)((Filesize) / (tta_info.samples / tta_info.sps) * tta_info.bps / tta_info.nch / 1000);
+
+	// Filesize / total samples * number of channel = datasize per sample [byte/sample]
+	// datasize per sample * 8 * samples per sec = bitrate [bit/sec]
+	bitrate = (long)(Filesize / (tta_info.samples * tta_info.nch) * 8 * tta_info.sps  / 1000);
 
 	if (TTA->seek_allowed){
 		st_state = 1;
@@ -155,17 +158,6 @@ int CDecodeFile::SetFileName(const char *filename)
 	return TTA_NO_ERROR;
 }
 
-int CDecodeFile::SetFileName(const wchar_t *filename)
-{
-	// check for required data presented
-	if (!filename) {
-		return TTA_OPEN_ERROR;
-	}
-
-	std::string fn = wcstostring(filename, ".ACP");
-
-	return SetFileName(fn.c_str());
-}
 
 
 long double CDecodeFile::SeekPosition(int *done)

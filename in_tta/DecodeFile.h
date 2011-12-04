@@ -66,7 +66,6 @@ public:
 	~CDecodeFile(void);
 
 	int				SetFileName(const char *filename);
-	int				SetFileName(const wchar_t *filename);
 	const char	   *GetFileName(){return FileName.c_str();}
 //	int				Play();
 //	int				Stop();
