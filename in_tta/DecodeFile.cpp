@@ -133,7 +133,7 @@ int CDecodeFile::SetFileName(const char *filename)
 {
 	// check for required data presented
 	if (!filename) {
-		return TTA_OPEN_ERROR;
+		throw CDecodeFile_exception(TTA_OPEN_ERROR);
 	}
 
 	::EnterCriticalSection(&CriticalSection);
@@ -143,7 +143,7 @@ int CDecodeFile::SetFileName(const char *filename)
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (decoderFileHANDLE == INVALID_HANDLE_VALUE || decoderFileHANDLE == NULL) {
 		::LeaveCriticalSection(&CriticalSection);
-		return TTA_OPEN_ERROR;
+		throw CDecodeFile_exception(TTA_OPEN_ERROR);
 	}
 
 	Filesize = ::GetFileSize(decoderFileHANDLE, NULL);
@@ -159,21 +159,8 @@ int CDecodeFile::SetFileName(const char *filename)
 		// nothing todo
 	}
 
-	try {
-		TTA = new tta::tta_decoder((TTA_io_callback *) &iocb_wrapper);
-		TTA->init_get_info(&tta_info, pos);
-	} 
-	
-	catch (tta::tta_exception ex) {
-		if (TTA != NULL) {
-			delete TTA;
-			TTA = NULL;
-		} else {
-			// do nothign
-		}
-		::LeaveCriticalSection(&CriticalSection);
-		return ex.code();
-	}
+	TTA = new tta::tta_decoder((TTA_io_callback *) &iocb_wrapper);
+	TTA->init_get_info(&tta_info, pos);
 	
 	paused = 0;
 	decode_pos_ms = 0;
@@ -217,31 +204,22 @@ long double CDecodeFile::SeekPosition(int *done)
 	return decode_pos_ms;
 }
 
-int  CDecodeFile::GetSamples(int *decoded_length, BYTE *buffer, long buffersize, int *current_bitrate)
+int  CDecodeFile::GetSamples(BYTE *buffer, long buffersize, int *current_bitrate)
 {
 	BYTE *temp = new BYTE[buffersize];
 	int skip_len = 0;
 	int len = 0;
 
-	::EnterCriticalSection(&CriticalSection);
 
 	if (INVALID_HANDLE_VALUE == decoderFileHANDLE) {
-		*decoded_length = 0;
-		::LeaveCriticalSection(&CriticalSection);
-		return TTA_NO_ERROR;
+		return 0; // no decode data
 	} else {
 		// do nothing
 	}
 
-	try {
-		len = TTA->process_stream(temp, buffersize);
-	}
+	::EnterCriticalSection(&CriticalSection);
 
-	catch (tta::tta_exception ex) {
-		delete [] temp;
-		::LeaveCriticalSection(&CriticalSection);
-		return ex.code();
-	}
+	len = TTA->process_stream(temp, buffersize);
 
 	if (len != 0) {
 		skip_len += len;
@@ -251,13 +229,11 @@ int  CDecodeFile::GetSamples(int *decoded_length, BYTE *buffer, long buffersize,
 	} else {
 	}
 
-	*decoded_length = len;
-	
 	delete [] temp;
 
 	::LeaveCriticalSection(&CriticalSection);
 
-	return TTA_NO_ERROR;
+	return len;
 
 }
 

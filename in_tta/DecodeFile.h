@@ -69,7 +69,7 @@ public:
 
 	int				SetFileName(const char *filename);
 	const char	   *GetFileName(){return FileName.c_str();}
-	int				GetSamples(int *decoded_length, BYTE *buffer, long buffersize, int *current_bitrate);
+	int				GetSamples(BYTE *buffer, long buffersize, int *current_bitrate);
 
 	int				GetPaused(){return paused;}
 	void			SetPaused(int p){paused = p;}
@@ -97,4 +97,11 @@ public:
 
 };
 
+class CDecodeFile_exception : public tta::tta_exception {
+		tta_error err_code;
+
+	public:
+		CDecodeFile_exception(tta_error code) : tta::tta_exception(code) {}
+		tta_error code() const { return err_code; }
+	}; // class tta_exception
 #endif
