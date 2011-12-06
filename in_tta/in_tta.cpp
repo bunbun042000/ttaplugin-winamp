@@ -61,7 +61,7 @@ CMediaLibrary m_Tag;
 static long	vis_buffer[BUFFER_SIZE * MAX_NCH];	// vis buffer
 static BYTE pcm_buffer[BUFFER_SIZE];
 
-static HANDLE decoder_handle = NULL;
+static HANDLE decoder_handle = INVALID_HANDLE_VALUE;
 static DWORD WINAPI __stdcall DecoderThread (void *p);
 static volatile int killDecoderThread = 0;
 
@@ -136,11 +136,6 @@ static void tta_error(int error, const char *filename)
 	} else {
 		name = "";
 	}
-//	if (filename) {
-//		char *p = filename + lstrlen(filename);
-//		while (*p != '\\' && p >= filename) p--;
-//		if (*p == '\\') name = ++p; else name = filename;
-//	}
 
 	switch (error) {
 		case TTA_OPEN_ERROR:	
@@ -236,6 +231,9 @@ void about(HWND hwndParent)
 
 void init()
 {
+	remain_data.data_length = 0;
+	remain_data.buffer = NULL;
+
 	Wasabi_Init();
 }
 
@@ -249,6 +247,12 @@ void getfileinfo(const char *file, char *title, int *length_in_ms)
 {
 	if (!file || !*file) { 
 		// invalid filename
+		if (NULL != playing_ttafile.GetFileName()) {
+			SetPlayingTitle(playing_ttafile.GetFileName(), title);
+			*length_in_ms = playing_ttafile.GetLengthbymsec();
+		} else {
+			// No playing file exists. so do nothing 
+		}
 	} else {
 		SetPlayingTitle(file, title);
 		TagLib::FileName fn(file);
@@ -283,6 +287,7 @@ int play(const char *fn)
 	} else {
 		// do nothing
 	}
+
 
 	maxlatency = mod.outMod->Open(playing_ttafile.GetSampleRate(), 
 		playing_ttafile.GetNumberofChannel(), playing_ttafile.GetOutputBPS(), -1, -1);
@@ -405,6 +410,12 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 	int decoder_err;
 
 	while (!killDecoderThread) {
+		if(!playing_ttafile.isValid()) {
+			return 0;
+		} else {
+			// do nothing
+		}
+		
 		if (playing_ttafile.GetSeekNeeded() != -1) {
 			mod.outMod->Flush((int)playing_ttafile.SeekPosition(&done));
 		} else {
@@ -516,7 +527,8 @@ extern "C"
 	}
 
 
-	__declspec( dllexport ) int __cdecl winampSetExtendedFileInfo(const char *fn, const char *data, const char *val)
+	__declspec( dllexport ) int __cdecl 
+		winampSetExtendedFileInfo(const char *fn, const char *data, const char *val)
 	{
 		return m_Tag.SetExtendedFileInfo(fn, data, val);
 	}
@@ -526,18 +538,37 @@ extern "C"
 		return m_Tag.WriteExtendedFileInfo();
 	}
 
-	__declspec(dllexport) intptr_t __cdecl winampGetExtendedRead_open(const char *filename, int *size, int *bps, int *nch, int *srate)
+	__declspec(dllexport) intptr_t __cdecl 
+		winampGetExtendedRead_open(const char *filename, int *size, int *bps, int *nch, int *srate)
 	{
-		
+
 		CDecodeFile *dec = new CDecodeFile;
 		dec->SetFileName(filename);
+		if (!dec->isValid()) {
+			return (intptr_t) 0;
+		} else {
+			// do nothing
+		}
+
+		int err = dec->SetFileName(filename);
 	
+		if (err != TTA_NO_ERROR) {
+			return (intptr_t) 0;
+		} else {
+			// do nothing
+		}
+
 		*bps = dec->GetBitsperSample();
 		*nch = dec->GetNumberofChannel();
 		*srate = dec->GetSampleRate();
 		*size = dec->GetDataLength() * (*bps / 8) * (*nch);
 		remain_data.data_length = 0;
-		remain_data.buffer = NULL;
+		if (NULL != remain_data.buffer) {
+			delete [] remain_data.buffer;
+			remain_data.buffer = NULL;
+		} else {
+			// do nothing
+		}
 	
 		return (intptr_t)dec;
 	}
@@ -551,6 +582,12 @@ extern "C"
 		int bitrate;
 		int32_t decoded_bytes = 0;
 		int decoder_err;
+
+		if (!dec->isValid()) {
+			return (intptr_t) -1;
+		} else {
+			// do nothing
+		}
 
 		// restore remain (not copied) data
 		if (remain_data.data_length != 0) {
@@ -627,6 +664,11 @@ extern "C"
 			// nothing to do
 		}
 		CDecodeFile *dec = (CDecodeFile *)handle;
-		delete dec;
+		if (dec->isValid()) {
+			delete dec;
+		} else {
+			// do nothing
+		}
+
 	}
 }

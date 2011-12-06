@@ -23,9 +23,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "common.h"
 #include "..\libtta++\libtta.h"
 
-//////////////////////// TTA hybrid filter ////////////////////////////
-
-
 typedef struct {
 	TTA_io_callback iocb;
 	HANDLE handle;
@@ -39,24 +36,27 @@ TTAint64 CALLBACK seek_callback(_tag_TTA_io_callback *io, TTAint64 offset);
 class CDecodeFile
 {
 private:
-	std::string		FileName;
+	std::string				FileName;
 
-	int	            paused;
-	long            seek_needed;
-	double	        decode_pos_ms;
-	TTAuint64		pos;
+	int						paused;
+	long					seek_needed;
+	double					decode_pos_ms;
+	TTAuint64				pos;
 
-	long            bitrate;			// kbps
-	long            Filesize;			// total file size (in bytes)
+	long					bitrate;			// kbps
+	long					Filesize;			// total file size (in bytes)
 
-	unsigned long	data_pos;			// currently playing frame index
-	unsigned long	st_state;			// seek table status
+	unsigned long			data_pos;			// currently playing frame index
+	unsigned long			st_state;			// seek table status
 
 
-	HANDLE decoderFileHANDLE;
+	HANDLE					decoderFileHANDLE;
 
-	tta::tta_decoder *TTA;
-	TTA_info		tta_info;
+	tta::tta_decoder		*TTA;
+	TTA_info				tta_info;
+	__int64					signature;
+	static const __int64	sig_number = 7792625911880894;
+	CRITICAL_SECTION		CriticalSection;
 
 public:
 	TTA_io_callback_wrapper iocb_wrapper;
@@ -65,12 +65,11 @@ public:
 	CDecodeFile(CDecodeFile &s);
 	~CDecodeFile(void);
 
+	bool			isValid() {return sig_number == signature ? true : false;}
+
 	int				SetFileName(const char *filename);
 	const char	   *GetFileName(){return FileName.c_str();}
-//	int				Play();
-//	int				Stop();
 	int				GetSamples(int *decoded_length, BYTE *buffer, long buffersize, int *current_bitrate);
-	void			CloseFile();
 
 	int				GetPaused(){return paused;}
 	void			SetPaused(int p){paused = p;}
