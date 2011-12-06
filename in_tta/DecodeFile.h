@@ -46,7 +46,6 @@ private:
 	long					bitrate;			// kbps
 	long					Filesize;			// total file size (in bytes)
 
-	unsigned long			data_pos;			// currently playing frame index
 	unsigned long			st_state;			// seek table status
 
 
@@ -74,13 +73,6 @@ public:
 	int				GetPaused(){return paused;}
 	void			SetPaused(int p){paused = p;}
 	double			GetDecodePosMs(){return decode_pos_ms;}
-	void		 	SetDecodePosMs(int d_pos_ms)
-	{
-		TTAuint32 new_pos;
-		decode_pos_ms = d_pos_ms;
-		TTA->set_position((TTAuint32)(decode_pos_ms / 1000), &new_pos);
-		decode_pos_ms = new_pos * 1000;
-	}
 	long double		SeekPosition(int *done);
 	void			SetSeekNeeded(int sn){seek_needed = sn;}
 	int				GetSeekNeeded(){return seek_needed;}
@@ -89,7 +81,6 @@ public:
 	__int32			GetNumberofChannel() {return tta_info.nch;}
 	unsigned long	GetLengthbymsec() {return (unsigned long)(tta_info.samples / tta_info.sps * 1000);}
 	int				GetDataLength() {return tta_info.samples;}
-	unsigned long	GetDataPos(){return data_pos;}
 	TTAuint8		GetByteSize() {return TTAuint8(tta_info.bps/8);}
 	unsigned long	GetOutputBPS() {return tta_info.bps;}
 	void			SetOutputBPS(unsigned long bps);

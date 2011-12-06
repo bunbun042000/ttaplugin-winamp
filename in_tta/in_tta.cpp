@@ -650,7 +650,7 @@ extern "C"
 	{
 		int done = 0;
 		CDecodeFile *dec = (CDecodeFile *)handle;
-		dec->SetDecodePosMs(millisecs);
+		dec->SetSeekNeeded(millisecs);
 		dec->SeekPosition(&done);
 		return 1;
 	}

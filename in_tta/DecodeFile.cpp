@@ -79,7 +79,6 @@ CDecodeFile::CDecodeFile(CDecodeFile &s)
 	decode_pos_ms = s.decode_pos_ms;
 	bitrate = s.bitrate;
 	Filesize = s.Filesize;
-	data_pos = s.data_pos;
 	st_state = s.st_state;
 
 	decoderFileHANDLE = INVALID_HANDLE_VALUE;
@@ -161,7 +160,7 @@ int CDecodeFile::SetFileName(const char *filename)
 
 	try {
 		TTA = new tta::tta_decoder((TTA_io_callback *) &iocb_wrapper);
-		TTA->init_get_info(&tta_info, pos);
+		TTA->init_get_info(&tta_info, 0);
 	} 
 	
 	catch (tta::tta_exception ex) {
