@@ -39,8 +39,8 @@ private:
 	std::string				FileName;
 
 	int						paused;
-	long					seek_needed;
-	double					decode_pos_ms;
+	__int32					seek_needed;
+	__int32					decode_pos_ms;
 	TTAuint64				pos;
 
 	long					bitrate;			// kbps
@@ -79,7 +79,7 @@ public:
 	int				GetSampleRate() {return tta_info.sps;}
 	int				GetBitrate() {return (int) (bitrate);}
 	__int32			GetNumberofChannel() {return tta_info.nch;}
-	unsigned long	GetLengthbymsec() {return (unsigned long)(tta_info.samples / tta_info.sps * 1000);}
+	__int32			GetLengthbymsec() {return (__int32)(tta_info.samples / tta_info.sps * 1000);}
 	int				GetDataLength() {return tta_info.samples;}
 	TTAuint8		GetByteSize() {return TTAuint8(tta_info.bps/8);}
 	unsigned long	GetOutputBPS() {return tta_info.bps;}

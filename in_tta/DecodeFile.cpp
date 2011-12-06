@@ -189,8 +189,8 @@ long double CDecodeFile::SeekPosition(int *done)
 
 	TTAuint32 new_pos;
 
-	if (seek_needed >= (long)GetLengthbymsec()) {
-		decode_pos_ms = (double)(GetLengthbymsec());
+	if (seek_needed >= GetLengthbymsec()) {
+		decode_pos_ms = GetLengthbymsec();
 		*done = 1;
 	} else {
 		decode_pos_ms = seek_needed;
@@ -223,7 +223,7 @@ int  CDecodeFile::GetSamples(BYTE *buffer, long buffersize, int *current_bitrate
 	if (len != 0) {
 		skip_len += len;
 		memcpy_s(buffer, buffersize, temp, len * tta_info.nch * tta_info.bps / 8);
-		decode_pos_ms += (skip_len * 1000.) / tta_info.sps;
+		decode_pos_ms += (__int32)(skip_len * 1000. / tta_info.sps);
 		*current_bitrate = TTA->get_rate();	
 	} else {
 	}
