@@ -65,6 +65,7 @@ public:
 	~CDecodeFile(void);
 
 	bool			isValid() {return sig_number == signature ? true : false;}
+	bool			isDecodable() {return decoderFileHANDLE != INVALID_HANDLE_VALUE ? true : false;}
 
 	int				SetFileName(const char *filename);
 	const char	   *GetFileName(){return FileName.c_str();}

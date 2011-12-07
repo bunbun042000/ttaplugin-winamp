@@ -241,8 +241,9 @@ void init()
 
 void quit()
 {
-	if (playing_ttafile->isValid()) {
+	if (NULL != playing_ttafile && playing_ttafile->isValid()) {
 		delete playing_ttafile;
+		playing_ttafile = NULL;
 	} else {
 		// do nothing
 	}
@@ -254,16 +255,13 @@ void quit()
 void getfileinfo(const char *file, char *title, int *length_in_ms)
 {
 	if (!file || !*file) { 
-		// invalid filename
-		if(NULL != playing_ttafile) {
-			if (playing_ttafile->isValid()) {
-				SetPlayingTitle(playing_ttafile->GetFileName(), title);
-				*length_in_ms = playing_ttafile->GetLengthbymsec();
-			} else {
-				// No playing file exists. so do nothing 
-			}
+		// invalid filename may be playing file
+		if(NULL != playing_ttafile && playing_ttafile->isValid() && playing_ttafile->isDecodable()) {
+			SetPlayingTitle(playing_ttafile->GetFileName(), title);
+			*length_in_ms = playing_ttafile->GetLengthbymsec();
 		} else {
-			// do nothing
+			title = "";
+			*length_in_ms = 0;
 		}
 	} else {
 		SetPlayingTitle(file, title);
@@ -273,6 +271,8 @@ void getfileinfo(const char *file, char *title, int *length_in_ms)
 			*length_in_ms = f.audioProperties()->length() * 1000;
 		} else {
 			// cannot get fileinfo
+			title = "";
+			*length_in_ms = 0;
 		}
 	}
 }
@@ -346,7 +346,7 @@ int play(const char *fn)
 
 void pause() 
 {
-	if (NULL != playing_ttafile && playing_ttafile->isValid()) {
+	if (NULL != playing_ttafile && playing_ttafile->isValid() && playing_ttafile->isDecodable()) {
 		playing_ttafile->SetPaused(1);
 	} else {
 		// do nothing
@@ -357,7 +357,7 @@ void pause()
 
 void unpause() 
 {
-	if (NULL != playing_ttafile && playing_ttafile->isValid()) {
+	if (NULL != playing_ttafile && playing_ttafile->isValid() && playing_ttafile->isDecodable()) {
 		playing_ttafile->SetPaused(0);
 	} else {
 		// do nothing
@@ -368,7 +368,7 @@ void unpause()
 
 int ispaused()
 {
-	if (NULL != playing_ttafile && playing_ttafile->isValid()) {
+	if (NULL != playing_ttafile && playing_ttafile->isValid() && playing_ttafile->isDecodable()) {
 		return playing_ttafile->GetPaused();
 	} else {
 		return 0;
@@ -387,13 +387,9 @@ void stop()
 		decoder_handle = INVALID_HANDLE_VALUE;
 	}
 
-	if (NULL != playing_ttafile) {
-		if (playing_ttafile->isValid()) {
-			delete playing_ttafile;
-			playing_ttafile = NULL;
-		} else {
-			// do nothing
-		}
+	if (NULL != playing_ttafile && playing_ttafile->isValid()) {
+		delete playing_ttafile;
+		playing_ttafile = NULL;
 	} else {
 		// do nothing
 	}
@@ -409,7 +405,7 @@ void stop()
 
 int getlength()
 {
-	if (NULL != playing_ttafile && playing_ttafile->isValid()) {
+	if (NULL != playing_ttafile && playing_ttafile->isValid() && playing_ttafile->isDecodable()) {
 		return playing_ttafile->GetLengthbymsec();
 	} else {
 		return 0;
@@ -418,7 +414,7 @@ int getlength()
 
 int getoutputtime()
 {
-	if (NULL != playing_ttafile && playing_ttafile->isValid()) { 
+	if (NULL != playing_ttafile && playing_ttafile->isValid() && playing_ttafile->isDecodable()) { 
 		return (int)(playing_ttafile->GetDecodePosMs() 
 		+ (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime())); 
 	} else {
@@ -428,7 +424,7 @@ int getoutputtime()
 
 void setoutputtime(int time_in_ms)
 {
-	if (NULL != playing_ttafile && playing_ttafile->isValid()) {
+	if (NULL != playing_ttafile && playing_ttafile->isValid() && playing_ttafile->isDecodable()) {
 		playing_ttafile->SetSeekNeeded(time_in_ms); 
 	} else {
 		// do nothing
@@ -467,8 +463,10 @@ static void do_vis(unsigned char *data, int count, int bps, long double position
 		data = (unsigned char *)vis_buffer;
 	}
 
-	mod.SAAddPCMData(data, playing_ttafile->GetNumberofChannel(), 16, (int)position);
-	mod.VSAAddPCMData(data, playing_ttafile->GetNumberofChannel(), 16, (int)position);
+	if (NULL != playing_ttafile && playing_ttafile->isValid() && playing_ttafile->isDecodable()) {
+		mod.SAAddPCMData(data, playing_ttafile->GetNumberofChannel(), 16, (int)position);
+		mod.VSAAddPCMData(data, playing_ttafile->GetNumberofChannel(), 16, (int)position);
+	}
 }
 
 
@@ -477,7 +475,7 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 	int len;
 
 	if (NULL == playing_ttafile || !playing_ttafile->isValid() 
-		|| playing_ttafile->GetFileName() == "") {
+		|| !playing_ttafile->isDecodable()) {
 		tta_error(-1, "");
 		done = 1;
 		return 0;
@@ -488,7 +486,7 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 	int bitrate = playing_ttafile->GetBitrate();
 
 	while (!killDecoderThread) {
-		if(!playing_ttafile->isValid()) {
+		if(!playing_ttafile->isDecodable()) {
 			tta_error(-1, "");
 			return 0;
 		} else {
@@ -543,36 +541,29 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 
 void SetPlayingTitle(const char *filename, char *title)
 {
-	if (filename != NULL) { 
-		if (TagLib::TrueAudio::File::isReadable(filename)) {
-
-			TagLib::FileName fn(filename);
-			TagLib::TrueAudio::File File(fn);
-			if (File.isValid() == false) {
-				// cannot get file info
-			} else if (!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty()) || !(File.tag()->album().isEmpty())) {
-				if(!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty())) {
-					wsprintf(title, "%s - %s", 
-						File.tag()->artist(),
-						File.tag()->title());
-				} else if (!(File.tag()->artist().isEmpty()) || !(File.tag()->album().isEmpty())) {
-					wsprintf(title, "%s - %s", 
-						File.tag()->artist(),
-						File.tag()->album());
-				} else if (!(File.tag()->artist().isEmpty())) {
-					wsprintf(title, "%s", 
-						File.tag()->artist());
-				} else if (!(File.tag()->title().isEmpty())) {
-					wsprintf(title, "%s", 
-						File.tag()->title());
-				}
-			} else {
-				char p[MAX_PATHLEN];
-				::GetFileTitle(filename, p, MAX_PATHLEN - 1);
-				lstrcpyn(title, p, strchr(p, '.') - p);
+	if (filename != NULL && TagLib::TrueAudio::File::isReadable(filename)) {
+		TagLib::FileName fn(filename);
+		TagLib::TrueAudio::File File(fn);
+		if (File.isValid() == false) {
+			char p[MAX_PATHLEN];
+			::GetFileTitle(filename, p, MAX_PATHLEN - 1);
+			lstrcpyn(title, p, strchr(p, '.') - p);
+		} else if (!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty()) || !(File.tag()->album().isEmpty())) {
+			if(!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty())) {
+				wsprintf(title, "%s - %s", 
+					File.tag()->artist(),
+					File.tag()->title());
+			} else if (!(File.tag()->artist().isEmpty()) || !(File.tag()->album().isEmpty())) {
+				wsprintf(title, "%s - %s", 
+					File.tag()->artist(),
+					File.tag()->album());
+			} else if (!(File.tag()->artist().isEmpty())) {
+				wsprintf(title, "%s", 
+					File.tag()->artist());
+			} else if (!(File.tag()->title().isEmpty())) {
+				wsprintf(title, "%s", 
+					File.tag()->title());
 			}
-		} else {
-			// do nothing.
 		}
 	} else {
 		// do nothing
@@ -663,7 +654,7 @@ extern "C"
 		int bitrate;
 		int32_t decoded_bytes = 0;
 
-		if (!dec->isValid()) {
+		if (!dec->isDecodable()) {
 			return (intptr_t) -1;
 		} else {
 			// do nothing
@@ -734,8 +725,12 @@ extern "C"
 	{
 		int done = 0;
 		CDecodeFile *dec = (CDecodeFile *)handle;
-		dec->SetSeekNeeded(millisecs);
-		dec->SeekPosition(&done);
+		if (NULL != dec && dec->isValid() && dec->isDecodable()) {
+			dec->SetSeekNeeded(millisecs);
+			dec->SeekPosition(&done);
+		} else {
+			// do nothing
+		}
 		return 1;
 	}
 
@@ -748,7 +743,7 @@ extern "C"
 			// nothing to do
 		}
 		CDecodeFile *dec = (CDecodeFile *)handle;
-		if (dec->isValid()) {
+		if (NULL == dec && dec->isValid()) {
 			delete dec;
 		} else {
 			// do nothing

@@ -158,8 +158,16 @@ int CDecodeFile::SetFileName(const char *filename)
 		// nothing todo
 	}
 
-	TTA = new tta::tta_decoder((TTA_io_callback *) &iocb_wrapper);
+	try {
+		TTA = new tta::tta_decoder((TTA_io_callback *) &iocb_wrapper);
 		TTA->init_get_info(&tta_info, 0);
+	}
+
+	catch (CDecodeFile_exception ex) {
+		::CloseHandle(decoderFileHANDLE);
+		decoderFileHANDLE = INVALID_HANDLE_VALUE;
+		throw CDecodeFile_exception(ex.code());
+	}
 	
 	paused = 0;
 	decode_pos_ms = 0;
@@ -196,6 +204,7 @@ long double CDecodeFile::SeekPosition(int *done)
 		decode_pos_ms = seek_needed;
 		seek_needed = -1;
 	}
+
 	TTA->set_position((TTAuint32)(decode_pos_ms / 1000.), &new_pos);
 
 	::LeaveCriticalSection(&CriticalSection);
