@@ -1,4 +1,4 @@
-in_tta.dll Ver3.2 Modified(Beta13) 
+in_tta.dll Ver3.2 Modified(Beta14) 
 =====================================================
 
 *This plugin 
@@ -16,6 +16,8 @@ This plugin performs Winamp Ver.2.9 or newer.
  Please copy in_tta.dll to Plugins folder in Winamp and also copy tag.dll(https://github.com/downloads/bunbun042000/taglib-modified/tag.dll) to Winamp base folder.
 
 *Release Notes
+2011-12-10 Beta14 Revert multibyte version
+                  Fix exception from libtta
 2011-12-03 Beta13 Unicode Plugin version
                   Add exception processs from decoder
 2011-11-27 Beta12 Fix freeze when invalid file will open.
