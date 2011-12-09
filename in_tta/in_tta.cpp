@@ -45,7 +45,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "resource.h"
 
-#define  PLUGIN_VERSION "3.2 extended Beta13"
+#define  PLUGIN_VERSION "3.2 extended Beta14"
 #define  PROJECT_URL "<git://github.com/bunbun042000/ttaplugin-winamp.git>"
 #define  LIBTTA_VERSION "based on libtta++2.1"
 #define  ORIGINAL_CREADIT01 "Plugin is written by Alexander Djourik, Pavel Zhilin and Anton Gorbunov.\n"
