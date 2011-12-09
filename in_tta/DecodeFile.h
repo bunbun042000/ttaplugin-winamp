@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "common.h"
 #include "..\libtta++\libtta.h"
+#include <stdexcept>
 
 typedef struct {
 	TTA_io_callback iocb;
@@ -48,21 +49,20 @@ private:
 
 	unsigned long			st_state;			// seek table status
 
-
 	HANDLE					decoderFileHANDLE;
 
 	tta::tta_decoder		*TTA;
 	TTA_info				tta_info;
 	__int64					signature;
 	static const __int64	sig_number = 7792625911880894;
+
 	CRITICAL_SECTION		CriticalSection;
 
 public:
 	TTA_io_callback_wrapper iocb_wrapper;
 
 	CDecodeFile(void);
-	CDecodeFile(CDecodeFile &s);
-	~CDecodeFile(void);
+	virtual ~CDecodeFile(void);
 
 	bool			isValid() {return sig_number == signature ? true : false;}
 	bool			isDecodable() {return decoderFileHANDLE != INVALID_HANDLE_VALUE ? true : false;}
@@ -89,11 +89,12 @@ public:
 
 };
 
-class CDecodeFile_exception : public tta::tta_exception {
-		tta_error err_code;
+class CDecodeFile_exception : public std::exception {
+	tta_error err_code;
 
-	public:
-		CDecodeFile_exception(tta_error code) : tta::tta_exception(code) {}
-		tta_error code() const { return err_code; }
-	}; // class tta_exception
+public:
+	CDecodeFile_exception(tta_error code) : err_code(code) {}
+	tta_error code() const { return err_code; }
+}; // class tta_exception
+
 #endif

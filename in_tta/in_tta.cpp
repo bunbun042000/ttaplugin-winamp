@@ -125,17 +125,10 @@ typedef struct _buffer {
 
 static data_buf remain_data; // for transcoding (buffer for data that is decoded but is not copied)
 
-static void tta_error(int error, const char *filename)
+static void tta_error_message(int error, const char *filename)
 {
 	char message[1024];
-	std::string tempname(filename);
-	std::string name;
-
-	if (!tempname.empty()) {
-		name = tempname.substr(tempname.find_last_of('\\' + 1));
-	} else {
-		name = "";
-	}
+	std::string name(filename);
 
 	switch (error) {
 		case TTA_OPEN_ERROR:	
@@ -172,6 +165,7 @@ static void tta_error(int error, const char *filename)
 
 	MessageBox(mod.hMainWindow, message, "TTA Decoder Error",
 		MB_OK|MB_ICONERROR|MB_SYSTEMMODAL);
+
 }
 
 static BOOL CALLBACK config_dialog(HWND dialog, UINT message,
@@ -295,6 +289,7 @@ int play(const char *fn)
 
 	if(NULL != playing_ttafile) {
 		delete playing_ttafile;
+		playing_ttafile = NULL;
 	} else {
 		// do nothing
 	}
@@ -311,8 +306,11 @@ int play(const char *fn)
 		return_number = playing_ttafile->SetFileName(fn);
 	}
 
-	catch (CDecodeFile_exception ex) {
-		tta_error(ex.code(), fn);
+	catch (CDecodeFile_exception &ex) {
+		tta_error_message(ex.code(), fn);
+		delete playing_ttafile;
+		playing_ttafile = NULL;
+		return -1;
 	}
 
 	maxlatency = mod.outMod->Open(playing_ttafile->GetSampleRate(), 
@@ -387,7 +385,7 @@ void stop()
 		decoder_handle = INVALID_HANDLE_VALUE;
 	}
 
-	if (NULL != playing_ttafile && playing_ttafile->isValid()) {
+	if (NULL != playing_ttafile) {
 		delete playing_ttafile;
 		playing_ttafile = NULL;
 	} else {
@@ -470,13 +468,15 @@ static void do_vis(unsigned char *data, int count, int bps, long double position
 }
 
 
-DWORD WINAPI __stdcall DecoderThread (void *p) {
+DWORD WINAPI __stdcall DecoderThread (void *p) 
+{
+
 	int done = 0;
 	int len;
 
 	if (NULL == playing_ttafile || !playing_ttafile->isValid() 
 		|| !playing_ttafile->isDecodable()) {
-		tta_error(-1, "");
+		tta_error_message(-1, "");
 		done = 1;
 		return 0;
 	} else {
@@ -487,7 +487,8 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 
 	while (!killDecoderThread) {
 		if(!playing_ttafile->isDecodable()) {
-			tta_error(-1, "");
+			tta_error_message(-1, "");
+			PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
 			return 0;
 		} else {
 			// do nothing
@@ -513,9 +514,15 @@ DWORD WINAPI __stdcall DecoderThread (void *p) {
 				try {
 					len = playing_ttafile->GetSamples(pcm_buffer, BUFFER_SIZE, &bitrate);
 				}
-				catch (CDecodeFile_exception err) {
-					tta_error(err.code(), playing_ttafile->GetFileName());
-					done = 1;
+				catch (CDecodeFile_exception &ex) {
+					tta_error_message(ex.code(), playing_ttafile->GetFileName());
+					delete playing_ttafile;
+					playing_ttafile = NULL;
+					PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
+					mod.SetInfo(0, 0, 0, 1);
+					mod.outMod->Close();
+					mod.SAVSADeInit();
+					return 0;
 				}
 				if (len == 0) {
 					done = 1;
@@ -625,8 +632,8 @@ extern "C"
 			dec->SetFileName(filename);
 		}
 
-		catch (CDecodeFile_exception err) {
-			tta_error(err.code(), filename);
+		catch (CDecodeFile_exception &ex) {
+			tta_error_message(ex.code(), filename);
 			return (intptr_t) 0;
 		}
 
@@ -686,8 +693,8 @@ extern "C"
 				try {
 					decoded_bytes = dec->GetSamples(buf, BUFFER_SIZE, &bitrate);
 				}
-				catch (CDecodeFile_exception err) {
-					tta_error(err.code(), dec->GetFileName());
+				catch (CDecodeFile_exception &ex) {
+					tta_error_message(ex.code(), dec->GetFileName());
 					dest_used = -1;
 					break;
 				}

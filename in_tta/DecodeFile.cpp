@@ -48,64 +48,25 @@ TTAint64 CALLBACK seek_callback(TTA_io_callback *io, TTAint64 offset) {
 } // seek_callback
 
 
-CDecodeFile::CDecodeFile(void)
+CDecodeFile::CDecodeFile(void) : paused(0), seek_needed(1), decode_pos_ms(0), bitrate(0), Filesize(0), 
+		st_state(0), decoderFileHANDLE(INVALID_HANDLE_VALUE), TTA(NULL), signature(sig_number)
 {
-	paused = 0;
-	seek_needed = -1;
-	decode_pos_ms = 0;
-	bitrate = 0;
-	Filesize = 0;
-	st_state = 0;
-
-	decoderFileHANDLE = INVALID_HANDLE_VALUE;
 	iocb_wrapper.handle = INVALID_HANDLE_VALUE;
 	iocb_wrapper.iocb.read = NULL;
 	iocb_wrapper.iocb.seek = NULL;
 	iocb_wrapper.iocb.write = NULL;
 
-	TTA = NULL;
-	signature = sig_number;
-
 	::InitializeCriticalSection(&CriticalSection);
-
 }
 
-CDecodeFile::CDecodeFile(CDecodeFile &s)
-{
-	FileName = s.FileName;
-
-	paused = s.paused;
-	seek_needed = s.seek_needed;
-	decode_pos_ms = s.decode_pos_ms;
-	bitrate = s.bitrate;
-	Filesize = s.Filesize;
-	st_state = s.st_state;
-
-	decoderFileHANDLE = INVALID_HANDLE_VALUE;
-	iocb_wrapper.handle = INVALID_HANDLE_VALUE;
-	iocb_wrapper.iocb.read = NULL;
-	iocb_wrapper.iocb.seek = NULL;
-	iocb_wrapper.iocb.write = NULL;
-
-	TTA = NULL;
-	signature = sig_number;
-
-	::InitializeCriticalSection(&CriticalSection);
-
-}
 
 CDecodeFile::~CDecodeFile(void)
 {
+	::EnterCriticalSection(&CriticalSection);
+
 	if (INVALID_HANDLE_VALUE != decoderFileHANDLE) {
 		decoderFileHANDLE = INVALID_HANDLE_VALUE;
 		::CloseHandle(decoderFileHANDLE);
-	} else {
-		// do nothing
-	}
-
-	if (NULL != TTA) {
-		delete TTA;
-		TTA = NULL;
 	} else {
 		// do nothing
 	}
@@ -124,18 +85,27 @@ CDecodeFile::~CDecodeFile(void)
 
 	signature = -1;
 
+	if (NULL != TTA) {
+		delete TTA;
+		TTA = NULL;
+	} else {
+		// do nothing
+	}
+	::LeaveCriticalSection(&CriticalSection);
+
 	::DeleteCriticalSection(&CriticalSection);
 
 }
 
 int CDecodeFile::SetFileName(const char *filename)
 {
+	::EnterCriticalSection(&CriticalSection);
+
 	// check for required data presented
 	if (!filename) {
 		throw CDecodeFile_exception(TTA_OPEN_ERROR);
 	}
 
-	::EnterCriticalSection(&CriticalSection);
 
 	FileName = filename;
 	decoderFileHANDLE = ::CreateFile(FileName.c_str(), GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE,
@@ -163,9 +133,17 @@ int CDecodeFile::SetFileName(const char *filename)
 		TTA->init_get_info(&tta_info, 0);
 	}
 
-	catch (CDecodeFile_exception ex) {
+	catch (tta::tta_exception &ex) {
+		if (NULL != TTA) {
+			delete TTA;
+			TTA = NULL;
+		} else {
+			// do nothing
+		}
+
 		::CloseHandle(decoderFileHANDLE);
 		decoderFileHANDLE = INVALID_HANDLE_VALUE;
+		::LeaveCriticalSection(&CriticalSection);
 		throw CDecodeFile_exception(ex.code());
 	}
 	
@@ -205,7 +183,19 @@ long double CDecodeFile::SeekPosition(int *done)
 		seek_needed = -1;
 	}
 
-	TTA->set_position((TTAuint32)(decode_pos_ms / 1000.), &new_pos);
+	if (NULL == TTA) {
+		return (double)0;
+	} else {
+		// do nothing
+	}
+
+	try {
+		TTA->set_position((TTAuint32)(decode_pos_ms / 1000.), &new_pos);
+	}
+
+	catch (tta::tta_exception &ex) {
+		throw CDecodeFile_exception(ex.code());
+	}
 
 	::LeaveCriticalSection(&CriticalSection);
 
@@ -227,7 +217,20 @@ int  CDecodeFile::GetSamples(BYTE *buffer, long buffersize, int *current_bitrate
 
 	::EnterCriticalSection(&CriticalSection);
 
-	len = TTA->process_stream(temp, buffersize);
+	if (NULL == TTA) {
+		throw CDecodeFile_exception(TTA_MEMORY_ERROR);
+	} else {
+		// do nothing
+	}
+
+	try {
+		len = TTA->process_stream(temp, buffersize);
+	}
+
+	catch (tta::tta_exception &ex) {
+		delete []temp;
+		throw CDecodeFile_exception(ex.code());
+	}
 
 	if (len != 0) {
 		skip_len += len;
@@ -249,8 +252,20 @@ void CDecodeFile::SetOutputBPS(unsigned long bps)
 {
 	::EnterCriticalSection(&CriticalSection);
 
-	tta_info.bps = bps;
-	TTA->init_set_info(&tta_info);
+	if (NULL == TTA) {
+		throw CDecodeFile_exception(TTA_MEMORY_ERROR);
+	} else {
+		// do nothing
+	}
+
+	try {
+		tta_info.bps = bps;
+		TTA->init_set_info(&tta_info);
+	}
+
+	catch (tta::tta_exception &ex) {
+		throw CDecodeFile_exception(ex.code());
+	}
 
 	::LeaveCriticalSection(&CriticalSection);
 
