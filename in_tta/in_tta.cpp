@@ -12,7 +12,7 @@
 
 /*
 The ttaplugin-winamp project.
-Copyright (C) 2005-2011 Yamagata Fumihiro
+Copyright (C) 2005-2013 Yamagata Fumihiro
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -43,20 +43,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "DecodeFile.h"
 #include "MediaLibrary.h"
 
+#include "VersionNo.h"
 #include "resource.h"
 
-#define  PLUGIN_VERSION "3.2 extended Beta14"
-#define  PROJECT_URL "<git://github.com/bunbun042000/ttaplugin-winamp.git>"
-#define  LIBTTA_VERSION "based on libtta++2.1"
-#define  ORIGINAL_CREADIT01 "Plugin is written by Alexander Djourik, Pavel Zhilin and Anton Gorbunov.\n"
-#define  ORIGINAL_CREADIT02 "Copyright (c) 2003 Alexander Djourik.\n"
-#define  ORIGINAL_CREADIT03 "All rights reserved.\n"
-#define  CREADIT01 "Modified by Yamagata Fumihiro, 2005-2011\n"
-#define  CREADIT02 "Copyright (C)2005-2011 Yamagata Fumihiro.\n"
 
 // For Support Transcoder input (2007/10/15)
-CDecodeFile *playing_ttafile;
-CMediaLibrary m_Tag;
+static CDecodeFile playing_ttafile;
 
 static long	vis_buffer[BUFFER_SIZE * MAX_NCH];	// vis buffer
 static BYTE pcm_buffer[BUFFER_SIZE];
@@ -88,7 +80,7 @@ void SetPlayingTitle(const char *filename, char *title);
 
 In_Module mod = {
 	IN_VER,
-	"TTA Audio Decoder v" PLUGIN_VERSION " (x86)",
+	"TTA Audio Decoder " PLUGIN_VERSION,
 	NULL,	// hMainWindow
 	NULL,	// hDllInstance
 	"TTA\0TTA Audio File (*.TTA)\0",
@@ -228,18 +220,21 @@ void init()
 	remain_data.data_length = 0;
 	remain_data.buffer = NULL;
 
-	playing_ttafile = NULL;
-
 	Wasabi_Init();
 }
 
 void quit()
 {
-	if (NULL != playing_ttafile && playing_ttafile->isValid()) {
-		delete playing_ttafile;
-		playing_ttafile = NULL;
-	} else {
-		// do nothing
+	remain_data.data_length = 0;
+
+	if (remain_data.buffer != NULL)
+	{
+		delete [] remain_data.buffer;
+		remain_data.buffer = NULL;
+	}
+	else
+	{
+		// Do nothing
 	}
 
 	Wasabi_Quit();
@@ -250,9 +245,9 @@ void getfileinfo(const char *file, char *title, int *length_in_ms)
 {
 	if (!file || !*file) { 
 		// invalid filename may be playing file
-		if(NULL != playing_ttafile && playing_ttafile->isValid() && playing_ttafile->isDecodable()) {
-			SetPlayingTitle(playing_ttafile->GetFileName(), title);
-			*length_in_ms = playing_ttafile->GetLengthbymsec();
+		if(playing_ttafile.isValid() && playing_ttafile.isDecodable()) {
+			SetPlayingTitle(playing_ttafile.GetFileName(), title);
+			*length_in_ms = playing_ttafile.GetLengthbymsec();
 		} else {
 			title = "";
 			*length_in_ms = 0;
@@ -287,46 +282,36 @@ int play(const char *fn)
 	unsigned long decoder_thread_id;
 	int return_number;
 
-	if(NULL != playing_ttafile) {
-		delete playing_ttafile;
-		playing_ttafile = NULL;
-	} else {
-		// do nothing
-	}
-
-	playing_ttafile = new CDecodeFile;
-
-	if(!playing_ttafile->isValid()) {
+	if(!playing_ttafile.isValid()) {
 		return 1;
 	} else {
 		// do nothing
 	}
 
 	try {
-		return_number = playing_ttafile->SetFileName(fn);
+		return_number = playing_ttafile.SetFileName(fn);
 	}
 
 	catch (CDecodeFile_exception &ex) {
 		tta_error_message(ex.code(), fn);
-		delete playing_ttafile;
-		playing_ttafile = NULL;
 		return -1;
 	}
 
-	maxlatency = mod.outMod->Open(playing_ttafile->GetSampleRate(), 
-		playing_ttafile->GetNumberofChannel(), playing_ttafile->GetOutputBPS(), -1, -1);
+	maxlatency = mod.outMod->Open(playing_ttafile.GetSampleRate(), 
+		playing_ttafile.GetNumberofChannel(), playing_ttafile.GetOutputBPS(), -1, -1);
 	if (maxlatency < 0) {
+		stop();
 		return 1;
 	} else {
 		//do nothing
 	}
 
 	// setup information display
-	mod.SetInfo(playing_ttafile->GetBitrate(), playing_ttafile->GetSampleRate() / 1000, playing_ttafile->GetNumberofChannel(), 1);
+	mod.SetInfo(playing_ttafile.GetBitrate(), playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
 
 	// initialize vis stuff
-	mod.SAVSAInit(maxlatency, playing_ttafile->GetSampleRate());
-	mod.VSASetInfo(playing_ttafile->GetNumberofChannel(), playing_ttafile->GetSampleRate());
+	mod.SAVSAInit(maxlatency, playing_ttafile.GetSampleRate());
+	mod.VSASetInfo(playing_ttafile.GetNumberofChannel(), playing_ttafile.GetSampleRate());
 
 	// set the output plug-ins default volume
 	mod.outMod->SetVolume(-666);
@@ -344,8 +329,8 @@ int play(const char *fn)
 
 void pause() 
 {
-	if (NULL != playing_ttafile && playing_ttafile->isValid() && playing_ttafile->isDecodable()) {
-		playing_ttafile->SetPaused(1);
+	if (playing_ttafile.isValid() && playing_ttafile.isDecodable()) {
+		playing_ttafile.SetPaused(1);
 	} else {
 		// do nothing
 	}
@@ -355,8 +340,8 @@ void pause()
 
 void unpause() 
 {
-	if (NULL != playing_ttafile && playing_ttafile->isValid() && playing_ttafile->isDecodable()) {
-		playing_ttafile->SetPaused(0);
+	if (playing_ttafile.isValid() && playing_ttafile.isDecodable()) {
+		playing_ttafile.SetPaused(0);
 	} else {
 		// do nothing
 	}
@@ -366,8 +351,8 @@ void unpause()
 
 int ispaused()
 {
-	if (NULL != playing_ttafile && playing_ttafile->isValid() && playing_ttafile->isDecodable()) {
-		return playing_ttafile->GetPaused();
+	if (playing_ttafile.isValid() && playing_ttafile.isDecodable()) {
+		return playing_ttafile.GetPaused();
 	} else {
 		return 0;
 	}
@@ -376,6 +361,19 @@ int ispaused()
 
 void stop()
 {
+
+	remain_data.data_length = 0;
+
+	if (remain_data.buffer != NULL)
+	{
+		delete [] remain_data.buffer;
+		remain_data.buffer = NULL;
+	}
+	else
+	{
+		// Do nothing
+	}
+
 	if (INVALID_HANDLE_VALUE != decoder_handle) {
 		killDecoderThread = 1;
 		if (WaitForSingleObject(decoder_handle, INFINITE) == WAIT_TIMEOUT) {
@@ -383,13 +381,6 @@ void stop()
 		}
 		CloseHandle(decoder_handle);
 		decoder_handle = INVALID_HANDLE_VALUE;
-	}
-
-	if (NULL != playing_ttafile) {
-		delete playing_ttafile;
-		playing_ttafile = NULL;
-	} else {
-		// do nothing
 	}
 
 	mod.SetInfo(0, 0, 0, 1);
@@ -403,8 +394,8 @@ void stop()
 
 int getlength()
 {
-	if (NULL != playing_ttafile && playing_ttafile->isValid() && playing_ttafile->isDecodable()) {
-		return playing_ttafile->GetLengthbymsec();
+	if (playing_ttafile.isValid() && playing_ttafile.isDecodable()) {
+		return playing_ttafile.GetLengthbymsec();
 	} else {
 		return 0;
 	}
@@ -412,8 +403,8 @@ int getlength()
 
 int getoutputtime()
 {
-	if (NULL != playing_ttafile && playing_ttafile->isValid() && playing_ttafile->isDecodable()) { 
-		return (int)(playing_ttafile->GetDecodePosMs() 
+	if (playing_ttafile.isValid() && playing_ttafile.isDecodable()) { 
+		return (int)(playing_ttafile.GetDecodePosMs() 
 		+ (mod.outMod->GetOutputTime() - mod.outMod->GetWrittenTime())); 
 	} else {
 		return 0;
@@ -422,8 +413,8 @@ int getoutputtime()
 
 void setoutputtime(int time_in_ms)
 {
-	if (NULL != playing_ttafile && playing_ttafile->isValid() && playing_ttafile->isDecodable()) {
-		playing_ttafile->SetSeekNeeded(time_in_ms); 
+	if (playing_ttafile.isValid() && playing_ttafile.isDecodable()) {
+		playing_ttafile.SetSeekNeeded(time_in_ms); 
 	} else {
 		// do nothing
 	}
@@ -461,9 +452,9 @@ static void do_vis(unsigned char *data, int count, int bps, long double position
 		data = (unsigned char *)vis_buffer;
 	}
 
-	if (NULL != playing_ttafile && playing_ttafile->isValid() && playing_ttafile->isDecodable()) {
-		mod.SAAddPCMData(data, playing_ttafile->GetNumberofChannel(), 16, (int)position);
-		mod.VSAAddPCMData(data, playing_ttafile->GetNumberofChannel(), 16, (int)position);
+	if (playing_ttafile.isValid() && playing_ttafile.isDecodable()) {
+		mod.SAAddPCMData(data, playing_ttafile.GetNumberofChannel(), 16, (int)position);
+		mod.VSAAddPCMData(data, playing_ttafile.GetNumberofChannel(), 16, (int)position);
 	}
 }
 
@@ -474,8 +465,7 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 	int done = 0;
 	int len;
 
-	if (NULL == playing_ttafile || !playing_ttafile->isValid() 
-		|| !playing_ttafile->isDecodable()) {
+	if (!playing_ttafile.isValid() || !playing_ttafile.isDecodable()) {
 		tta_error_message(-1, "");
 		done = 1;
 		return 0;
@@ -483,10 +473,10 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 		// do nothing
 	}
 
-	int bitrate = playing_ttafile->GetBitrate();
+	int bitrate = playing_ttafile.GetBitrate();
 
 	while (!killDecoderThread) {
-		if(!playing_ttafile->isDecodable()) {
+		if(!playing_ttafile.isDecodable()) {
 			tta_error_message(-1, "");
 			PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
 			return 0;
@@ -494,8 +484,8 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 			// do nothing
 		}
 		
-		if (playing_ttafile->GetSeekNeeded() != -1) {
-			mod.outMod->Flush((int)playing_ttafile->SeekPosition(&done));
+		if (playing_ttafile.GetSeekNeeded() != -1) {
+			mod.outMod->Flush((int)playing_ttafile.SeekPosition(&done));
 		} else {
 			// do nothing
 		}
@@ -509,15 +499,13 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 				Sleep(10);
 			}
 		} else if (mod.outMod->CanWrite() >= 
-			((BUFFER_LENGTH * playing_ttafile->GetNumberofChannel() * 
-			playing_ttafile->GetByteSize()) << (mod.dsp_isactive()? 1:0))) {
+			((BUFFER_LENGTH * playing_ttafile.GetNumberofChannel() * 
+			playing_ttafile.GetByteSize()) << (mod.dsp_isactive()? 1:0))) {
 				try {
-					len = playing_ttafile->GetSamples(pcm_buffer, BUFFER_SIZE, &bitrate);
+					len = playing_ttafile.GetSamples(pcm_buffer, BUFFER_SIZE, &bitrate);
 				}
 				catch (CDecodeFile_exception &ex) {
-					tta_error_message(ex.code(), playing_ttafile->GetFileName());
-					delete playing_ttafile;
-					playing_ttafile = NULL;
+					tta_error_message(ex.code(), playing_ttafile.GetFileName());
 					PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
 					mod.SetInfo(0, 0, 0, 1);
 					mod.outMod->Close();
@@ -527,17 +515,17 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 				if (len == 0) {
 					done = 1;
 				} else {
-					do_vis(pcm_buffer, len, playing_ttafile->GetOutputBPS(), playing_ttafile->GetDecodePosMs());
+					do_vis(pcm_buffer, len, playing_ttafile.GetOutputBPS(), playing_ttafile.GetDecodePosMs());
 					if (mod.dsp_isactive()) {
-						len = mod.dsp_dosamples((short *)pcm_buffer, len, playing_ttafile->GetOutputBPS(),
-							playing_ttafile->GetNumberofChannel(), playing_ttafile->GetSampleRate());
+						len = mod.dsp_dosamples((short *)pcm_buffer, len, playing_ttafile.GetOutputBPS(),
+							playing_ttafile.GetNumberofChannel(), playing_ttafile.GetSampleRate());
 					} else {
 						// do nothing
 					}
-					mod.outMod->Write((char *)pcm_buffer, len * playing_ttafile->GetNumberofChannel()
-						* (playing_ttafile->GetOutputBPS() >> 3));
+					mod.outMod->Write((char *)pcm_buffer, len * playing_ttafile.GetNumberofChannel()
+						* (playing_ttafile.GetOutputBPS() >> 3));
 				}
-				mod.SetInfo(bitrate, playing_ttafile->GetSampleRate() / 1000, playing_ttafile->GetNumberofChannel(), 1);
+				mod.SetInfo(bitrate, playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
 		} else {
 			Sleep(20);
 		}
@@ -588,6 +576,8 @@ extern "C"
 	__declspec(dllexport) int __cdecl
 	winampGetExtendedFileInfo(const char *fn, const char *data, char *dest, size_t destlen)
 	{
+		CMediaLibrary m_Tag;
+
 		return m_Tag.GetExtendedFileInfo(fn, data, dest, destlen);
 	}
 
@@ -596,12 +586,20 @@ extern "C"
   // this will be called when Winamp is requested to show a File Info dialog for the selected file(s)
   // and this will allow you to override or forceable ignore the handling of a file or format
   // e.g. this will allow streams/urls to be ignored
-	if (!_strnicmp(fn, "file://", 7)) {
+	if (!_strnicmp(fn, "file://", 7)) 
+	{
 		fn += 7;
 	}
-	if (PathIsURLA(fn)) { 
+	
+	if (PathIsURLA(fn)) 
+	{ 
 		return 0;
 	}
+	else
+	{
+		// Do nothing
+	}
+
 	return 1;
 	}
 
@@ -609,11 +607,13 @@ extern "C"
 	__declspec( dllexport ) int __cdecl 
 		winampSetExtendedFileInfo(const char *fn, const char *data, const char *val)
 	{
+		CMediaLibrary m_Tag;
 		return m_Tag.SetExtendedFileInfo(fn, data, val);
 	}
 
 	__declspec(dllexport) int __cdecl winampWriteExtendedFileInfo()
 	{
+		CMediaLibrary m_Tag;
 		return m_Tag.WriteExtendedFileInfo();
 	}
 
@@ -655,7 +655,7 @@ extern "C"
 	__declspec( dllexport ) intptr_t __cdecl winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
 	{
 		CDecodeFile *dec = (CDecodeFile *)handle;
-		unsigned char *buf = new unsigned char[BUFFER_SIZE];
+		unsigned char buf[BUFFER_SIZE];
 		int dest_used = 0;
 		int n = 0;
 		int bitrate;
@@ -677,7 +677,6 @@ extern "C"
 			}
 
 			if(remain_data.data_length != 0) {
-				delete [] buf;
 				delete [] remain_data.buffer;
 				remain_data.buffer = NULL;
 				return (intptr_t)dest_used;
@@ -719,11 +718,19 @@ extern "C"
 		// copy as much as we can back to winamp
 		if (n > 0 && n < decoded_bytes)	{
 			remain_data.data_length = decoded_bytes - n;
+			if (NULL != remain_data.buffer)
+			{
+				delete [] remain_data.buffer;
+				remain_data.buffer = NULL;
+			}
+			else
+			{
+				// Do nothing
+			}
 			remain_data.buffer = new BYTE[remain_data.data_length];
 			memcpy_s(remain_data.buffer, remain_data.data_length, buf + n, remain_data.data_length);
 		}
 
-		delete [] buf;
 		return (intptr_t)dest_used;
 	}
 
@@ -736,7 +743,7 @@ extern "C"
 			dec->SetSeekNeeded(millisecs);
 			dec->SeekPosition(&done);
 		} else {
-			// do nothing
+			return 0;
 		}
 		return 1;
 	}
@@ -749,9 +756,11 @@ extern "C"
 		} else {
 			// nothing to do
 		}
+
 		CDecodeFile *dec = (CDecodeFile *)handle;
-		if (NULL == dec && dec->isValid()) {
+		if (NULL != dec && dec->isValid()) {
 			delete dec;
+			dec = NULL;
 		} else {
 			// do nothing
 		}

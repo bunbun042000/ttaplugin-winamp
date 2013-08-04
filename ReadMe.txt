@@ -1,4 +1,4 @@
-in_tta.dll Ver3.2 Modified(Beta14) 
+in_tta.dll Ver3.2 Modified(Beta15) 
 =====================================================
 
 *This plugin 
@@ -13,9 +13,12 @@ TTA encoder/decoder/decoder multiplatform library, C++ version
 This plugin performs Winamp Ver.2.9 or newer.
 
 *Install
- Please copy in_tta.dll to Plugins folder in Winamp and also copy tag.dll(https://github.com/downloads/bunbun042000/taglib-modified/tag.dll) to Winamp base folder.
+ Please copy in_tta.dll to Plugins folder in Winamp.
 
 *Release Notes
+2013-08-xx Beta15 Change base taglib stable(commit Hash:fddf3ed51b705d69e12df4a0cba01984ce82c638).
+                  Fix memory leak in transcoding.
+				  Change DLL taglib to static taglib. 
 2011-12-10 Beta14 Revert multibyte version
                   Fix exception from libtta
 2011-12-03 Beta13 Unicode Plugin version

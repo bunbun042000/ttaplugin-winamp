@@ -1,4 +1,4 @@
-in_tta.dll Ver3.2 (Beta14) 
+in_tta.dll Ver3.2 (Beta15) 
 =====================================================
 
 *このプラグインは
@@ -6,7 +6,7 @@ in_tta.dll Ver3.2 (Beta14)
 メディアライブラリ読み込み対応を付け加え、ID3v2周りを改変し
 たものです。よって、Winamp Ver2.9以降に対応します。
 
-動作確認はWinamp5.622で行いました。
+動作確認はWinamp5.65で行いました。
 
 
 *インストール方法
@@ -15,6 +15,9 @@ in_tta.dll Ver3.2 (Beta14)
 (https://github.com/downloads/bunbun042000/taglib-modified/tag.dll)をコピーしてください。
 
 *更新履歴
+2013-08-xx Beta15 taglibを最新stable(commit Hash:fddf3ed51b705d69e12df4a0cba01984ce82c638)ベースに変更
+                  トランスコーディング時のメモリリークを修正
+				  taglibをスタティックリンクに再変更
 2011-12-10 Beta14 Revert multibyte version
                   libttaからの例外チェックを追加
 2011-12-03 Beta13 Unicode Plugin version

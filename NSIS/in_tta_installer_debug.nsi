@@ -15,12 +15,12 @@
 ; !include "Sections.nsh"
 
 ; common defines for a generic DrO installer :o)
-!define VERSION "3.2 Beta12 debug"
-!define ALT_VER "3_2_Beta12_debug"
+!define VERSION "3.2 Beta15p debug"
+!define ALT_VER "3_2_Beta15p_debug"
 !define PLUG "ttaplugin-winamp"
 !define PLUG_ALT "ttaplugin-winamp"
 !define PLUG_FILE "in_tta"
-!define TAGLIB_DLL "tag"
+;!define TAGLIB_DLL "tagd"
 
 ; use leet compression
 SetCompressor lzma
@@ -109,8 +109,8 @@ Section ""
   ; if you're script is in the project folder then the following file path is
   ; likely to apply otherwise just alter the path as needed
   File "..\Debug\${PLUG_FILE}.dll"
-	SetOutPath "$INSTDIR"
-  File "..\..\libraries\bin\${TAGLIB_DLL}.dll"
+;  SetOutPath "$INSTDIR"
+;  File "..\..\libraries\bin\${TAGLIB_DLL}.dll"
 
   SetOverwrite off
 SectionEnd

@@ -1,6 +1,6 @@
 /*
 The ttaplugin-winamp project.
-Copyright (C) 2005-2011 Yamagata Fumihiro
+Copyright (C) 2005-2013 Yamagata Fumihiro
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -176,7 +176,11 @@ bool TTA_AlbumArtProvider::IsMine(const wchar_t *filename)
 	const wchar_t *extension = extensionW(filename);
 	if (extension && *extension)
 	{
-	return (_wcsicmp (extension, L"tta") == 0) ? true : false;
+		return (_wcsicmp (extension, L"tta") == 0) ? true : false;
+	}
+	else
+	{
+		// Do nothing
 	}
 	return false;
 }
@@ -211,11 +215,30 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 	}
 
 	size_t origsize = wcslen(filename) + 1;
-	size_t convertedChars = 0;
 	int ret = WideCharToMultiByte(CP_ACP, 0, filename, origsize, demandFile, MAX_PATHLEN - 1, NULL, NULL);
 
-	TagLib::TrueAudio::File TagFile(demandFile);
-	if (false == TagFile.isValid()) {
+	if (ret == 0)
+	{
+		::LeaveCriticalSection(&CriticalSection);
+		return retval;
+	}
+	else
+	{
+		// Do nothing
+	}
+
+	if (true != TagLib::File::isReadable(demandFile))
+	{
+		::LeaveCriticalSection(&CriticalSection);
+		return retval;
+	}
+	else
+	{
+		// Do nothing
+	}
+
+	TagLib::TrueAudio::File TagFile(demandFile, false);
+	if (true != TagFile.isValid()) {
 		::LeaveCriticalSection(&CriticalSection);
 		return retval;
 	} else {

@@ -1,6 +1,6 @@
 /*
 The ttaplugin-winamp project.
-Copyright (C) 2005-2011 Yamagata Fumihiro
+Copyright (C) 2005-2013 Yamagata Fumihiro
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -65,8 +65,8 @@ CDecodeFile::~CDecodeFile(void)
 	::EnterCriticalSection(&CriticalSection);
 
 	if (INVALID_HANDLE_VALUE != decoderFileHANDLE) {
-		decoderFileHANDLE = INVALID_HANDLE_VALUE;
 		::CloseHandle(decoderFileHANDLE);
+		decoderFileHANDLE = INVALID_HANDLE_VALUE;
 	} else {
 		// do nothing
 	}
@@ -210,6 +210,8 @@ int  CDecodeFile::GetSamples(BYTE *buffer, long buffersize, int *current_bitrate
 
 
 	if (INVALID_HANDLE_VALUE == decoderFileHANDLE) {
+		delete []temp;
+		temp = 0;
 		return 0; // no decode data
 	} else {
 		// do nothing
@@ -229,6 +231,7 @@ int  CDecodeFile::GetSamples(BYTE *buffer, long buffersize, int *current_bitrate
 
 	catch (tta::tta_exception &ex) {
 		delete []temp;
+		temp = 0;
 		throw CDecodeFile_exception(ex.code());
 	}
 
@@ -241,6 +244,7 @@ int  CDecodeFile::GetSamples(BYTE *buffer, long buffersize, int *current_bitrate
 	}
 
 	delete [] temp;
+	temp = 0;
 
 	::LeaveCriticalSection(&CriticalSection);
 
