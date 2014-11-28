@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-////////////// THE LOSSLESS TRUE AUDIO CODEC C++ LIBRARY V2.1 ///////////////
+////////////// THE LOSSLESS TRUE AUDIO CODEC C++ LIBRARY V2.2 ///////////////
 /////////////////////////////////////////////////////////////////////////////
 
 This package contains a full-futured codec library for realtime encoding and
@@ -310,12 +310,13 @@ RMstatus rmtta_file_read(RMuint8 *buffer, RMuint32 length,
 Listed in chronological order:
 
 Aleksander Djuric, Pavel Zhilin, Tamir Barak, Noam Koenigstein,
-Kazuki Oikawa, Christophe Paris, Eugene Okhotsky, Yoshihisa Uchida, LM Poh.
+Kazuki Oikawa, Christophe Paris, Eugene Okhotsky, Yoshihisa Uchida,
+LM Poh, Scott Watson.
 
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
-Copyright (c) 1999-2011 Aleksander Djuric. All rights reserved.
+Copyright (c) 1999-2014 Aleksander Djuric. All rights reserved.
 
 For the latest in news and downloads, please visit the official True Audio
 project site:
