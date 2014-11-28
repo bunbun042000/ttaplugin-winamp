@@ -1,22 +1,25 @@
-in_tta.dll Ver3.2 Modified(Beta15) 
+in_tta.dll Ver3.2 Modified(Beta16) 
 =====================================================
 
 *This plugin 
 is based on TAU Software(http://en.true-audio.com/)
 TTA plug-in ver 3.2 for Winamp 2,5.
 The modification is ID3v2 Tag read/write function using 
-taglib(http://developer.kde.org/~wheeler/taglib.html).
+taglib(https://github.com/taglib/taglib).
 And add read metadata (include album art) for MediaLibray.
 From Beta9, decode engine was replaced by
 TTA encoder/decoder/decoder multiplatform library, C++ version
 (http://en.true-audio.com/)
-This plugin performs Winamp Ver.2.9 or newer.
+This plugin performs Winamp Ver.2.9 or newer and tested by Winamp Ver.5.666.
 
 *Install
  Please copy in_tta.dll to Plugins folder in Winamp.
 
 *Release Notes
-2013-08-xx Beta15 Change base taglib stable(commit Hash:fddf3ed51b705d69e12df4a0cba01984ce82c638).
+2014-11-28 Beta16 Change base library to libtta++2.2.
+                  Change base taglib stable(2014/10/23 2:31:14 commit Hash:072851869a2980dab4aefd471ad7dd707993d74f).
+				  Change compiler to VS2013.
+2013-08-22 Beta15 Change base taglib stable(commit Hash:fddf3ed51b705d69e12df4a0cba01984ce82c638).
                   Fix memory leak in transcoding.
 				  Change DLL taglib to static taglib. 
 2011-12-10 Beta14 Revert multibyte version

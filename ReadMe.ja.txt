@@ -1,21 +1,26 @@
-in_tta.dll Ver3.2 (Beta15) 
+in_tta.dll Ver3.2 (Beta16) 
 =====================================================
 
 *このプラグインは
 本家(http://www.true-audio.com/)配布のwinamp用プラグインに
+taglib(https://github.com/taglib/taglib)をベースとした
 メディアライブラリ読み込み対応を付け加え、ID3v2周りを改変し
-たものです。よって、Winamp Ver2.9以降に対応します。
-
-動作確認はWinamp5.65で行いました。
+たものです。
+またアルバムアートなどメディアライブラリのメタデータ読み込み機能を付加しました。
+Beta9以降はデコードエンジンをTTA encoder/decoder/decoder multiplatform library, C++ version
+(http://en.true-audio.com/)に変更しました。
+Winamp Ver2.9以降に対応しており，Winamp Ver.5.666にて動作確認しています。
 
 
 *インストール方法
  WinampのフォルダにあるPluginsフォルダにin_tta.dllをコピー
- てください。また、Winampのベースフォルダにtag.dll
-(https://github.com/downloads/bunbun042000/taglib-modified/tag.dll)をコピーしてください。
+ てください。
 
 *更新履歴
-2013-08-xx Beta15 taglibを最新stable(commit Hash:fddf3ed51b705d69e12df4a0cba01984ce82c638)ベースに変更
+2014-11-28 Beta16 ベースライブラリをlibtta++2.2に変更
+                  taglibを最新stable(2014/10/23 2:31:14 commit Hash:072851869a2980dab4aefd471ad7dd707993d74f)ベースに変更
+                  コンパイラをVC2013に変更
+2013-08-22 Beta15 taglibを最新stable(commit Hash:fddf3ed51b705d69e12df4a0cba01984ce82c638)ベースに変更
                   トランスコーディング時のメモリリークを修正
 				  taglibをスタティックリンクに再変更
 2011-12-10 Beta14 Revert multibyte version
