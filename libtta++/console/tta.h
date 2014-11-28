@@ -2,7 +2,7 @@
  * tta.h
  *
  * Description: TTA general portability definitions
- * Copyright (c) 2011 Aleksander Djuric. All rights reserved.
+ * Copyright (c) 1999-2014 Aleksander Djuric. All rights reserved.
  * Distributed under the GNU Lesser General Public License (LGPL).
  * The complete text of the license can be found in the COPYING
  * file included in the distribution.
@@ -60,8 +60,12 @@ typedef RMfile (HANDLE);
 #else // NOT CARIBBEAN
 typedef int (HANDLE);
 #define INVALID_HANDLE_VALUE (-1)
+#if defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || \
+	(defined(__APPLE__) && defined(__MACH__))
+#define lseek64 lseek
+#endif
 #define tta_open_read(__name) open(__name,O_RDONLY|O_NONBLOCK)
-#define tta_open_write(__name) open(__name,O_RDWR|O_TRUNC|O_CREAT)
+#define tta_open_write(__name) open(__name,O_RDWR|O_TRUNC|O_CREAT,S_IRUSR|S_IWUSR)
 #define tta_close(__handle) close(__handle)
 #define tta_unlink(__name) unlink(__name)
 #define tta_read(__handle,__buffer,__size,__result) (__result=read(__handle,__buffer,__size))

@@ -2,7 +2,7 @@
  * filter.h
  *
  * Description: TTA hybrid filter functions
- * Copyright (c) 1999-2011 Aleksander Djuric. All rights reserved.
+ * Copyright (c) 1999-2014 Aleksander Djuric. All rights reserved.
  * SSE4 optimization copyright (c) 2008 Kazuki Oikawa
  * Distributed under the GNU Lesser General Public License (LGPL).
  * The complete text of the license can be found in the COPYING
@@ -19,7 +19,7 @@
 #elif defined(ENABLE_SSE2) || defined(ENABLE_SSE4)
 
 #if defined(ENABLE_SSE4)
-#include <tmmintrin.h>
+#include <smmintrin.h>
 #define mullo_epi32(a, b) _mm_mullo_epi32(a, b)
 #else // ENABLE_SSE2
 #include <emmintrin.h>
@@ -32,7 +32,7 @@
 ////////////////////////// hybrid_filter_sse4_dec ///////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
-__inline void hybrid_filter_dec(TTA_fltst *fs, TTAint32 *in) {
+static __inline void hybrid_filter_dec(TTA_fltst *fs, TTAint32 *in) {
 	register TTAint32 *pA = fs->dl;
 	register TTAint32 *pB = fs->qm;
 	register TTAint32 *pM = fs->dx;
@@ -82,7 +82,7 @@ __inline void hybrid_filter_dec(TTA_fltst *fs, TTAint32 *in) {
 ////////////////////////// hybrid_filter_sse4_enc ///////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
-__inline void hybrid_filter_enc(TTA_fltst *fs, TTAint32 *in) {
+static __inline void hybrid_filter_enc(TTA_fltst *fs, TTAint32 *in) {
 	register TTAint32 *pA = fs->dl;
 	register TTAint32 *pB = fs->qm;
 	register TTAint32 *pM = fs->dx;
@@ -134,7 +134,7 @@ __inline void hybrid_filter_enc(TTA_fltst *fs, TTAint32 *in) {
 ///////////////////////// hybrid_filter_compat_dec //////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
-__inline void hybrid_filter_dec(TTA_fltst *fs, TTAint32 *in) {
+static __inline void hybrid_filter_dec(TTA_fltst *fs, TTAint32 *in) {
 	register TTAint32 *pA = fs->dl;
 	register TTAint32 *pB = fs->qm;
 	register TTAint32 *pM = fs->dx;
@@ -170,7 +170,7 @@ __inline void hybrid_filter_dec(TTA_fltst *fs, TTAint32 *in) {
 ///////////////////////// hybrid_filter_compat_enc //////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
-__inline void hybrid_filter_enc(TTA_fltst *fs, TTAint32 *in) {
+static __inline void hybrid_filter_enc(TTA_fltst *fs, TTAint32 *in) {
 	register TTAint32 *pA = fs->dl;
 	register TTAint32 *pB = fs->qm;
 	register TTAint32 *pM = fs->dx;
