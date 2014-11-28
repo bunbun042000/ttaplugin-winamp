@@ -45,14 +45,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "resource.h"
 
-#define  PLUGIN_VERSION "3.2 extended Beta14"
+#define  PLUGIN_VERSION "3.2 extended Beta16"
 #define  PROJECT_URL "<git://github.com/bunbun042000/ttaplugin-winamp.git>"
-#define  LIBTTA_VERSION "based on libtta++2.1"
+#define  LIBTTA_VERSION "based on libtta++2.2"
 #define  ORIGINAL_CREADIT01 "Plugin is written by Alexander Djourik, Pavel Zhilin and Anton Gorbunov.\n"
 #define  ORIGINAL_CREADIT02 "Copyright (c) 2003 Alexander Djourik.\n"
 #define  ORIGINAL_CREADIT03 "All rights reserved.\n"
-#define  CREADIT01 "Modified by Yamagata Fumihiro, 2005-2011\n"
-#define  CREADIT02 "Copyright (C)2005-2011 Yamagata Fumihiro.\n"
+#define  CREADIT01 "Modified by Yamagata Fumihiro, 2005-2014\n"
+#define  CREADIT02 "Copyright (C)2005-2014 Yamagata Fumihiro.\n"
 
 // For Support Transcoder input (2007/10/15)
 CDecodeFile *playing_ttafile;
