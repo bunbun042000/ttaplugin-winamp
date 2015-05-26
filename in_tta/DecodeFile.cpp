@@ -48,6 +48,7 @@ TTAint64 CALLBACK seek_callback(TTA_io_callback *io, TTAint64 offset) {
 } // seek_callback
 
 
+
 CDecodeFile::CDecodeFile(void) : paused(0), seek_needed(1), decode_pos_ms(0), bitrate(0), Filesize(0), 
 		st_state(0), decoderFileHANDLE(INVALID_HANDLE_VALUE), TTA(NULL), signature(sig_number)
 {
@@ -86,7 +87,6 @@ CDecodeFile::~CDecodeFile(void)
 	signature = -1;
 
 	if (NULL != TTA) {
-		delete TTA;
 		TTA = NULL;
 	} else {
 		// do nothing
@@ -122,20 +122,18 @@ int CDecodeFile::SetFileName(const char *filename)
 	iocb_wrapper.iocb.seek = &seek_callback;
 
 	if (TTA != NULL) {
-		delete TTA;
 		TTA = NULL;
 	} else {
 		// nothing todo
 	}
 
 	try {
-		TTA = new tta::tta_decoder((TTA_io_callback *) &iocb_wrapper);
+		TTA = new (&ttadec_mem) tta::tta_decoder((TTA_io_callback *)&iocb_wrapper);
 		TTA->init_get_info(&tta_info, 0);
 	}
 
 	catch (tta::tta_exception &ex) {
 		if (NULL != TTA) {
-			delete TTA;
 			TTA = NULL;
 		} else {
 			// do nothing

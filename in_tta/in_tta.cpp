@@ -31,6 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <Shlwapi.h>
 #include <stdlib.h>
+#include <type_traits>
 
 #include <Winamp/in2.h>
 #include <Agave/Language/api_language.h>
@@ -48,7 +49,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 // For Support Transcoder input (2007/10/15)
-static CDecodeFile playing_ttafile;
+static __declspec(align(16)) CDecodeFile playing_ttafile;
+static std::aligned_storage<sizeof(CDecodeFile), __alignof(CDecodeFile)>::type CDecodeFile_mem;
 
 static long	vis_buffer[BUFFER_SIZE * MAX_NCH];	// vis buffer
 static BYTE pcm_buffer[BUFFER_SIZE];
@@ -621,7 +623,7 @@ extern "C"
 		winampGetExtendedRead_open(const char *filename, int *size, int *bps, int *nch, int *srate)
 	{
 
-		CDecodeFile *dec = new CDecodeFile;
+		CDecodeFile *dec = new (&CDecodeFile_mem)CDecodeFile;
 		if (!dec->isValid()) {
 			return (intptr_t) 0;
 		} else {
@@ -759,7 +761,6 @@ extern "C"
 
 		CDecodeFile *dec = (CDecodeFile *)handle;
 		if (NULL != dec && dec->isValid()) {
-			delete dec;
 			dec = NULL;
 		} else {
 			// do nothing
