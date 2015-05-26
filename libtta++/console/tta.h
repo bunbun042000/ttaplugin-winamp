@@ -2,7 +2,7 @@
  * tta.h
  *
  * Description: TTA general portability definitions
- * Copyright (c) 1999-2014 Aleksander Djuric. All rights reserved.
+ * Copyright (c) 1999-2015 Aleksander Djuric. All rights reserved.
  * Distributed under the GNU Lesser General Public License (LGPL).
  * The complete text of the license can be found in the COPYING
  * file included in the distribution.
@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <locale.h>
 #else // MSVC
+#include <io.h>
 #include <stdio.h>
 #include <locale.h>
 #include <intrin.h>
@@ -43,6 +44,7 @@ typedef char (TTAwchar);
 #else
 #define tta_print(fmt, ...) fprintf(stderr, fmt, ## __VA_ARGS__)
 #endif
+#define INVALID_SET_FILE_POINTER (-1)
 #ifdef CARIBBEAN
 typedef RMfile (HANDLE);
 #define INVALID_HANDLE_VALUE (NULL)
@@ -74,7 +76,7 @@ typedef int (HANDLE);
 #define tta_reset(__handle) lseek64(__handle,0,SEEK_SET)
 #define tta_memclear(__dest,__length) memset(__dest,0,__length)
 #define tta_memcpy(__dest,__source,__length) memcpy(__dest,__source,__length)
-#define tta_malloc malloc
+#define tta_malloc(__length) aligned_alloc(16,__length)
 #define tta_free free
 
 #define tta_cpuid(func,ax,bx,cx,dx) \
@@ -89,7 +91,7 @@ typedef wchar_t (TTAwchar);
 #define STDIN_FILENO GetStdHandle(STD_INPUT_HANDLE)
 #define STDOUT_FILENO GetStdHandle(STD_OUTPUT_HANDLE)
 #define tta_main __cdecl wmain
-#define tta_strlen wcslen
+#define tta_strlen (int) wcslen
 #define tta_print(fmt, ...) fwprintf(stderr, L##fmt, ##__VA_ARGS__)
 #define tta_open_read(__name) CreateFileW(__name,GENERIC_READ,FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL)
 #define tta_open_write(__name) CreateFileW(__name,GENERIC_READ|GENERIC_WRITE,0,NULL,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL|FILE_FLAG_SEQUENTIAL_SCAN,NULL)
@@ -101,8 +103,8 @@ typedef wchar_t (TTAwchar);
 #define tta_reset(__handle) SetFilePointer(__handle,0,0,FILE_BEGIN)
 #define tta_memclear(__dest,__length) ZeroMemory(__dest,__length)
 #define tta_memcpy(__dest,__source,__length) CopyMemory(__dest,__source,__length)
-#define tta_malloc malloc
-#define tta_free free
+#define tta_malloc(__length) _aligned_malloc(__length, 16)
+#define tta_free(__dest) _aligned_free(__dest)
 
 #define tta_cpuid(func,ax,bx,cx,dx) { \
 	int cpuid[4]; \

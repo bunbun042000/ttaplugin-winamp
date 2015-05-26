@@ -2,7 +2,7 @@
  * libtta.h
  *
  * Description: TTA1-C++ library interface
- * Copyright (c) 1999-2014 Aleksander Djuric. All rights reserved.
+ * Copyright (c) 1999-2015 Aleksander Djuric. All rights reserved.
  * Distributed under the GNU Lesser General Public License (LGPL).
  * The complete text of the license can be found in the COPYING
  * file included in the distribution.
@@ -85,6 +85,19 @@ typedef unsigned __int64 (TTAuint64);
 #define TTA_FORMAT_SIMPLE 1
 #define TTA_FORMAT_ENCRYPTED 2
 
+typedef enum tta_error {
+	TTA_NO_ERROR,	// no known errors found
+	TTA_OPEN_ERROR,	// can't open file
+	TTA_FORMAT_ERROR,	// not compatible file format
+	TTA_FILE_ERROR,	// file is corrupted
+	TTA_READ_ERROR,	// can't read from input file
+	TTA_WRITE_ERROR,	// can't write to output file
+	TTA_SEEK_ERROR,	// file seek error
+	TTA_MEMORY_ERROR,	// insufficient memory available
+	TTA_PASSWORD_ERROR,	// password protected file
+	TTA_NOT_SUPPORTED	// unsupported architecture
+} TTA_CODEC_STATUS;
+
 typedef enum {
 	CPU_ARCH_UNDEFINED,
 	CPU_ARCH_IX86_SSE2,
@@ -99,14 +112,7 @@ typedef struct {
 	TTAuint32 bps;	// bits per sample
 	TTAuint32 sps;	// samplerate (sps)
 	TTAuint32 samples;	// data length in samples
-} TTA_info;
-
-typedef struct {
-	TTAuint32 k0;
-	TTAuint32 k1;
-	TTAuint32 sum0;
-	TTAuint32 sum1;
-} TTA_adapt;
+} TTA_ALIGNED(16) TTA_info;
 
 typedef struct {
 	TTAint32 index;
@@ -119,29 +125,23 @@ typedef struct {
 } TTA_ALIGNED(16) TTA_fltst;
 
 typedef struct {
+	TTAuint32 k0;
+	TTAuint32 k1;
+	TTAuint32 sum0;
+	TTAuint32 sum1;
+} TTA_ALIGNED(16) TTA_adapt;
+
+typedef struct {
 	TTA_fltst fst;
 	TTA_adapt rice;
 	TTAint32 prev;
-} TTA_codec;
-
-typedef enum tta_error {
-	TTA_NO_ERROR,	// no known errors found
-	TTA_OPEN_ERROR,	// can't open file
-	TTA_FORMAT_ERROR,	// not compatible file format
-	TTA_FILE_ERROR,	// file is corrupted
-	TTA_READ_ERROR,	// can't read from input file
-	TTA_WRITE_ERROR,	// can't write to output file
-	TTA_SEEK_ERROR,	// file seek error
-	TTA_MEMORY_ERROR,	// insufficient memory available
-	TTA_PASSWORD_ERROR,	// password protected file
-	TTA_NOT_SUPPORTED	// unsupported architecture
-} TTA_CODEC_STATUS;
+} TTA_ALIGNED(16) TTA_codec;
 
 typedef struct _tag_TTA_io_callback {
 	TTAint32 (CALLBACK *read)(struct _tag_TTA_io_callback *, TTAuint8 *, TTAuint32);
 	TTAint32 (CALLBACK *write)(struct _tag_TTA_io_callback *, TTAuint8 *, TTAuint32);
 	TTAint64 (CALLBACK *seek)(struct _tag_TTA_io_callback *, TTAint64 offset);
-} TTA_io_callback;
+} TTA_ALIGNED(16) TTA_io_callback;
 
 typedef struct {
 	TTAuint8 buffer[TTA_FIFO_BUFFER_SIZE];
@@ -152,7 +152,7 @@ typedef struct {
 	TTAuint32 crc;
 	TTAuint32 count;
 	TTA_io_callback *io;
-} TTA_fifo;
+} TTA_ALIGNED(16) TTA_fifo;
 
 // progress callback
 typedef void (CALLBACK *TTA_CALLBACK)(TTAuint32, TTAuint32, TTAuint32);
@@ -180,10 +180,10 @@ namespace tta
 		TTAuint32 get_rate();
 
 	protected:
-		TTA_fifo fifo;
 		TTA_codec decoder[MAX_NCH]; // decoder (1 per channel)
-		TTA_codec *decoder_last;
 		TTAint8 data[8];	// decoder initialization data
+		TTA_fifo fifo;
+		TTA_codec *decoder_last;
 		bool password_set;	// password protection flag
 		TTAuint64 *seek_table; // the playing position table
 		TTAuint32 format;	// tta data format
@@ -216,10 +216,10 @@ namespace tta
 		TTAuint32 get_rate();
 
 	protected:
-		TTA_fifo fifo;
 		TTA_codec encoder[MAX_NCH]; // encoder (1 per channel)
-		TTA_codec *encoder_last;
 		TTAint8 data[8];	// encoder initialization data
+		TTA_fifo fifo;
+		TTA_codec *encoder_last;
 		TTAuint64 *seek_table; // the playing position table
 		TTAuint32 format;	// tta data format
 		TTAuint32 rate;	// bitrate (kbps)

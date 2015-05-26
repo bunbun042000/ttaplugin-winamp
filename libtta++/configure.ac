@@ -1,4 +1,4 @@
-AC_INIT([libtta++], [2.2], [info@true-audio.com])
+AC_INIT([libtta-cpp], [2.3], [info@true-audio.com])
 AC_CANONICAL_TARGET
 
 AC_CONFIG_SRCDIR([libtta.cpp])
@@ -45,7 +45,7 @@ AC_HEADER_STDC
 AC_SYS_LARGEFILE
 
 # Checks for library functions
-AC_CHECK_FUNCS([read write malloc memset memcpy lseek64])
+AC_CHECK_FUNCS([read write malloc memset memcpy lseek64 aligned_alloc])
 
 # Specific optimization features
 AM_CONDITIONAL(ENABLE_ASM, false)

@@ -21,6 +21,9 @@
 /* Define to use SSE4 instructions */
 #undef ENABLE_SSE4
 
+/* Define to 1 if you have the `aligned_alloc' function. */
+#undef HAVE_ALIGNED_ALLOC
+
 /* Define to 1 if you have the `lseek64' function. */
 #undef HAVE_LSEEK64
 

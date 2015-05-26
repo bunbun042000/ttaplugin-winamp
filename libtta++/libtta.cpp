@@ -2,7 +2,7 @@
  * libtta.cpp
  *
  * Description: TTA1-C++ library functions
- * Copyright (c) 1999-2014 Aleksander Djuric. All rights reserved.
+ * Copyright (c) 1999-2015 Aleksander Djuric. All rights reserved.
  * Distributed under the GNU Lesser General Public License (LGPL).
  * The complete text of the license can be found in the COPYING
  * file included in the distribution.
@@ -27,14 +27,14 @@ using namespace tta;
 #else // GNUC
 #define tta_memclear(__dest,__length) memset(__dest,0,__length)
 #define tta_memcpy(__dest,__source,__length) memcpy(__dest,__source,__length)
-#define tta_malloc malloc
+#define tta_malloc(__length) aligned_alloc(16,__length)
 #define tta_free free
 #endif
 #else // MSVC
 #define tta_memclear(__dest,__length) ZeroMemory(__dest,__length)
 #define tta_memcpy(__dest,__source,__length) CopyMemory(__dest,__source,__length)
-#define tta_malloc(__length) GlobalAlloc(GMEM_ZEROINIT,__length)
-#define tta_free(__dest) GlobalFree(__dest)
+#define tta_malloc(__length) _aligned_malloc(__length, 16)
+#define tta_free(__dest) _aligned_free(__dest)
 #endif
 
 //////////////////////// constants and definitions //////////////////////////
@@ -776,7 +776,7 @@ void writer_reset(TTA_fifo *s) {
 } // writer_reset
 
 void writer_done(TTA_fifo *s) {
-	TTAint32 buffer_size = s->pos - s->buffer;
+	TTAint32 buffer_size = (TTAint32)(s->pos - s->buffer);
 
 	if (buffer_size) {
 		if (s->io->write(s->io, s->buffer, buffer_size) != buffer_size)

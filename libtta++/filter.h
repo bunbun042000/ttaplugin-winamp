@@ -2,7 +2,7 @@
  * filter.h
  *
  * Description: TTA hybrid filter functions
- * Copyright (c) 1999-2014 Aleksander Djuric. All rights reserved.
+ * Copyright (c) 1999-2015 Aleksander Djuric. All rights reserved.
  * SSE4 optimization copyright (c) 2008 Kazuki Oikawa
  * Distributed under the GNU Lesser General Public License (LGPL).
  * The complete text of the license can be found in the COPYING

@@ -6,4 +6,4 @@ tta_SOURCES = tta.cpp tta.h
 
 tta_LDADD = $(top_builddir)/libtta++.a
 
-EXTRA_DIST = Makefile.mipsel console.vcproj
+EXTRA_DIST = Makefile.mipsel console.sln console.vcxproj*

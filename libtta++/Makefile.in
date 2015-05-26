@@ -382,7 +382,7 @@ libtta___a_SOURCES = libtta.cpp libtta.h filter.h
 @CPU_ARM_TRUE@@ENABLE_ASM_TRUE@libtta___a_LIBADD = filter_arm.o
 DOCLIST = COPYING README
 SUBDIRS = . console
-EXTRA_DIST = config.h Makefile.rm Makefile.mipsel libtta.vcproj
+EXTRA_DIST = config.h Makefile.rm Makefile.mipsel libtta.sln libtta.vcxproj*
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 

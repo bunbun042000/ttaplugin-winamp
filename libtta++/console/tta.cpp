@@ -2,7 +2,7 @@
  * tta.cpp
  *
  * Description: TTA simple console frontend
- * Copyright (c) 1999-2014 Aleksander Djuric. All rights reserved.
+ * Copyright (c) 1999-2015 Aleksander Djuric. All rights reserved.
  * Distributed under the GNU Lesser General Public License (LGPL).
  * The complete text of the license can be found in the COPYING
  * file included in the distribution.
@@ -123,7 +123,7 @@ int read_wav_hdr(HANDLE infile, WAVE_hdr *wave_hdr, TTAuint32 *subchunk_size) {
 	if (wave_hdr->subchunk_size > def_subchunk_size) {
 		TTAuint32 extra_len = wave_hdr->subchunk_size - def_subchunk_size;
 
-		if (tta_seek(infile, extra_len) < 0)
+		if (tta_seek(infile, extra_len) == INVALID_SET_FILE_POINTER)
 			return -1;
 	}
 
@@ -135,7 +135,7 @@ int read_wav_hdr(HANDLE infile, WAVE_hdr *wave_hdr, TTAuint32 *subchunk_size) {
 			return -1;
 
 		if (subchunk_hdr.subchunk_id == data_SIGN) break;
-		if (tta_seek(infile, subchunk_hdr.subchunk_size) < 0)
+		if (tta_seek(infile, subchunk_hdr.subchunk_size) == INVALID_SET_FILE_POINTER)
 			return -1;
 
 		tta_memcpy(chunk_id, &subchunk_hdr.subchunk_id, 4);
@@ -169,7 +169,7 @@ TTAuint8 *convert_password(const TTAwchar *src, int *len) {
 	TTAuint8 *dst;
 	int n;
 
-	dst = (TTAuint8*)tta_malloc(*len + 1);
+	dst = (TTAuint8*) tta_malloc(*len + 1);
 	if (dst == NULL) return NULL;
 
 	for (n = 0; n != *len; ++n) {
@@ -292,9 +292,10 @@ int test_libtta_compatibility() {
 /////////////////////////////////////////////////////////////////////////////
 
 int compress(HANDLE infile, HANDLE outfile, HANDLE tmpfile, void const *passwd, int pwlen, int format) {
+	tta_encoder *TTA;
+	void *aligned_encoder;
 	TTAuint32 data_size;
 	WAVE_hdr wave_hdr;
-	tta_encoder *TTA;
 	TTA_io_callback_wrapper io;
 	TTAuint8 *buffer = NULL;
 	TTAuint32 buf_size, smp_size, len, res;
@@ -311,7 +312,19 @@ int compress(HANDLE infile, HANDLE outfile, HANDLE tmpfile, void const *passwd, 
 		return -1;
 	}
 
-	TTA = new tta_encoder((TTA_io_callback *) &io);
+	// check for supported formats
+	if ((wave_hdr.chunk_id != RIFF_SIGN) ||
+		(wave_hdr.format != WAVE_SIGN) ||
+		(wave_hdr.num_channels == 0) ||
+		(wave_hdr.num_channels > MAX_NCH) ||
+		(wave_hdr.bits_per_sample == 0) ||
+		(wave_hdr.bits_per_sample > MAX_BPS)) {
+		tta_strerror(TTA_FORMAT_ERROR);
+		return -1;
+	}
+
+	aligned_encoder = tta_malloc(sizeof(tta_encoder));
+	TTA = new(aligned_encoder) tta_encoder((TTA_io_callback *)&io);
 
 	smp_size = (wave_hdr.num_channels * ((wave_hdr.bits_per_sample + 7) / 8));
 	info.nch = wave_hdr.num_channels;
@@ -354,6 +367,8 @@ int compress(HANDLE infile, HANDLE outfile, HANDLE tmpfile, void const *passwd, 
 		TTA->init_set_info(&info, 0);
 
 		while (data_size > 0) {
+			buf_size = (buf_size < data_size) ? buf_size : data_size;
+
 			if (!tta_read(infile, buffer, buf_size, len) || !len)
 				throw tta_exception(TTA_READ_ERROR);
 
@@ -371,7 +386,8 @@ int compress(HANDLE infile, HANDLE outfile, HANDLE tmpfile, void const *passwd, 
 	}
 
 done:
-	delete TTA;
+	TTA->~tta_encoder();
+	tta_free(aligned_encoder);
 	if (buffer) tta_free(buffer);
 
 	return ret;
@@ -381,8 +397,9 @@ done:
 /////////////////////////////////////////////////////////////////////////////
 
 int decompress(HANDLE infile, HANDLE outfile, void const *passwd, int pwlen) {
-	WAVE_hdr wave_hdr;
 	tta_decoder *TTA;
+	void *aligned_decoder;
+	WAVE_hdr wave_hdr;
 	TTA_io_callback_wrapper io;
 	TTAuint8 *buffer = NULL;
 	TTAuint32 buf_size, smp_size, data_size, res;
@@ -395,7 +412,8 @@ int decompress(HANDLE infile, HANDLE outfile, void const *passwd, int pwlen) {
 	io.iocb.write = NULL;
 	io.handle = infile;
 
-	TTA = new tta_decoder((TTA_io_callback *) &io);
+	aligned_decoder = tta_malloc(sizeof(tta_decoder));
+	TTA = new(aligned_decoder)tta_decoder((TTA_io_callback *)&io);
 
 	if (passwd && pwlen)
 		TTA->set_password(passwd, pwlen);
@@ -452,7 +470,8 @@ int decompress(HANDLE infile, HANDLE outfile, void const *passwd, int pwlen) {
 	}
 
 done:
-	delete TTA;
+	TTA->~tta_decoder();
+	tta_free(aligned_decoder);
 	if (buffer) tta_free(buffer);
 
 	return ret;
@@ -593,7 +612,7 @@ int tta_main(int argc, TTAwchar **argv) {
 	}
 
 done:
-	if (pwstr) free(pwstr);
+	if (pwstr) tta_free(pwstr);
 	return ret;
 }
 

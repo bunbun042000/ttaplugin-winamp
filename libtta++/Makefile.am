@@ -20,4 +20,4 @@ console:
 	$(MAKE) $(AM_MAKEFLAGS)
 
 SUBDIRS = . console
-EXTRA_DIST = config.h Makefile.rm Makefile.mipsel libtta.vcproj
+EXTRA_DIST = config.h Makefile.rm Makefile.mipsel libtta.sln libtta.vcxproj*
