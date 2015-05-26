@@ -1,4 +1,4 @@
-in_tta.dll Ver3.2 Modified(Beta16) 
+in_tta.dll Ver3.2 Modified(Beta17) 
 =====================================================
 
 *This plugin 
@@ -16,12 +16,14 @@ This plugin performs Winamp Ver.2.9 or newer and tested by Winamp Ver.5.666.
  Please copy in_tta.dll to Plugins folder in Winamp.
 
 *Release Notes
+2015-05-27 Beta17 Change base library to libtta++2.3.
+                  Change base taglib stable(2015/05/25 21:41:37 commit Hash:c5f2e9342dfdf9a94dbcbf70fc3861b2221d1b39).
 2014-11-28 Beta16 Change base library to libtta++2.2.
                   Change base taglib stable(2014/10/23 2:31:14 commit Hash:072851869a2980dab4aefd471ad7dd707993d74f).
-				  Change compiler to VS2013.
+				          Change compiler to VS2013.
 2013-08-22 Beta15 Change base taglib stable(commit Hash:fddf3ed51b705d69e12df4a0cba01984ce82c638).
                   Fix memory leak in transcoding.
-				  Change DLL taglib to static taglib. 
+				          Change DLL taglib to static taglib. 
 2011-12-10 Beta14 Revert multibyte version
                   Fix exception from libtta
 2011-12-03 Beta13 Unicode Plugin version
