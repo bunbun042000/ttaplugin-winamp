@@ -10,6 +10,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "in_tta", "in_tta\in_tta.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtta", "libtta++\libtta.vcxproj", "{B3DF599C-1C8F-451D-91E4-DD766210DA1F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tta", "libtta++\console\console.vcxproj", "{66695377-9DFB-4792-A97C-C42C03DE910A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B3DF599C-1C8F-451D-91E4-DD766210DA1F} = {B3DF599C-1C8F-451D-91E4-DD766210DA1F}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
