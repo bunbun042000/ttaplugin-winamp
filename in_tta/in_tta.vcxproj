@@ -107,7 +107,7 @@
       <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
     </ProjectReference>
     <Link>
-      <AdditionalDependencies>tagd.lib;libtta.lib;shlwapi.lib;zlibstaticd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>tagd.lib;libtta.lib;shlwapi.lib;zlibd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>LinkVerboseLib</ShowProgress>
       <AdditionalLibraryDirectories>$(SolutionDir)..\libraries\lib;$(SolutionDir)libtta++\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;libcmt.lib;msvcrt.lib;libcd.lib;libcmtd.lib</IgnoreSpecificDefaultLibraries>
@@ -133,7 +133,7 @@
     </Link>
     <PostBuildEvent>
       <Command>"$(ProgramFiles)\NSIS\makensis" /V1 "$(SolutionDir)NSIS\in_tta_installer_debug.nsi"
-"$(SolutionDir)NSIS\$(SolutionName)_v3_2_Beta17_debug.exe" /S</Command>
+"$(SolutionDir)NSIS\$(SolutionName)_v3_2_Beta18_debug.exe" /S</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release1|Win32'">
@@ -218,7 +218,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)..\libraries\lib;$(SolutionDir)libtta++\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>tag.lib;libtta.lib;shlwapi.lib;zlibstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>tag.lib;libtta.lib;shlwapi.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <AssemblyDebug>false</AssemblyDebug>
@@ -259,6 +259,8 @@
     <ResourceCompile Include="resource.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\NSIS\in_tta_installer.nsi" />
+    <None Include="..\NSIS\in_tta_installer_debug.nsi" />
     <None Include="..\ReadMe.ja.txt" />
     <None Include="..\ReadMe.txt" />
     <None Include="info.ico" />
