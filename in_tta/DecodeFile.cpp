@@ -202,7 +202,7 @@ long double CDecodeFile::SeekPosition(int *done)
 
 int  CDecodeFile::GetSamples(BYTE *buffer, long buffersize, int *current_bitrate)
 {
-	BYTE *temp = new BYTE[buffersize];
+	BYTE *temp = new BYTE[buffersize + 1];
 	int skip_len = 0;
 	int len = 0;
 
