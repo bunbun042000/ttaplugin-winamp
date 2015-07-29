@@ -26,7 +26,7 @@ TTAint32 CALLBACK read_callback(TTA_io_callback *io, TTAuint8 *buffer, TTAuint32
 	TTA_io_callback_wrapper *iocb = (TTA_io_callback_wrapper *)io; 
 	TTAint32 result;
 
-	if (::ReadFile(iocb->handle, buffer, size, (LPDWORD)&result,NULL)) {
+	if (::ReadFile(iocb->handle, buffer, size, (LPDWORD)&result, NULL)) {
 		return result;
 	}
 	return 0;
@@ -200,26 +200,32 @@ long double CDecodeFile::SeekPosition(int *done)
 	return decode_pos_ms;
 }
 
-int  CDecodeFile::GetSamples(BYTE *buffer, long buffersize, int *current_bitrate)
+int  CDecodeFile::GetSamples(BYTE *buffer, size_t buffersize, int *current_bitrate)
 {
 	BYTE *temp = new BYTE[buffersize + 1];
 	int skip_len = 0;
 	int len = 0;
 
 
-	if (INVALID_HANDLE_VALUE == decoderFileHANDLE) {
+	if (INVALID_HANDLE_VALUE == decoderFileHANDLE)
+	{
 		delete []temp;
 		temp = 0;
 		return 0; // no decode data
-	} else {
+	} 
+	else
+	{
 		// do nothing
 	}
 
 	::EnterCriticalSection(&CriticalSection);
 
-	if (NULL == TTA) {
+	if (NULL == TTA)
+	{
 		throw CDecodeFile_exception(TTA_MEMORY_ERROR);
-	} else {
+	}
+	else
+	{
 		// do nothing
 	}
 
@@ -235,13 +241,16 @@ int  CDecodeFile::GetSamples(BYTE *buffer, long buffersize, int *current_bitrate
 
 	if (len != 0) {
 		skip_len += len;
-		memcpy_s(buffer, buffersize, temp, len * tta_info.nch * tta_info.bps / 8);
+		errno_t err = memcpy_s(buffer, buffersize, temp, len * tta_info.nch * tta_info.bps / 8);
 		decode_pos_ms += (__int32)(skip_len * 1000. / tta_info.sps);
 		*current_bitrate = TTA->get_rate();	
-	} else {
+	} 
+	else
+	{
+		// Do nothing
 	}
 
-	delete [] temp;
+	delete []temp;
 	temp = 0;
 
 	::LeaveCriticalSection(&CriticalSection);
