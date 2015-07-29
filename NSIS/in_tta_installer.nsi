@@ -124,51 +124,49 @@ Section "Microsoft Visual C++ 2013 SP1 Redist" SEC_CRT2013
   ; see if it needs to be downloaded and installed or not.
   SectionIn RO
 
-  ; Detection made easy: Unlike previous redists, VC2013 now generates a platform
+  ; Detection made easy: Unlike previous redists, VC2015 now generates a platform
   ; independent key for checking availability.
-  ; HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\VisualStudio\12.0\VC\Runtimes\x86  for x64 Windows
-  ; HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\12.0\VC\Runtimes\x86  for x86 Windows
+  ; HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64  for x64 Windows
+  ; HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86  for x86 Windows
   
   ; Download from:
-  ; http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe
+  ; http://download.microsoft.com/download/0/4/1/041224F6-A7DC-486B-BD66-BCAAF74B6919/vc_redist.x86.exe
 
   ClearErrors
   
   ${If} ${RunningX64}
-  	ReadRegDword $R0 HKLM "SOFTWARE\Wow6432Node\Microsoft\VisualStudio\12.0\VC\Runtimes\x86" "Installed"
+  	ReadRegDword $R0 HKLM "SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" "Installed"
 	${Else}
-		ReadRegDword $R0 HKLM "SOFTWARE\Microsoft\VisualStudio\12.0\VC\Runtimes\x86" "Installed"
+		ReadRegDword $R0 HKLM "SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" "Installed"
 	${EndIf}
 	
   IfErrors 0 +2
-  DetailPrint "Visual C++ 2013 Redistributable registry key was not found; assumed to be uninstalled."
+  DetailPrint "Visual C++ 2015 Redistributable registry key was not found; assumed to be uninstalled."
   StrCmp $R0 "1" 0 +3
-    DetailPrint "Visual C++ 2013 Redistributable is already installed; skipping!"
+    DetailPrint "Visual C++ 2015 Redistributable is already installed; skipping!"
     Goto done
 
   SetOutPath "$TEMP"
 
-  DetailPrint "Downloading Visual C++ 2013 Redistributable Setup..."
+  DetailPrint "Downloading Visual C++ 2015 Redistributable Setup..."
   DetailPrint "Contacting Microsoft.com..."
-  NSISdl::download /TIMEOUT=15000 "http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe" "vcredist_2013_x86.exe"
+  NSISdl::download /TIMEOUT=15000 "http://download.microsoft.com/download/0/4/1/041224F6-A7DC-486B-BD66-BCAAF74B6919/vc_redist.x86.exe" "vcredist_2015_x86.exe"
 
   Pop $R0 ;Get the return value
   StrCmp $R0 "success" OnSuccess
-  DetailPrint "Could not contact Microsoft.com, or the file has been (re)moved!"
-  DetailPrint "Contacting Googlecode.com..."
-  NSISdl::download /TIMEOUT=20000 "http://pcsx2.googlecode.com/files/vcredist_2013_x86.exe" "vcredist_2013_x86.exe"
+;  DetailPrint "Could not contact Microsoft.com, or the file has been (re)moved!"
 
   Pop $R0 ;Get the return value
   StrCmp $R0 "success" +2
-    MessageBox MB_OK "Could not download Visual Studio 2013 Redist; none of the mirrors appear to be functional."
+    MessageBox MB_OK "Could not download Visual Studio 2015 Redist; none of the mirrors appear to be functional."
     Goto done
 
 OnSuccess:
-  DetailPrint "Running Visual C++ 2013 Redistributable Setup..."
-  ExecWait '"$TEMP\vcredist_2013_x86.exe" /qb'
-  DetailPrint "Finished Visual C++ 2013 SP1 Redistributable Setup"
+  DetailPrint "Running Visual C++ 2015 Redistributable Setup..."
+  ExecWait '"$TEMP\vcredist_2015_x86.exe" /qb'
+  DetailPrint "Finished Visual C++ 2015 Redistributable Setup"
   
-  Delete "$TEMP\vcredist_2013_x86.exe"
+  Delete "$TEMP\vcredist_2015_x86.exe"
 
 done:
 SectionEnd
