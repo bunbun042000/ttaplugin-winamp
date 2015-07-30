@@ -442,22 +442,9 @@ void eq_set(int on, char data[10], int preamp)
 static void do_vis(unsigned char *data, int count, int bps, long double position)
 {
 
-	int i, bsize = bps >> 3;
-
-	// Winamp visuals may have problems accepting sample sizes larger than
-	// 16 bits, so we reduce the sample size here if necessary.
-
-	if (bps > 16) {
-		for (i = 0; i < count; i++) {
-			int t = *((unsigned char *)(data + i * bsize));
-			vis_buffer[i] = t >> (bps-16);
-		}
-		data = (unsigned char *)vis_buffer;
-	}
-
 	if (playing_ttafile.isValid() && playing_ttafile.isDecodable()) {
-		mod.SAAddPCMData(data, playing_ttafile.GetNumberofChannel(), 16, (int)position);
-		mod.VSAAddPCMData(data, playing_ttafile.GetNumberofChannel(), 16, (int)position);
+		mod.SAAddPCMData(data, playing_ttafile.GetNumberofChannel(), bps, (int)position);
+		mod.VSAAddPCMData(data, playing_ttafile.GetNumberofChannel(), bps, (int)position);
 	}
 }
 
