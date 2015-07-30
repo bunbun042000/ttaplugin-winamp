@@ -18,6 +18,7 @@ This plugin performs Winamp Ver.2.9 or newer and tested by Winamp Ver.5.666.
 *Release Notes
 2015-07-30 Beta18 Fix freeze when playing 24bit/sample file.
                   Remove title name function and uses Winamp itself.
+				  Change plugin UNICODE base.
                   Change upstream taglib stable(2015/06/19 16:12:32 commit Hash:e90b5e5f2faded598688c48dd3bdd2fc6cd5cbab).
 				  Change uses zlib.dll in Winamp.
 				  Change compiler to VS2015.
