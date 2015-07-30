@@ -246,24 +246,21 @@ void quit()
 
 void getfileinfo(const char *file, char *title, int *length_in_ms)
 {
-	if (!file || !*file) { 
+	title = "";
+	if (!file || !*file) {
 		// invalid filename may be playing file
 		if(playing_ttafile.isValid() && playing_ttafile.isDecodable()) {
-			SetPlayingTitle(playing_ttafile.GetFileName(), title);
 			*length_in_ms = playing_ttafile.GetLengthbymsec();
 		} else {
-			title = "";
 			*length_in_ms = 0;
 		}
 	} else {
-		SetPlayingTitle(file, title);
 		TagLib::FileName fn(file);
 		TagLib::TrueAudio::File f(fn);
 		if (f.isValid() == true) {
 			*length_in_ms = f.audioProperties()->length() * 1000;
 		} else {
 			// cannot get fileinfo
-			title = "";
 			*length_in_ms = 0;
 		}
 	}
@@ -523,38 +520,6 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 
 	return 0;
 }
-
-void SetPlayingTitle(const char *filename, char *title)
-{
-	if (filename != NULL && TagLib::TrueAudio::File::isReadable(filename)) {
-		TagLib::FileName fn(filename);
-		TagLib::TrueAudio::File File(fn);
-		if (File.isValid() == false) {
-			char p[MAX_PATHLEN];
-			::GetFileTitle(filename, p, MAX_PATHLEN - 1);
-			lstrcpyn(title, p, strchr(p, '.') - p);
-		} else if (!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty()) || !(File.tag()->album().isEmpty())) {
-			if(!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty())) {
-				wsprintf(title, "%s - %s", 
-					File.tag()->artist(),
-					File.tag()->title());
-			} else if (!(File.tag()->artist().isEmpty()) || !(File.tag()->album().isEmpty())) {
-				wsprintf(title, "%s - %s", 
-					File.tag()->artist(),
-					File.tag()->album());
-			} else if (!(File.tag()->artist().isEmpty())) {
-				wsprintf(title, "%s", 
-					File.tag()->artist());
-			} else if (!(File.tag()->title().isEmpty())) {
-				wsprintf(title, "%s", 
-					File.tag()->title());
-			}
-		}
-	} else {
-		// do nothing
-	}
-}
-
 
 extern "C"
 {
