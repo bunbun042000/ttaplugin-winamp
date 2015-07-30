@@ -51,6 +51,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 // For Support Transcoder input (2007/10/15)
 static __declspec(align(16)) CDecodeFile playing_ttafile;
 static std::aligned_storage<sizeof(CDecodeFile), __alignof(CDecodeFile)>::type CDecodeFile_mem;
+static CMediaLibrary m_Tag;
 
 static long	vis_buffer[BUFFER_SIZE * MAX_NCH];	// vis buffer
 static BYTE pcm_buffer[BUFFER_SIZE];
@@ -245,26 +246,27 @@ void quit()
 
 void getfileinfo(const char *file, char *title, int *length_in_ms)
 {
-	title = "";
-
-	if (!file || !*file) {
+	if (!file || !*file) { 
 		// invalid filename may be playing file
 		if(playing_ttafile.isValid() && playing_ttafile.isDecodable()) {
+			SetPlayingTitle(playing_ttafile.GetFileName(), title);
 			*length_in_ms = playing_ttafile.GetLengthbymsec();
 		} else {
+			title = "";
 			*length_in_ms = 0;
 		}
 	} else {
+		SetPlayingTitle(file, title);
 		TagLib::FileName fn(file);
 		TagLib::TrueAudio::File f(fn);
 		if (f.isValid() == true) {
 			*length_in_ms = f.audioProperties()->length() * 1000;
 		} else {
 			// cannot get fileinfo
+			title = "";
 			*length_in_ms = 0;
 		}
 	}
-	return;
 }
 
 int infodlg(const char *filename, HWND parent)
@@ -535,6 +537,38 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 	return 0;
 }
 
+void SetPlayingTitle(const char *filename, char *title)
+{
+	if (filename != NULL && TagLib::TrueAudio::File::isReadable(filename)) {
+		TagLib::FileName fn(filename);
+		TagLib::TrueAudio::File File(fn);
+		if (File.isValid() == false) {
+			char p[MAX_PATHLEN];
+			::GetFileTitle(filename, p, MAX_PATHLEN - 1);
+			lstrcpyn(title, p, strchr(p, '.') - p);
+		} else if (!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty()) || !(File.tag()->album().isEmpty())) {
+			if(!(File.tag()->artist().isEmpty()) || !(File.tag()->title().isEmpty())) {
+				wsprintf(title, "%s - %s", 
+					File.tag()->artist(),
+					File.tag()->title());
+			} else if (!(File.tag()->artist().isEmpty()) || !(File.tag()->album().isEmpty())) {
+				wsprintf(title, "%s - %s", 
+					File.tag()->artist(),
+					File.tag()->album());
+			} else if (!(File.tag()->artist().isEmpty())) {
+				wsprintf(title, "%s", 
+					File.tag()->artist());
+			} else if (!(File.tag()->title().isEmpty())) {
+				wsprintf(title, "%s", 
+					File.tag()->title());
+			}
+		}
+	} else {
+		// do nothing
+	}
+}
+
+
 extern "C"
 {
 	__declspec(dllexport) In_Module* __cdecl winampGetInModule2(void)
@@ -545,7 +579,6 @@ extern "C"
 	__declspec(dllexport) int __cdecl
 	winampGetExtendedFileInfo(const char *fn, const char *data, char *dest, size_t destlen)
 	{
-		CMediaLibrary m_Tag;
 
 		return m_Tag.GetExtendedFileInfo(fn, data, dest, destlen);
 	}
@@ -576,13 +609,11 @@ extern "C"
 	__declspec( dllexport ) int __cdecl 
 		winampSetExtendedFileInfo(const char *fn, const char *data, const char *val)
 	{
-		CMediaLibrary m_Tag;
 		return m_Tag.SetExtendedFileInfo(fn, data, val);
 	}
 
 	__declspec(dllexport) int __cdecl winampWriteExtendedFileInfo()
 	{
-		CMediaLibrary m_Tag;
 		return m_Tag.WriteExtendedFileInfo();
 	}
 
