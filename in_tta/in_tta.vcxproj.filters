@@ -36,6 +36,9 @@
     <ClInclude Include="VersionNo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="in_tta.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc">

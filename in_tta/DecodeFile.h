@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "common.h"
 #include "..\libtta++\libtta.h"
+#include "in_tta.h"
 #include <stdexcept>
 #include <type_traits>
 
@@ -39,7 +40,11 @@ TTAint64 CALLBACK seek_callback(_tag_TTA_io_callback *io, TTAint64 offset);
 __declspec(align(16)) class CDecodeFile
 {
 private:
+#ifdef UNICODE_INPUT_PLUGIN
+	std::wstring			FileNameW;
+#else
 	std::string				FileName;
+#endif
 
 	int						paused;
 	__int32					seek_needed;
@@ -70,8 +75,13 @@ public:
 	bool			isValid() {return sig_number == signature ? true : false;}
 	bool			isDecodable() {return decoderFileHANDLE != INVALID_HANDLE_VALUE ? true : false;}
 
+#ifdef UNICODE_INPUT_PLUGIN
+	int				SetFileName(const wchar_t *filename);
+	const wchar_t  *GetFileNameW() { return FileNameW.c_str(); }
+#else
 	int				SetFileName(const char *filename);
-	const char	   *GetFileName(){return FileName.c_str();}
+	const char	   *GetFileName() { return FileName.c_str(); }
+#endif
 	int				GetSamples(BYTE *buffer, size_t buffersize, int *current_bitrate);
 
 	int				GetPaused(){return paused;}

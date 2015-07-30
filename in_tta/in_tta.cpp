@@ -29,6 +29,8 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include "in_tta.h"
+
 #include <Shlwapi.h>
 #include <stdlib.h>
 #include <type_traits>
@@ -64,10 +66,10 @@ void config(HWND hwndParent);
 void about(HWND hwndParent);
 void init();
 void quit();
-void getfileinfo(const char *file, char *title, int *length_in_ms);
-int  infodlg(const char *file, HWND hwndParent);
-int  isourfile(const char *fn);
-int  play(const char *fn);
+void getfileinfo(const in_char *file, in_char *title, int *length_in_ms);
+int  infodlg(const in_char *file, HWND hwndParent);
+int  isourfile(const in_char *fn);
+int  play(const in_char *fn);
 void pause();
 void unpause();
 int  ispaused();
@@ -120,11 +122,15 @@ typedef struct _buffer {
 
 static data_buf remain_data; // for transcoding (buffer for data that is decoded but is not copied)
 
-static void tta_error_message(int error, const char *filename)
+static void tta_error_message(int error, const in_char *filename)
 {
 	char message[1024];
-	std::string name(filename);
 
+#ifdef UNICODE_INPUT_PLUGIN
+	std::wstring name(filename);
+#else
+	std::string name(filename);
+#endif
 	switch (error) {
 		case TTA_OPEN_ERROR:	
 			wsprintf(message, "Can't open file:\n%s", name.c_str());
@@ -244,9 +250,15 @@ void quit()
 }
 
 
-void getfileinfo(const char *file, char *title, int *length_in_ms)
+void getfileinfo(const in_char *file, in_char *title, int *length_in_ms)
 {
+
+#ifdef UNICODE_INPUT_PLUGIN
+	title = L"";
+#else
 	title = "";
+#endif
+
 	if (!file || !*file) {
 		// invalid filename may be playing file
 		if(playing_ttafile.isValid() && playing_ttafile.isDecodable()) {
@@ -266,17 +278,17 @@ void getfileinfo(const char *file, char *title, int *length_in_ms)
 	}
 }
 
-int infodlg(const char *filename, HWND parent)
+int infodlg(const in_char *filename, HWND parent)
 {
 	return 0;
 }
 
-int isourfile(const char *filename)
+int isourfile(const in_char *filename)
 {
 	return 0;
 } 
 
-int play(const char *fn)
+int play(const in_char *fn)
 {
 	int maxlatency;
 	unsigned long decoder_thread_id;
@@ -453,7 +465,11 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 	int len;
 
 	if (!playing_ttafile.isValid() || !playing_ttafile.isDecodable()) {
+#ifdef UNICODE_INPUT_PLUGIN
+		tta_error_message(-1, L"");
+#else
 		tta_error_message(-1, "");
+#endif
 		done = 1;
 		return 0;
 	} else {
@@ -464,7 +480,11 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 
 	while (!killDecoderThread) {
 		if(!playing_ttafile.isDecodable()) {
+#ifdef UNICODE_INPUT_PLUGIN
+			tta_error_message(-1, L"");
+#else
 			tta_error_message(-1, "");
+#endif
 			PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
 			return 0;
 		} else {
@@ -492,7 +512,11 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 					len = playing_ttafile.GetSamples(pcm_buffer, BUFFER_SIZE, &bitrate);
 				}
 				catch (CDecodeFile_exception &ex) {
+#ifdef UNICODE_INPUT_PLUGIN
+					tta_error_message(ex.code(), playing_ttafile.GetFileNameW());
+#else
 					tta_error_message(ex.code(), playing_ttafile.GetFileName());
+#endif
 					PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
 					mod.SetInfo(0, 0, 0, 1);
 					mod.outMod->Close();
@@ -569,7 +593,45 @@ extern "C"
 		return m_Tag.WriteExtendedFileInfo();
 	}
 
-	__declspec(dllexport) intptr_t __cdecl 
+#ifdef  UNICODE_INPUT_PLUGIN
+	__declspec(dllexport) intptr_t __cdecl
+		winampGetExtendedRead_openW(const wchar_t *filename, int *size, int *bps, int *nch, int *srate)
+	{
+
+		CDecodeFile *dec = new (&CDecodeFile_mem)CDecodeFile;
+		if (!dec->isValid()) {
+			return (intptr_t)0;
+		}
+		else {
+			// do nothing
+		}
+
+		try {
+			dec->SetFileName(filename);
+		}
+
+		catch (CDecodeFile_exception &ex) {
+			tta_error_message(ex.code(), filename);
+			return (intptr_t)0;
+		}
+
+		*bps = dec->GetBitsperSample();
+		*nch = dec->GetNumberofChannel();
+		*srate = dec->GetSampleRate();
+		*size = dec->GetDataLength() * (*bps / 8) * (*nch);
+		remain_data.data_length = 0;
+		if (NULL != remain_data.buffer) {
+			delete[] remain_data.buffer;
+			remain_data.buffer = NULL;
+		}
+		else {
+			// do nothing
+		}
+
+		return (intptr_t)dec;
+	}
+#else
+	__declspec(dllexport) intptr_t __cdecl
 		winampGetExtendedRead_open(const char *filename, int *size, int *bps, int *nch, int *srate)
 	{
 
@@ -603,8 +665,10 @@ extern "C"
 	
 		return (intptr_t)dec;
 	}
-
-	__declspec( dllexport ) intptr_t __cdecl winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
+#endif
+	
+#ifdef  UNICODE_INPUT_PLUGIN
+	__declspec( dllexport ) intptr_t __cdecl winampGetExtendedRead_getDataW(intptr_t handle, wchar_t *dest, int len, int *killswitch)
 	{
 		CDecodeFile *dec = (CDecodeFile *)handle;
 		unsigned char buf[BUFFER_SIZE];
@@ -645,7 +709,7 @@ extern "C"
 					decoded_bytes = dec->GetSamples(buf, BUFFER_SIZE, &bitrate);
 				}
 				catch (CDecodeFile_exception &ex) {
-					tta_error_message(ex.code(), dec->GetFileName());
+					tta_error_message(ex.code(), dec->GetFileNameW());
 					dest_used = -1;
 					break;
 				}
@@ -685,6 +749,94 @@ extern "C"
 
 		return (intptr_t)dest_used;
 	}
+#else
+	__declspec(dllexport) intptr_t __cdecl winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
+	{
+		CDecodeFile *dec = (CDecodeFile *)handle;
+		unsigned char buf[BUFFER_SIZE];
+		int dest_used = 0;
+		int n = 0;
+		int bitrate;
+		int32_t decoded_bytes = 0;
+
+		if (!dec->isDecodable()) {
+			return (intptr_t)-1;
+		}
+		else {
+			// do nothing
+		}
+
+		// restore remain (not copied) data
+		if (remain_data.data_length != 0) {
+			while (min(len - dest_used, remain_data.data_length) > 0 && !*killswitch) {
+				n = min(len - dest_used, remain_data.data_length);
+				memcpy_s(dest + dest_used, len - dest_used, remain_data.buffer + dest_used, n);
+				dest_used += n;
+				remain_data.data_length -= n;
+			}
+
+			if (remain_data.data_length != 0) {
+				delete[] remain_data.buffer;
+				remain_data.buffer = NULL;
+				return (intptr_t)dest_used;
+			}
+			else {
+				delete[] remain_data.buffer;
+				remain_data.buffer = NULL;
+			}
+		}
+
+		while (dest_used < len && !*killswitch) {
+			// do we need to decode more?
+			if (n >= decoded_bytes) {
+				try {
+					decoded_bytes = dec->GetSamples(buf, BUFFER_SIZE, &bitrate);
+				}
+				catch (CDecodeFile_exception &ex) {
+					tta_error_message(ex.code(), dec->GetFileName());
+					dest_used = -1;
+					break;
+				}
+
+				if (0 == decoded_bytes) {
+					break; // end of stream
+				}
+				else {
+					decoded_bytes = decoded_bytes * dec->GetBitsperSample() / 8 * dec->GetNumberofChannel();
+					n = min(len - dest_used, decoded_bytes);
+					if (n > 0) {
+						memcpy_s(dest + dest_used, len - dest_used, buf, n);
+						dest_used += n;
+					}
+					else {
+						// do nothing
+					}
+				}
+			}
+			else {
+				// do nothing
+			}
+		}
+
+		// copy as much as we can back to winamp
+		if (n > 0 && n < decoded_bytes) {
+			remain_data.data_length = decoded_bytes - n;
+			if (NULL != remain_data.buffer)
+			{
+				delete[] remain_data.buffer;
+				remain_data.buffer = NULL;
+			}
+			else
+			{
+				// Do nothing
+			}
+			remain_data.buffer = new BYTE[remain_data.data_length];
+			memcpy_s(remain_data.buffer, remain_data.data_length, buf + n, remain_data.data_length);
+		}
+
+		return (intptr_t)dest_used;
+	}
+#endif
 
 	// return nonzero on success, zero on failure
 	__declspec( dllexport ) int __cdecl winampGetExtendedRead_setTime(intptr_t handle, int millisecs)
