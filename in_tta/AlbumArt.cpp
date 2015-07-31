@@ -117,17 +117,29 @@ public:
 protected:
 	RECVS_DISPATCH;
 	CRITICAL_SECTION	CriticalSection;
+	TagLib::TrueAudio::File *TagFile;
+	std::wstring			FileName;
 };
 
 TTA_AlbumArtProvider::TTA_AlbumArtProvider() : svc_albumArtProvider()
 {
 	::InitializeCriticalSection(&CriticalSection);
+	TagFile = NULL;
 
 }
 
 TTA_AlbumArtProvider::~TTA_AlbumArtProvider()
 {
 	::DeleteCriticalSection(&CriticalSection);
+	if (TagFile != NULL)
+	{
+		delete TagFile;
+		TagFile = NULL;
+	}
+	else
+	{
+		// Do nothing
+	}
 
 }
 
@@ -192,15 +204,14 @@ int TTA_AlbumArtProvider::ProviderType()
 
 int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t *type, void **bits, size_t *len, wchar_t **mime_type)
 {
-	bool FindTag = false;
+
 	size_t tag_size = 0;
     int retval = ALBUMARTPROVIDER_FAILURE;
 	TagLib::String mimeType;
-	char demandFile[MAX_PATHLEN];
 
 	::EnterCriticalSection(&CriticalSection);
 
-	if(!filename || !*filename || _wcsicmp (type, L"cover")) {
+	if(!filename || _wcsicmp (type, L"cover")) {
 		::LeaveCriticalSection(&CriticalSection);
         return retval;
 	} else {
@@ -214,31 +225,26 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 		// do nothing
 	}
 
-	size_t origsize = wcslen(filename) + 1;
-	int ret = WideCharToMultiByte(CP_ACP, 0, filename, origsize, demandFile, MAX_PATHLEN - 1, NULL, NULL);
-
-	if (ret == 0)
+	if (TagFile == NULL || _wcsicmp(FileName.c_str(), filename))
 	{
-		::LeaveCriticalSection(&CriticalSection);
-		return retval;
+		if (TagFile != NULL)
+		{
+			delete TagFile;
+			TagFile = NULL;
+		}
+		else
+		{
+			// Do nothing
+		}
+		FileName = filename;
+		TagFile = new TagLib::TrueAudio::File(FileName.c_str());
 	}
 	else
 	{
 		// Do nothing
 	}
 
-	if (true != TagLib::File::isReadable(demandFile))
-	{
-		::LeaveCriticalSection(&CriticalSection);
-		return retval;
-	}
-	else
-	{
-		// Do nothing
-	}
-
-	TagLib::TrueAudio::File TagFile(demandFile, false);
-	if (true != TagFile.isValid()) {
+	if (true != TagFile->isValid()) {
 		::LeaveCriticalSection(&CriticalSection);
 		return retval;
 	} else {
@@ -247,7 +253,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 
 	// read Album Art
 	TagLib::ByteVector AlbumArt = 
-		TagFile.ID3v2Tag()->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
+		TagFile->ID3v2Tag()->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
 
 	if(AlbumArt != TagLib::ByteVector::null) {
 		*len = AlbumArt.size();
@@ -309,10 +315,8 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t *type, void *bits, size_t len, const wchar_t *mime_type)
 {
 
-	bool FindTag = false;
     int retval = ALBUMARTPROVIDER_FAILURE;
 	TagLib::String mimeType(L"");
-	char demandFile[MAX_PATHLEN];
 	int size = 0;
 	TagLib::ID3v2::AttachedPictureFrame::Type artType = TagLib::ID3v2::AttachedPictureFrame::Other;
 
@@ -323,24 +327,7 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
         return retval;
 	}
 
-	size_t origsize = wcslen(filename) + 1;
 	size_t convertedChars = 0;
-	int ret = WideCharToMultiByte(CP_ACP, 0, filename, origsize, demandFile, MAX_PATHLEN - 1, NULL, NULL);
-
-	if(!ret) {
-		::LeaveCriticalSection(&CriticalSection);
-		return retval;
-	} else {
-		// do nothing
-	}
-
-	// If target file cannot access
-	if (TagLib::File::isWritable(demandFile) == false) {
-		::LeaveCriticalSection(&CriticalSection);
-		return retval;
-	} else {
-		// do nothing
-	}
 
 	TagLib::ByteVector AlbumArt;
 
@@ -359,18 +346,42 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 		AlbumArt.setData((const char *)bits, (TagLib::uint)size);
 	}
 
-	TagLib::TrueAudio::File TagFile(demandFile);
-	if (!TagFile.isValid()) {
+	if (TagFile == NULL || _wcsicmp(FileName.c_str(), filename))
+	{
+		if (TagFile != NULL)
+		{
+			delete TagFile;
+			TagFile = NULL;
+		}
+		else
+		{
+			// Do nothing
+		}
+		FileName = filename;
+		TagFile = new TagLib::TrueAudio::File(FileName.c_str());
+	}
+	else
+	{
+		// Do nothing
+	}
+
+	if (!TagFile->isValid()) {
 		::LeaveCriticalSection(&CriticalSection);
 		return retval;
 	} else {
-		// do nothing
+		// Do nothing
 	}
 
-	retval = ALBUMARTPROVIDER_SUCCESS;
 
-	TagFile.ID3v2Tag()->setAlbumArt(AlbumArt, artType, mimeType);
-	TagFile.save();
+	TagFile->ID3v2Tag()->setAlbumArt(AlbumArt, artType, mimeType);
+	if (TagFile->save())
+	{
+		retval = ALBUMARTPROVIDER_SUCCESS;
+	}
+	else
+	{
+		// Do nothing
+	}
 
 	::LeaveCriticalSection(&CriticalSection);
 
@@ -422,7 +433,7 @@ void *AlbumArtFactory::GetInterface(int global_lock)
 
 int AlbumArtFactory::SupportNonLockingInterface()
 {
-	return 1;
+	return 0;
 }
 
 int AlbumArtFactory::ReleaseInterface(void *ifc)
