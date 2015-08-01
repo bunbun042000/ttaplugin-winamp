@@ -31,7 +31,7 @@ static const __int32 MAX_YEAR = 10;
 struct TagInfo
 {
 	unsigned long	Length;
-	char            Format[MAX_MUSICTEXT];
+	std::string		Format;
 	char			Title[MAX_MUSICTEXT];
 	char			Artist[MAX_MUSICTEXT];
 	char            AlbumArtist[MAX_MUSICTEXT];
@@ -61,13 +61,13 @@ public:
 private:
 
 	CRITICAL_SECTION	CriticalSection;
-	TagInfo		        Cache;
+	TagInfo		        TagData;
 	DWORD				GetTagTime;
-	TagLib::String		FileName;
+	std::string			FileName;
 	TagLib::TrueAudio::File *TTAFile;
 
 	void FlushCache(void);
-	bool GetTagInfo(const TagLib::String fn);
+	bool GetTagInfo(const std::string fn);
 };
 
 #endif // !defined(AFX_MediaLibrary_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_)
