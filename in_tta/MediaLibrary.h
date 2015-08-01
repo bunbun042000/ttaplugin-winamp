@@ -77,7 +77,6 @@ private:
 	TagInfo				TagDataW;
 	DWORD				GetTagTime;
 	std::wstring		FileName;
-//	TagLib::TrueAudio::File *TTAFile;
 	bool				isValidFile;
 	AlbumArtInfo		albumArtInfo;
 

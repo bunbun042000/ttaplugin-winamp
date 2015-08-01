@@ -81,7 +81,10 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 {
 	if (FileName != fn)
 	{
-		TagLib::TrueAudio::File TTAFile(fn.c_str());
+		char mbFileName[MAX_PATH + 1];
+		size_t strlen = 0;
+		wcstombs_s(&strlen, mbFileName, MAX_PATH + 1, fn.c_str(), _TRUNCATE);
+		TagLib::TrueAudio::File TTAFile(mbFileName);
 
 		if (!TTAFile.isValid())
 		{
@@ -389,7 +392,10 @@ int CMediaLibrary::WriteExtendedFileInfo()
 	}
 	else
 	{
-		TagLib::TrueAudio::File TTAFile(FileName.c_str());
+		char mbFileName[MAX_PATH + 1];
+		size_t strlen = 0;
+		wcstombs_s(&strlen, mbFileName, MAX_PATH + 1, FileName.c_str(), _TRUNCATE);
+		TagLib::TrueAudio::File TTAFile(mbFileName);
 		if (!TTAFile.isValid()) {
 			return 0;
 		}
