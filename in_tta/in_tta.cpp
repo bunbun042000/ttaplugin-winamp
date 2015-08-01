@@ -552,18 +552,18 @@ extern "C"
 		return &mod;
 	}
 
-	__declspec(dllexport) int __cdecl
-	winampGetExtendedFileInfo(const char *fn, const char *data, char *dest, size_t destlen)
-	{
-
-		return m_Tag.GetExtendedFileInfo(fn, data, dest, destlen);
-	}
+//	__declspec(dllexport) int __cdecl
+//	winampGetExtendedFileInfo(const char *fn, const char *data, char *dest, size_t destlen)
+//	{
+//
+//		return m_Tag.GetExtendedFileInfo(fn, data, dest, destlen);
+//	}
 
 	__declspec(dllexport) int __cdecl
 		winampGetExtendedFileInfoW(const wchar_t *fn, const wchar_t *data, wchar_t *dest, size_t destlen)
 	{
 
-		return m_Tag.GetExtendedFileInfoW(fn, data, dest, destlen);
+		return m_Tag.GetExtendedFileInfo(fn, data, dest, destlen);
 	}
 
 	__declspec(dllexport) int __cdecl winampUseUnifiedFileInfoDlg(const char * fn)
@@ -589,16 +589,16 @@ extern "C"
 	}
 
 
-	__declspec( dllexport ) int __cdecl 
-		winampSetExtendedFileInfo(const char *fn, const char *data, const char *val)
-	{
-		return m_Tag.SetExtendedFileInfo(fn, data, val);
-	}
+//	__declspec( dllexport ) int __cdecl 
+//		winampSetExtendedFileInfo(const char *fn, const char *data, const char *val)
+//	{
+//		return m_Tag.SetExtendedFileInfo(fn, data, val);
+//	}
 
 	__declspec(dllexport) int __cdecl
 		winampSetExtendedFileInfoW(const wchar_t *fn, const wchar_t *data, const wchar_t *val)
 	{
-		return m_Tag.SetExtendedFileInfoW(fn, data, val);
+		return m_Tag.SetExtendedFileInfo(fn, data, val);
 	}
 
 	__declspec(dllexport) int __cdecl winampWriteExtendedFileInfo()

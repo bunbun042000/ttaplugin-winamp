@@ -109,8 +109,8 @@ int CDecodeFile::SetFileName(const wchar_t *filename)
 	}
 
 
-	FileNameW = filename;
-	decoderFileHANDLE = CreateFileW(FileNameW.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+	FileName = filename;
+	decoderFileHANDLE = CreateFileW(FileName.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (decoderFileHANDLE == INVALID_HANDLE_VALUE || decoderFileHANDLE == NULL) {
 		::LeaveCriticalSection(&CriticalSection);

@@ -28,25 +28,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 static const __int32 MAX_MUSICTEXT = 512;
 static const __int32 MAX_YEAR = 10;
 
-struct TagInfo
-{
-	unsigned long	Length;
-	std::string		Format;
-	std::string		Title;
-	std::string		Artist;
-	std::string		AlbumArtist;
-	std::string		Comment;
-	std::string		Album;
-	std::string		Year;
-	std::string		Genre;
-	std::string		Track;
-	std::string		Composer;
-	std::string		Publisher;
-	std::string		Disc;
-	std::string		BPM;
-};
 
-struct TagInfoW
+struct TagInfo
 {
 	unsigned long	Length;
 	std::wstring	Format;
@@ -69,25 +52,20 @@ class CMediaLibrary
 public:
 	CMediaLibrary();
 	virtual ~CMediaLibrary();
-	__int32  GetExtendedFileInfo(const char *fn, const char *Metadata, char *dest, size_t destlen);
-	__int32  SetExtendedFileInfo(const char *fn, const char *MetaData, const char *val);
-	__int32  GetExtendedFileInfoW(const wchar_t *fn, const wchar_t *Metadata, wchar_t *dest, size_t destlen);
-	__int32  SetExtendedFileInfoW(const wchar_t *fn, const wchar_t *MetaData, const wchar_t *val);
+	__int32  GetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata, wchar_t *dest, size_t destlen);
+	__int32  SetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadata, const wchar_t *val);
 	__int32  WriteExtendedFileInfo();
 
 private:
 
 	CRITICAL_SECTION	CriticalSection;
-	TagInfo		        TagData;
-	TagInfoW			TagDataW;
+	TagInfo			TagDataW;
 	DWORD				GetTagTime;
-	std::string			FileName;
-	std::wstring		FileNameW;
+	std::wstring		FileName;
 	TagLib::TrueAudio::File *TTAFile;
 
 	void FlushCache(void);
-	bool GetTagInfo(const std::string fn);
-	bool GetTagInfoW(const std::wstring fn);
+	bool GetTagInfo(const std::wstring fn);
 
 };
 

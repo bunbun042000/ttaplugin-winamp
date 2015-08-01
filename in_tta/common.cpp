@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "common.h"
 #include "..\libtta++\libtta.h"
-
+#if 0
 std::string GetEncodingString(const char *string)
 {
 	std::string sTempChar;
@@ -151,3 +151,4 @@ const char *SetEncodingString(const char *string, unsigned char version, unsigne
 	std::string temp = string;
 	return SetEncodingString(temp, version, Encoding);
 }
+#endif
