@@ -30,7 +30,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <taglib/id3v2tag.h>
 #include <taglib/attachedpictureframe.h>
 #include <taglib/tag.h>
-#include "common.h"
+
+#include "MediaLibrary.h"
 
 static const int MIME_LENGTH = 64;
 
@@ -51,6 +52,7 @@ protected:
 };
 
 extern In_Module mod; // TODO: change if you called yours something else
+extern CMediaLibrary m_Tag;
 
 #define WASABI_API_MEMMGR memmgr
 
@@ -117,30 +119,22 @@ public:
 protected:
 	RECVS_DISPATCH;
 	CRITICAL_SECTION	CriticalSection;
-	TagLib::TrueAudio::File *TagFile;
 	std::wstring			FileName;
+	bool					isSucceed;
+	TagLib::ByteVector		AlbumArt;
+	TagLib::String			extension;
 };
 
 TTA_AlbumArtProvider::TTA_AlbumArtProvider() : svc_albumArtProvider()
 {
 	::InitializeCriticalSection(&CriticalSection);
-	TagFile = NULL;
-
+	isSucceed = false;
 }
 
 TTA_AlbumArtProvider::~TTA_AlbumArtProvider()
 {
 	::DeleteCriticalSection(&CriticalSection);
-	if (TagFile != NULL)
-	{
-		delete TagFile;
-		TagFile = NULL;
-	}
-	else
-	{
-		// Do nothing
-	}
-
+	isSucceed = false;
 }
 
 static const wchar_t *GetLastCharactercW(const wchar_t *string)
@@ -207,6 +201,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 
 	size_t tag_size = 0;
     int retval = ALBUMARTPROVIDER_FAILURE;
+	size_t string_len = 0;
 	TagLib::String mimeType;
 
 	::EnterCriticalSection(&CriticalSection);
@@ -225,43 +220,56 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 		// do nothing
 	}
 
-	if (TagFile == NULL || _wcsicmp(FileName.c_str(), filename))
+	if (!isSucceed || _wcsicmp(FileName.c_str(), filename))
 	{
-		if (TagFile != NULL)
+		if (m_Tag.isValid() && m_Tag.GetCurrentFileName() == filename)
 		{
-			delete TagFile;
-			TagFile = NULL;
+			FileName = filename;
+			// read Album Art
+			AlbumArt =
+				m_Tag.GetAlbumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
+			extension = mimeType.substr(mimeType.find("/") + 1);
+			isSucceed = true;
 		}
 		else
 		{
-			// Do nothing
+			FileName = filename;
+			char mbFileName[MAX_PATH + 1];
+			wcstombs_s(&string_len, mbFileName, MAX_PATH + 1, FileName.c_str(), _TRUNCATE);
+
+			TagLib::TrueAudio::File TagFile(mbFileName);
+
+			if (!TagFile.isValid())
+			{
+				isSucceed = false;
+				::LeaveCriticalSection(&CriticalSection);
+				return retval;
+			}
+			else {
+				isSucceed = true;
+			}
+
+			// read Album Art
+			AlbumArt =
+				TagFile.ID3v2Tag()->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
+
+			extension = mimeType.substr(mimeType.find("/") + 1);
 		}
-		FileName = filename;
-		TagFile = new TagLib::TrueAudio::File(FileName.c_str());
+
 	}
 	else
 	{
 		// Do nothing
 	}
 
-	if (true != TagFile->isValid()) {
-		::LeaveCriticalSection(&CriticalSection);
-		return retval;
-	} else {
-		// do nothing
-	}
-
-	// read Album Art
-	TagLib::ByteVector AlbumArt = 
-		TagFile->ID3v2Tag()->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
-
-	if(AlbumArt != TagLib::ByteVector::null) {
+	if (AlbumArt != TagLib::ByteVector::null) {
 		*len = AlbumArt.size();
 		*bits = (char *)Wasabi_Malloc(*len);
 		if (NULL == *bits) {
 			::LeaveCriticalSection(&CriticalSection);
 			return retval;
-		} else {
+		}
+		else {
 			// do nothing
 		}
 
@@ -269,28 +277,26 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 		if (err) {
 			::LeaveCriticalSection(&CriticalSection);
 			return retval;
-		} else {
+		}
+		else {
 			// do nothing
 		}
 
-		retval = ALBUMARTPROVIDER_SUCCESS;
-
-		size_t string_len;
-		TagLib::String extension = mimeType.substr(mimeType.find("/") + 1);
 		*mime_type = (wchar_t *)Wasabi_Malloc(extension.size() * 2 + 2);
 		if (NULL == *mime_type) {
 			if (NULL != *bits) {
 				Wasabi_Free(*bits);
-			} else {
+			}
+			else {
 				// do nothing
 			}
 			::LeaveCriticalSection(&CriticalSection);
 			return retval;
-		} else {
-			// do nothing
 		}
-
-		mbstowcs_s(&string_len, *mime_type, extension.size() + 1, extension.toCString(), _TRUNCATE);
+		else {
+			mbstowcs_s(&string_len, *mime_type, extension.size() + 1, extension.toCString(), _TRUNCATE);
+			retval = ALBUMARTPROVIDER_SUCCESS;
+		}
 
 		if (retval) {
 			if (NULL != *bits) {
@@ -319,6 +325,7 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 	TagLib::String mimeType(L"");
 	int size = 0;
 	TagLib::ID3v2::AttachedPictureFrame::Type artType = TagLib::ID3v2::AttachedPictureFrame::Other;
+	size_t string_len = 0;
 
 	::EnterCriticalSection(&CriticalSection);
 
@@ -346,41 +353,42 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 		AlbumArt.setData((const char *)bits, (TagLib::uint)size);
 	}
 
-	if (TagFile == NULL || _wcsicmp(FileName.c_str(), filename))
+	if (m_Tag.isValid() && m_Tag.GetCurrentFileName() == filename)
 	{
-		if (TagFile != NULL)
+		FileName = filename;
+		// read Album Art
+		m_Tag.SetAlbumArt(AlbumArt, artType, mimeType);
+		isSucceed = false;
+		retval = ALBUMARTPROVIDER_SUCCESS;
+	}
+	else
+	{
+		FileName = filename;
+		char mbFileName[MAX_PATH + 1];
+		wcstombs_s(&string_len, mbFileName, MAX_PATH + 1, FileName.c_str(), _TRUNCATE);
+
+		TagLib::TrueAudio::File TagFile(mbFileName);
+
+		if (!TagFile.isValid()) {
+			::LeaveCriticalSection(&CriticalSection);
+			return retval;
+		}
+		else {
+			// Do nothing
+		}
+
+
+		TagFile.ID3v2Tag()->setAlbumArt(AlbumArt, artType, mimeType);
+		if (TagFile.save())
 		{
-			delete TagFile;
-			TagFile = NULL;
+			retval = ALBUMARTPROVIDER_SUCCESS;
 		}
 		else
 		{
 			// Do nothing
 		}
-		FileName = filename;
-		TagFile = new TagLib::TrueAudio::File(FileName.c_str());
-	}
-	else
-	{
-		// Do nothing
-	}
+		isSucceed = false;
 
-	if (!TagFile->isValid()) {
-		::LeaveCriticalSection(&CriticalSection);
-		return retval;
-	} else {
-		// Do nothing
-	}
-
-
-	TagFile->ID3v2Tag()->setAlbumArt(AlbumArt, artType, mimeType);
-	if (TagFile->save())
-	{
-		retval = ALBUMARTPROVIDER_SUCCESS;
-	}
-	else
-	{
-		// Do nothing
 	}
 
 	::LeaveCriticalSection(&CriticalSection);

@@ -19,7 +19,5 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #pragma once
 #define UNICODE_INPUT_PLUGIN
-#include "..\libtta++\libtta.h"
 
 static const __int32 BUFFER_LENGTH = 576;
-static const __int32 BUFFER_SIZE = BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;

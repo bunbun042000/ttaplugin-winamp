@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 //////////////////////////////////////////////////////////////////////
 #include "MediaLibrary.h"
-#include "common.h"
 #include "resource.h"
 #include <taglib/trueaudiofile.h>
 #include <taglib/tag.h>
@@ -73,43 +72,112 @@ void CMediaLibrary::FlushCache(void)
 
 	FileName = L"";
 
-	if (TTAFile != NULL)
-	{
-		delete TTAFile;
-		TTAFile = NULL;
-	}
-	else
-	{
-		// Do nothing
-	}
+	isValidFile = false;
 
 	::LeaveCriticalSection(&CriticalSection);
 }
 
 bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 {
-
-	if (TTAFile != NULL && FileName != fn)
+	if (FileName != fn)
 	{
-		delete TTAFile;
-		TTAFile = NULL;
-	}
-	else
-	{
-		// Do nothing
-	}
+		TagLib::TrueAudio::File TTAFile(fn.c_str());
 
-	if (TTAFile == NULL)
-	{
-		TTAFile = new TagLib::TrueAudio::File(fn.c_str());
-
-		if (!TTAFile->isValid())
+		if (!TTAFile.isValid())
 		{
 			return false;
 		}
 		else
 		{
 			FileName = fn;
+			isValidFile = true;
+		}
+		TagDataW.Length = (unsigned long)(TTAFile.audioProperties()->length() * 1000.L);
+
+		int Lengthbysec = TTAFile.audioProperties()->length();
+		int hour = Lengthbysec / 3600;
+		int min = Lengthbysec / 60;
+		int sec = Lengthbysec % 60;
+
+		std::wstringstream second;
+		if (hour > 0) {
+			second << std::setw(2) << std::setfill(L'0') << hour << L":" << std::setw(2)
+				<< std::setfill(L'0') << min << L":" << std::setw(2) << std::setfill(L'0') << sec;
+		}
+		else if (min > 0) {
+			second << std::setw(2) << std::setfill(L'0') << min << L":" << std::setw(2)
+				<< std::setfill(L'0') << sec;
+		}
+		else {
+			second << std::setw(2) << std::setfill(L'0') << sec;
+		}
+
+		std::wstring channel_designation = (TTAFile.audioProperties()->channels() == 2) ? L"Stereo" : L"Monoral";
+
+		std::wstringstream ttainfo_temp;
+		ttainfo_temp << L"Format\t\t: TTA" << TTAFile.audioProperties()->ttaVersion()
+			<< L"\nSample\t\t: " << (int)TTAFile.audioProperties()->bitsPerSample()
+			<< L"bit\nSample Rate\t: " << TTAFile.audioProperties()->sampleRate()
+			<< L"Hz\nBit Rate\t\t: " << TTAFile.audioProperties()->bitrate()
+			<< L"kbit/s\nNum. of Chan.\t: " << TTAFile.audioProperties()->channels()
+			<< L"(" << channel_designation
+			<< L")\nLength\t\t: " << second.str();
+		TagDataW.Format = ttainfo_temp.str();
+
+		std::wstring temp;
+		if (NULL != TTAFile.ID3v2Tag()) {
+			temp = TTAFile.ID3v2Tag()->title().toCWString();
+			TagDataW.Title = temp;
+			temp = TTAFile.ID3v2Tag()->artist().toCWString();
+			TagDataW.Artist = temp;
+			temp = TTAFile.ID3v2Tag()->albumArtist().toCWString();
+			TagDataW.AlbumArtist = temp;
+			temp = TTAFile.ID3v2Tag()->comment().toCWString();
+			TagDataW.Comment = temp;
+			temp = TTAFile.ID3v2Tag()->album().toCWString();
+			TagDataW.Album = temp;
+			temp = TTAFile.ID3v2Tag()->stringYear().toCWString();
+			TagDataW.Year = temp;
+			temp = TTAFile.ID3v2Tag()->genre().toCWString();
+			TagDataW.Genre = temp;
+			temp = TTAFile.ID3v2Tag()->stringTrack().toCWString();
+			TagDataW.Track = temp;
+			temp = TTAFile.ID3v2Tag()->composers().toCWString();
+			TagDataW.Composer = temp;
+			temp = TTAFile.ID3v2Tag()->publisher().toCWString();
+			TagDataW.Publisher = temp;
+			temp = TTAFile.ID3v2Tag()->disc().toCWString();
+			TagDataW.Disc = temp;
+			temp = TTAFile.ID3v2Tag()->BPM().toCWString();
+			TagDataW.BPM = temp;
+			TagLib::String mtype;
+			albumArtInfo.Albumart = TTAFile.ID3v2Tag()->albumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mtype);
+			albumArtInfo.arttype = TagLib::ID3v2::AttachedPictureFrame::FrontCover;
+			albumArtInfo.mimetype = mtype;
+
+		}
+		else if (NULL != TTAFile.ID3v1Tag()) {
+
+			std::wstringstream temp_year;
+			std::wstringstream temp_track;
+			temp = TTAFile.ID3v1Tag()->title().toCWString();
+			TagDataW.Title = temp;
+			temp = TTAFile.ID3v1Tag()->artist().toCWString();
+			TagDataW.Artist = temp;
+			temp = TTAFile.ID3v1Tag()->comment().toCWString();
+			TagDataW.Comment = temp;
+			temp = TTAFile.ID3v1Tag()->album().toCWString();
+			TagDataW.Album = temp;
+			temp_year << TTAFile.ID3v1Tag()->year();
+			TagDataW.Year = temp_year.str();
+			temp = TTAFile.ID3v1Tag()->genre().toCWString();
+			TagDataW.Genre = temp;
+			temp_track << TTAFile.ID3v1Tag()->track();
+			TagDataW.Track = temp_track.str();
+
+		}
+		else {
+			// do nothing.
 		}
 	}
 	else
@@ -118,90 +186,6 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 	}
 
 
-	TagDataW.Length = (unsigned long)(TTAFile->audioProperties()->length() * 1000.L);
-
-	int Lengthbysec = TTAFile->audioProperties()->length();
-	int hour = Lengthbysec / 3600;
-	int min = Lengthbysec / 60;
-	int sec = Lengthbysec % 60;
-
-	std::wstringstream second;
-	if (hour > 0) {
-		second << std::setw(2) << std::setfill(L'0') << hour << L":" << std::setw(2)
-			<< std::setfill(L'0') << min << L":" << std::setw(2) << std::setfill(L'0') << sec;
-	}
-	else if (min > 0) {
-		second << std::setw(2) << std::setfill(L'0') << min << L":" << std::setw(2)
-			<< std::setfill(L'0') << sec;
-	}
-	else {
-		second << std::setw(2) << std::setfill(L'0') << sec;
-	}
-
-	std::wstring channel_designation = (TTAFile->audioProperties()->channels() == 2) ? L"Stereo" : L"Monoral";
-
-	std::wstringstream ttainfo_temp;
-	ttainfo_temp << L"Format\t\t: TTA" << TTAFile->audioProperties()->ttaVersion()
-		<< L"\nSample\t\t: " << (int)TTAFile->audioProperties()->bitsPerSample()
-		<< L"bit\nSample Rate\t: " << TTAFile->audioProperties()->sampleRate()
-		<< L"Hz\nBit Rate\t\t: " << TTAFile->audioProperties()->bitrate()
-		<< L"kbit/s\nNum. of Chan.\t: " << TTAFile->audioProperties()->channels()
-		<< L"(" << channel_designation
-		<< L")\nLength\t\t: " << second.str();
-	TagDataW.Format = ttainfo_temp.str();
-
-	std::wstring temp;
-	if (NULL != TTAFile->ID3v2Tag()) {
-		temp = TTAFile->ID3v2Tag()->title().toCWString();
-		TagDataW.Title = temp;
-		temp = TTAFile->ID3v2Tag()->artist().toCWString();
-		TagDataW.Artist = temp;
-		temp = TTAFile->ID3v2Tag()->albumArtist().toCWString();
-		TagDataW.AlbumArtist = temp;
-		temp = TTAFile->ID3v2Tag()->comment().toCWString();
-		TagDataW.Comment = temp;
-		temp = TTAFile->ID3v2Tag()->album().toCWString();
-		TagDataW.Album = temp;
-		temp = TTAFile->ID3v2Tag()->stringYear().toCWString();
-		TagDataW.Year = temp;
-		temp = TTAFile->ID3v2Tag()->genre().toCWString();
-		TagDataW.Genre = temp;
-		temp = TTAFile->ID3v2Tag()->stringTrack().toCWString();
-		TagDataW.Track = temp;
-		temp = TTAFile->ID3v2Tag()->composers().toCWString();
-		TagDataW.Composer = temp;
-		temp = TTAFile->ID3v2Tag()->publisher().toCWString();
-		TagDataW.Publisher = temp;
-		temp = TTAFile->ID3v2Tag()->disc().toCWString();
-		TagDataW.Disc = temp;
-		temp = TTAFile->ID3v2Tag()->BPM().toCWString();
-		TagDataW.BPM = temp;
-
-
-	}
-	else if (NULL != TTAFile->ID3v1Tag()) {
-
-		std::wstringstream temp_year;
-		std::wstringstream temp_track;
-		temp = TTAFile->ID3v1Tag()->title().toCWString();
-		TagDataW.Title = temp;
-		temp = TTAFile->ID3v1Tag()->artist().toCWString();
-		TagDataW.Artist = temp;
-		temp = TTAFile->ID3v1Tag()->comment().toCWString();
-		TagDataW.Comment = temp;
-		temp = TTAFile->ID3v1Tag()->album().toCWString();
-		TagDataW.Album = temp;
-		temp_year << TTAFile->ID3v1Tag()->year();
-		TagDataW.Year = temp_year.str();
-		temp = TTAFile->ID3v1Tag()->genre().toCWString();
-		TagDataW.Genre = temp;
-		temp_track << TTAFile->ID3v1Tag()->track();
-		TagDataW.Track = temp_track.str();
-
-	}
-	else {
-		// do nothing.
-	}
 
 	return true;
 }
@@ -405,59 +389,81 @@ int CMediaLibrary::WriteExtendedFileInfo()
 	}
 	else
 	{
-		if (!TTAFile->isValid()) {
+		TagLib::TrueAudio::File TTAFile(FileName.c_str());
+		if (!TTAFile.isValid()) {
 			return 0;
 		}
 		else {
 			// do nothing
 		}
 
-		if (NULL != TTAFile->ID3v2Tag()) {
+		if (NULL != TTAFile.ID3v2Tag()) {
 			TagLib::String temp;
-			temp = TagLib::String(TagDataW.Title, TagLib::String::UTF8);
-			TTAFile->ID3v2Tag()->setTitle(temp);
-			temp = TagLib::String(TagDataW.Artist, TagLib::String::UTF8);
-			TTAFile->ID3v2Tag()->setArtist(temp);
-			temp = TagLib::String(TagDataW.AlbumArtist, TagLib::String::UTF8);
-			TTAFile->ID3v2Tag()->setAlbumArtist(temp);
-			temp = TagLib::String(TagDataW.Comment, TagLib::String::UTF8);
-			TTAFile->ID3v2Tag()->setComment(temp);
-			temp = TagLib::String(TagDataW.Album, TagLib::String::UTF8);
-			TTAFile->ID3v2Tag()->setAlbum(temp);
-			temp = TagLib::String(TagDataW.Year, TagLib::String::UTF8);
-			TTAFile->ID3v2Tag()->setStringYear(temp);
-			temp = TagLib::String(TagDataW.Genre, TagLib::String::UTF8);
-			TTAFile->ID3v2Tag()->setGenre(temp);
-			temp = TagLib::String(TagDataW.Track, TagLib::String::UTF8);
-			TTAFile->ID3v2Tag()->setStringTrack(temp);
-			temp = TagLib::String(TagDataW.Composer, TagLib::String::UTF8);
-			TTAFile->ID3v2Tag()->setComposers(temp);
-			temp = TagLib::String(TagDataW.Publisher, TagLib::String::UTF8);
-			TTAFile->ID3v2Tag()->setPublisher(temp);
-			temp = TagLib::String(TagDataW.Disc, TagLib::String::UTF8);
-			TTAFile->ID3v2Tag()->setDisc(temp);
-			temp = TagLib::String(TagDataW.BPM, TagLib::String::UTF8);
-			TTAFile->ID3v2Tag()->setBPM(temp);
+			temp = TagLib::String(TagDataW.Title);
+			TTAFile.ID3v2Tag()->setTitle(temp);
+			temp = TagLib::String(TagDataW.Artist);
+			TTAFile.ID3v2Tag()->setArtist(temp);
+			temp = TagLib::String(TagDataW.AlbumArtist);
+			TTAFile.ID3v2Tag()->setAlbumArtist(temp);
+			temp = TagLib::String(TagDataW.Comment);
+			TTAFile.ID3v2Tag()->setComment(temp);
+			temp = TagLib::String(TagDataW.Album);
+			TTAFile.ID3v2Tag()->setAlbum(temp);
+			temp = TagLib::String(TagDataW.Year);
+			TTAFile.ID3v2Tag()->setStringYear(temp);
+			temp = TagLib::String(TagDataW.Genre);
+			TTAFile.ID3v2Tag()->setGenre(temp);
+			temp = TagLib::String(TagDataW.Track);
+			TTAFile.ID3v2Tag()->setStringTrack(temp);
+			temp = TagLib::String(TagDataW.Composer);
+			TTAFile.ID3v2Tag()->setComposers(temp);
+			temp = TagLib::String(TagDataW.Publisher);
+			TTAFile.ID3v2Tag()->setPublisher(temp);
+			temp = TagLib::String(TagDataW.Disc);
+			TTAFile.ID3v2Tag()->setDisc(temp);
+			temp = TagLib::String(TagDataW.BPM);
+			TTAFile.ID3v2Tag()->setBPM(temp);
+			TTAFile.ID3v2Tag()->setAlbumArt(albumArtInfo.Albumart, albumArtInfo.arttype, albumArtInfo.mimetype);
 
 		}
-		else if (NULL != TTAFile->ID3v1Tag()) {
-			TTAFile->ID3v1Tag()->setTitle(TagDataW.Title);
-			TTAFile->ID3v1Tag()->setArtist(TagDataW.Artist);
-			TTAFile->ID3v1Tag()->setAlbum(TagDataW.Album);
-			TTAFile->ID3v1Tag()->setComment(TagDataW.Comment);
-			TTAFile->ID3v1Tag()->setYear(_wtoi(TagDataW.Year.c_str()));
-			TTAFile->ID3v1Tag()->setTrack(_wtoi(TagDataW.Track.c_str()));
-			TTAFile->ID3v1Tag()->setGenre(TagDataW.Genre);
+		else if (NULL != TTAFile.ID3v1Tag()) {
+			TTAFile.ID3v1Tag()->setTitle(TagDataW.Title);
+			TTAFile.ID3v1Tag()->setArtist(TagDataW.Artist);
+			TTAFile.ID3v1Tag()->setAlbum(TagDataW.Album);
+			TTAFile.ID3v1Tag()->setComment(TagDataW.Comment);
+			TTAFile.ID3v1Tag()->setYear(_wtoi(TagDataW.Year.c_str()));
+			TTAFile.ID3v1Tag()->setTrack(_wtoi(TagDataW.Track.c_str()));
+			TTAFile.ID3v1Tag()->setGenre(TagDataW.Genre);
 		}
 		else {
 			// do nothing.
 		}
+		TTAFile.save();
 	}
 
-
-	TTAFile->save();
 
 	::LeaveCriticalSection(&CriticalSection);
 
 	return 1;
+}
+
+TagLib::ByteVector CMediaLibrary::GetAlbumArt(TagLib::ID3v2::AttachedPictureFrame::Type arttype, TagLib::String &mimetype)
+{
+	if (arttype == albumArtInfo.arttype)
+	{
+		mimetype = albumArtInfo.mimetype;
+		return albumArtInfo.Albumart;
+	}
+	else
+	{
+		// Do nothing
+	}
+	return TagLib::ByteVector::null;
+}
+
+void CMediaLibrary::SetAlbumArt(const TagLib::ByteVector &v, TagLib::ID3v2::AttachedPictureFrame::Type arttype, TagLib::String &mimetype)
+{
+	albumArtInfo.Albumart = v;
+	albumArtInfo.arttype = arttype;
+	albumArtInfo.mimetype = mimetype;
 }

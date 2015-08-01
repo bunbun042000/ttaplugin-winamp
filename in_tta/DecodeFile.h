@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef DECODEFILE_H
 #define DECODEFILE_H
 
-#include "common.h"
 #include "..\libtta++\libtta.h"
 #include "in_tta.h"
 #include <stdexcept>
@@ -41,7 +40,7 @@ __declspec(align(16)) class CDecodeFile
 {
 private:
 #ifdef UNICODE_INPUT_PLUGIN
-	std::wstring			FileName;
+	std::wstring			FileNameW;
 #else
 	std::string				FileName;
 #endif
@@ -77,7 +76,7 @@ public:
 
 #ifdef UNICODE_INPUT_PLUGIN
 	int				SetFileName(const wchar_t *filename);
-	const wchar_t  *GetFileNameW() { return FileName.c_str(); }
+	const wchar_t  *GetFileNameW() { return FileNameW.c_str(); }
 #else
 	int				SetFileName(const char *filename);
 	const char	   *GetFileName() { return FileName.c_str(); }
