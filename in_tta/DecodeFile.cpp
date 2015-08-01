@@ -87,6 +87,7 @@ CDecodeFile::~CDecodeFile(void)
 	signature = -1;
 
 	if (NULL != TTA) {
+		reinterpret_cast< tta::tta_decoder* >(&ttadec_mem)->~tta_decoder();
 		TTA = NULL;
 	} else {
 		// do nothing
@@ -123,6 +124,7 @@ int CDecodeFile::SetFileName(const wchar_t *filename)
 	iocb_wrapper.iocb.seek = &seek_callback;
 
 	if (TTA != NULL) {
+		reinterpret_cast< tta::tta_decoder* >(&ttadec_mem)->~tta_decoder();
 		TTA = NULL;
 	}
 	else {
@@ -136,6 +138,7 @@ int CDecodeFile::SetFileName(const wchar_t *filename)
 
 	catch (tta::tta_exception &ex) {
 		if (NULL != TTA) {
+			reinterpret_cast< tta::tta_decoder* >(&ttadec_mem)->~tta_decoder();
 			TTA = NULL;
 		}
 		else {
@@ -193,6 +196,7 @@ int CDecodeFile::SetFileName(const char *filename)
 	iocb_wrapper.iocb.seek = &seek_callback;
 
 	if (TTA != NULL) {
+		reinterpret_cast< tta::tta_decoder* >(&ttadec_mem)->~tta_decoder();
 		TTA = NULL;
 	} else {
 		// nothing todo
@@ -205,6 +209,7 @@ int CDecodeFile::SetFileName(const char *filename)
 
 	catch (tta::tta_exception &ex) {
 		if (NULL != TTA) {
+			reinterpret_cast< tta::tta_decoder* >(&ttadec_mem)->~tta_decoder();
 			TTA = NULL;
 		} else {
 			// do nothing
