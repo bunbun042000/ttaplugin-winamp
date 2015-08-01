@@ -67,7 +67,7 @@ void CMediaLibrary::FlushCache(void)
 	TagData.Composer = "";
 	TagData.Publisher = "";
 	TagData.Disc = "";
-	TagData.BPM[0] = "";
+	TagData.BPM = "";
 
 	FileName = "";
 
