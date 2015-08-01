@@ -559,6 +559,13 @@ extern "C"
 		return m_Tag.GetExtendedFileInfo(fn, data, dest, destlen);
 	}
 
+	__declspec(dllexport) int __cdecl
+		winampGetExtendedFileInfoW(const wchar_t *fn, const wchar_t *data, wchar_t *dest, size_t destlen)
+	{
+
+		return m_Tag.GetExtendedFileInfoW(fn, data, dest, destlen);
+	}
+
 	__declspec(dllexport) int __cdecl winampUseUnifiedFileInfoDlg(const char * fn)
 	{
   // this will be called when Winamp is requested to show a File Info dialog for the selected file(s)
@@ -586,6 +593,12 @@ extern "C"
 		winampSetExtendedFileInfo(const char *fn, const char *data, const char *val)
 	{
 		return m_Tag.SetExtendedFileInfo(fn, data, val);
+	}
+
+	__declspec(dllexport) int __cdecl
+		winampSetExtendedFileInfoW(const wchar_t *fn, const wchar_t *data, const wchar_t *val)
+	{
+		return m_Tag.SetExtendedFileInfoW(fn, data, val);
 	}
 
 	__declspec(dllexport) int __cdecl winampWriteExtendedFileInfo()

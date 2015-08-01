@@ -45,6 +45,23 @@ struct TagInfo
 	std::string		Disc;
 	std::string		BPM;
 };
+
+struct TagInfoW
+{
+	unsigned long	Length;
+	std::wstring	Format;
+	std::wstring	Title;
+	std::wstring	Artist;
+	std::wstring	AlbumArtist;
+	std::wstring	Comment;
+	std::wstring	Album;
+	std::wstring	Year;
+	std::wstring	Genre;
+	std::wstring	Track;
+	std::wstring	Composer;
+	std::wstring	Publisher;
+	std::wstring	Disc;
+	std::wstring	BPM;
 };
 
 class CMediaLibrary  
@@ -52,20 +69,26 @@ class CMediaLibrary
 public:
 	CMediaLibrary();
 	virtual ~CMediaLibrary();
-	__int32  GetExtendedFileInfo(const char *fn, const char *data, char *dest, size_t destlen);
+	__int32  GetExtendedFileInfo(const char *fn, const char *Metadata, char *dest, size_t destlen);
 	__int32  SetExtendedFileInfo(const char *fn, const char *MetaData, const char *val);
+	__int32  GetExtendedFileInfoW(const wchar_t *fn, const wchar_t *Metadata, wchar_t *dest, size_t destlen);
+	__int32  SetExtendedFileInfoW(const wchar_t *fn, const wchar_t *MetaData, const wchar_t *val);
 	__int32  WriteExtendedFileInfo();
 
 private:
 
 	CRITICAL_SECTION	CriticalSection;
 	TagInfo		        TagData;
+	TagInfoW			TagDataW;
 	DWORD				GetTagTime;
 	std::string			FileName;
+	std::wstring		FileNameW;
 	TagLib::TrueAudio::File *TTAFile;
 
 	void FlushCache(void);
 	bool GetTagInfo(const std::string fn);
+	bool GetTagInfoW(const std::wstring fn);
+
 };
 
 #endif // !defined(AFX_MediaLibrary_H__997DC726_50DB_46B4_A156_DB5E92EC2BE8__INCLUDED_)
