@@ -32,21 +32,19 @@ struct TagInfo
 {
 	unsigned long	Length;
 	std::string		Format;
-	char			Title[MAX_MUSICTEXT];
-	char			Artist[MAX_MUSICTEXT];
-	char            AlbumArtist[MAX_MUSICTEXT];
-	char			Comment[MAX_MUSICTEXT];
-	char			Album[MAX_MUSICTEXT];
-	char			Year[MAX_MUSICTEXT];
-	char			Genre[MAX_MUSICTEXT];
-	char			Track[MAX_MUSICTEXT];
-	char			Composer[MAX_MUSICTEXT];
-	char			OrgArtist[MAX_MUSICTEXT];
-	char			Copyright[MAX_MUSICTEXT];
-	char			Encoder[MAX_MUSICTEXT];
-	char            Publisher[MAX_MUSICTEXT];
-	char            Disc[MAX_MUSICTEXT];
-	char            BPM[MAX_MUSICTEXT];
+	std::string		Title;
+	std::string		Artist;
+	std::string		AlbumArtist;
+	std::string		Comment;
+	std::string		Album;
+	std::string		Year;
+	std::string		Genre;
+	std::string		Track;
+	std::string		Composer;
+	std::string		Publisher;
+	std::string		Disc;
+	std::string		BPM;
+};
 };
 
 class CMediaLibrary  

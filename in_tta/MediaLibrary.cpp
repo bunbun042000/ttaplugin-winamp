@@ -55,21 +55,19 @@ void CMediaLibrary::FlushCache(void)
 	::EnterCriticalSection(&CriticalSection);
 
 	GetTagTime = 0;
-	TagData.Title[0] = '\0';
-	TagData.Artist[0] = '\0';
-	TagData.Comment[0] = '\0';
-	TagData.Album[0] = '\0';
-	TagData.AlbumArtist[0] = '\0';
-	TagData.Year[0] = '\0';
-	TagData.Genre[0] = '\0';
-	TagData.Track[0] = '\0';
-	TagData.Composer[0] = '\0';
-	TagData.OrgArtist[0] = '\0';
-	TagData.Copyright[0] = '\0';
-	TagData.Encoder[0] = '\0';
-	TagData.Publisher[0] = '\0';
-	TagData.Disc[0] = '\0';
-	TagData.BPM[0] = '\0';
+	TagData.Format = "";
+	TagData.Title = "";
+	TagData.Artist = "";
+	TagData.Comment = "";
+	TagData.Album = "";
+	TagData.AlbumArtist = "";
+	TagData.Year = "";
+	TagData.Genre = "";
+	TagData.Track = "";
+	TagData.Composer = "";
+	TagData.Publisher = "";
+	TagData.Disc = "";
+	TagData.BPM[0] = "";
 
 	FileName = "";
 
@@ -151,33 +149,29 @@ bool CMediaLibrary::GetTagInfo(const std::string fn)
 	std::string temp;
 	if (NULL != TTAFile->ID3v2Tag()) {
 		temp = GetEncodingString(TTAFile->ID3v2Tag()->title().toCString(true));
-		strncpy_s(TagData.Title, MAX_MUSICTEXT - 1, temp.c_str(), _TRUNCATE);
+		TagData.Title = temp;
 		temp = GetEncodingString(TTAFile->ID3v2Tag()->artist().toCString(true));
-		strncpy_s(TagData.Artist, MAX_MUSICTEXT - 1, temp.c_str(), _TRUNCATE);
+		TagData.Artist = temp;
 		temp = GetEncodingString(TTAFile->ID3v2Tag()->albumArtist().toCString(true));
-		strncpy_s(TagData.AlbumArtist, MAX_MUSICTEXT - 1, temp.c_str(), _TRUNCATE);
+		TagData.AlbumArtist = temp;
 		temp = GetEncodingString(TTAFile->ID3v2Tag()->comment().toCString(true));
-		strncpy_s(TagData.Comment, MAX_MUSICTEXT -1, temp.c_str(), _TRUNCATE);
+		TagData.Comment = temp;
 		temp = GetEncodingString(TTAFile->ID3v2Tag()->album().toCString(true));
-		strncpy_s(TagData.Album, MAX_MUSICTEXT - 1, temp.c_str(), _TRUNCATE);
+		TagData.Album = temp;
 		temp = GetEncodingString(TTAFile->ID3v2Tag()->stringYear().toCString(true));
-		strncpy_s(TagData.Year, MAX_YEAR + 1, temp.c_str(), _TRUNCATE);
+		TagData.Year = temp;
 		temp = GetEncodingString(TTAFile->ID3v2Tag()->genre().toCString(true));
-		strncpy_s(TagData.Genre, MAX_MUSICTEXT - 1, temp.c_str(), _TRUNCATE);
+		TagData.Genre = temp;
 		temp = GetEncodingString(TTAFile->ID3v2Tag()->stringTrack().toCString(true));
-		strncpy_s(TagData.Track, MAX_MUSICTEXT - 1, temp.c_str(), _TRUNCATE);
+		TagData.Track = temp;
 		temp = GetEncodingString(TTAFile->ID3v2Tag()->composers().toCString(true));
-		strncpy_s(TagData.Composer, MAX_MUSICTEXT - 1, temp.c_str(), _TRUNCATE);
-		temp = GetEncodingString(TTAFile->ID3v2Tag()->origArtist().toCString(true));
-		strncpy_s(TagData.OrgArtist, MAX_MUSICTEXT - 1, temp.c_str(), _TRUNCATE);
-		temp = GetEncodingString(TTAFile->ID3v2Tag()->copyright().toCString(true));
-		strncpy_s(TagData.Copyright, MAX_MUSICTEXT - 1, temp.c_str(), _TRUNCATE);
+		TagData.Composer = temp;
 		temp = GetEncodingString(TTAFile->ID3v2Tag()->publisher().toCString(true));
-		strncpy_s(TagData.Publisher, MAX_MUSICTEXT - 1, temp.c_str(), _TRUNCATE);
+		TagData.Publisher = temp;
 		temp = GetEncodingString(TTAFile->ID3v2Tag()->disc().toCString(true));
-		strncpy_s(TagData.Disc, MAX_MUSICTEXT - 1, temp.c_str(), _TRUNCATE);
+		TagData.Disc = temp;
 		temp = GetEncodingString(TTAFile->ID3v2Tag()->BPM().toCString(true));
-		strncpy_s(TagData.BPM, MAX_MUSICTEXT - 1, temp.c_str(), _TRUNCATE);
+		TagData.BPM = temp;
 
 
 	} else if (NULL != TTAFile->ID3v1Tag()) {
@@ -185,19 +179,19 @@ bool CMediaLibrary::GetTagInfo(const std::string fn)
 		std::stringstream temp_year;
 		std::stringstream temp_track;
 		temp = TTAFile->ID3v1Tag()->title().toCString(false);
-		strncpy_s(TagData.Title, MAX_MUSICTEXT - 1, temp.c_str(), _TRUNCATE);
+		TagData.Title = temp;
 		temp = TTAFile->ID3v1Tag()->artist().toCString(false);
-		strncpy_s(TagData.Artist, MAX_MUSICTEXT - 1, temp.c_str(), _TRUNCATE);
+		TagData.Artist = temp;
 		temp = TTAFile->ID3v1Tag()->comment().toCString(false);
-		strncpy_s(TagData.Comment, MAX_MUSICTEXT -1, temp.c_str(), _TRUNCATE);
+		TagData.Comment = temp;
 		temp = TTAFile->ID3v1Tag()->album().toCString(false);
-		strncpy_s(TagData.Album, MAX_MUSICTEXT - 1, temp.c_str(), _TRUNCATE);
+		TagData.Album = temp;
 		temp_year << TTAFile->ID3v1Tag()->year();
-		strncpy_s(TagData.Year, MAX_YEAR + 1, temp_year.str().c_str(), _TRUNCATE);
+		TagData.Year = temp_year.str();
 		temp = TTAFile->ID3v1Tag()->genre().toCString(false);
-		strncpy_s(TagData.Genre, MAX_MUSICTEXT - 1, temp.c_str(), _TRUNCATE);
+		TagData.Genre = temp;
 		temp_track << TTAFile->ID3v1Tag()->track();
-		strncpy_s(TagData.Track, MAX_MUSICTEXT - 1, temp_track.str().c_str(), _TRUNCATE);
+		TagData.Track = temp_track.str();
 
 	} else { 
 		// do nothing.
@@ -249,40 +243,40 @@ int CMediaLibrary::GetExtendedFileInfo(const char *fn, const char *data, char *d
 			strncpy_s(dest, destlen, Buff, _TRUNCATE);
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "title") == 0) {
-			strncpy_s(dest, destlen, TagData.Title, _TRUNCATE);
+			strncpy_s(dest, destlen, TagData.Title.c_str(), _TRUNCATE);
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "artist") == 0) {
-			strncpy_s(dest, destlen, TagData.Artist, _TRUNCATE);
+			strncpy_s(dest, destlen, TagData.Artist.c_str(), _TRUNCATE);
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "albumartist") == 0) {
-			strncpy_s(dest, destlen, TagData.AlbumArtist, _TRUNCATE);
+			strncpy_s(dest, destlen, TagData.AlbumArtist.c_str(), _TRUNCATE);
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "comment") == 0) {
-			strncpy_s(dest, destlen, TagData.Comment, _TRUNCATE);
+			strncpy_s(dest, destlen, TagData.Comment.c_str(), _TRUNCATE);
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "album") == 0) {
-			strncpy_s(dest, destlen, TagData.Album, _TRUNCATE);
+			strncpy_s(dest, destlen, TagData.Album.c_str(), _TRUNCATE);
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "year") == 0) {
-			strncpy_s(dest, destlen, TagData.Year, _TRUNCATE);
+			strncpy_s(dest, destlen, TagData.Year.c_str(), _TRUNCATE);
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "genre") == 0) {
-			strncpy_s(dest, destlen, TagData.Genre, _TRUNCATE);
+			strncpy_s(dest, destlen, TagData.Genre.c_str(), _TRUNCATE);
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "track") == 0) {
-			strncpy_s(dest, destlen, TagData.Track, _TRUNCATE);
+			strncpy_s(dest, destlen, TagData.Track.c_str(), _TRUNCATE);
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "composer") == 0) {
-			strncpy_s(dest, destlen, TagData.Composer, _TRUNCATE);
+			strncpy_s(dest, destlen, TagData.Composer.c_str(), _TRUNCATE);
 			RetCode = 1; 
 		} else if(_stricmp(MetaData, "publisher") == 0) {
-			strncpy_s(dest, destlen, TagData.Publisher, _TRUNCATE);
+			strncpy_s(dest, destlen, TagData.Publisher.c_str(), _TRUNCATE);
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "disc") == 0) {
-			strncpy_s(dest, destlen, TagData.Disc, _TRUNCATE);
+			strncpy_s(dest, destlen, TagData.Disc.c_str(), _TRUNCATE);
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "bpm") == 0) {
-			strncpy_s(dest, destlen, TagData.BPM, _TRUNCATE);
+			strncpy_s(dest, destlen, TagData.BPM.c_str(), _TRUNCATE);
 			RetCode = 1;
 		} else {
 			RetCode = 0;
@@ -317,40 +311,40 @@ int CMediaLibrary::SetExtendedFileInfo(const char *fn, const char *MetaData, con
 	if (FindTag) {
 
 		if(_stricmp(MetaData, "title") == 0) {
-			strncpy_s(TagData.Title, MAX_MUSICTEXT - 1, val, _TRUNCATE);
+			TagData.Title = val;
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "artist") == 0) {
-			strncpy_s(TagData.Artist, MAX_MUSICTEXT - 1, val, _TRUNCATE);
+			TagData.Artist = val;
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "albumartist") == 0) {
-			strncpy_s(TagData.AlbumArtist, MAX_MUSICTEXT - 1, val, _TRUNCATE);
+			TagData.AlbumArtist = val;
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "comment") == 0) {
-			strncpy_s(TagData.Comment, MAX_MUSICTEXT - 1, val, _TRUNCATE);
+			TagData.Comment = val;
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "album") == 0) {
-			strncpy_s(TagData.Album, MAX_MUSICTEXT - 1, val, _TRUNCATE);
+			TagData.Album = val;
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "year") == 0) {
-			strncpy_s(TagData.Year, MAX_MUSICTEXT - 1, val, _TRUNCATE);
+			TagData.Year = val;
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "genre") == 0) {
-			strncpy_s(TagData.Genre, MAX_MUSICTEXT - 1, val, _TRUNCATE);
+			TagData.Genre = val;
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "track") == 0) {
-			strncpy_s(TagData.Track, MAX_MUSICTEXT - 1, val, _TRUNCATE);
+			TagData.Track = val;
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "composer") == 0) {
-			strncpy_s(TagData.Composer, MAX_MUSICTEXT - 1, val, _TRUNCATE);
+			TagData.Composer = val;
 			RetCode = 1; 
 		} else if(_stricmp(MetaData, "publisher") == 0) {
-			strncpy_s(TagData.Publisher, MAX_MUSICTEXT - 1, val, _TRUNCATE);
+			TagData.Publisher = val;
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "disc") == 0) {
-			strncpy_s(TagData.Disc, MAX_MUSICTEXT - 1, val, _TRUNCATE);
+			TagData.Disc = val;
 			RetCode = 1;
 		} else if(_stricmp(MetaData, "bpm") == 0) {
-			strncpy_s(TagData.BPM, MAX_MUSICTEXT - 1, val, _TRUNCATE);
+			TagData.BPM = val;
 			RetCode = 1;
 		} else {
 			RetCode = 0;
@@ -405,10 +399,6 @@ int CMediaLibrary::WriteExtendedFileInfo()
 		TTAFile->ID3v2Tag()->setStringTrack(temp);
 		temp = TagLib::String(SetEncodingString(TagData.Composer), TagLib::String::UTF8);
 		TTAFile->ID3v2Tag()->setComposers(temp);
-		temp = TagLib::String(SetEncodingString(TagData.OrgArtist), TagLib::String::UTF8);
-		TTAFile->ID3v2Tag()->setOrigArtist(temp);
-		temp = TagLib::String(SetEncodingString(TagData.Copyright), TagLib::String::UTF8);
-		TTAFile->ID3v2Tag()->setCopyright(temp);
 		temp = TagLib::String(SetEncodingString(TagData.Publisher), TagLib::String::UTF8);
 		TTAFile->ID3v2Tag()->setPublisher(temp);
 		temp = TagLib::String(SetEncodingString(TagData.Disc), TagLib::String::UTF8);
@@ -421,8 +411,8 @@ int CMediaLibrary::WriteExtendedFileInfo()
 		TTAFile->ID3v1Tag()->setArtist(TagData.Artist);
 		TTAFile->ID3v1Tag()->setAlbum(TagData.Album);
 		TTAFile->ID3v1Tag()->setComment(TagData.Comment);
-		TTAFile->ID3v1Tag()->setYear(atoi(TagData.Year));
-		TTAFile->ID3v1Tag()->setTrack(atoi(TagData.Track));
+		TTAFile->ID3v1Tag()->setYear(atoi(TagData.Year.c_str()));
+		TTAFile->ID3v1Tag()->setTrack(atoi(TagData.Track.c_str()));
 		TTAFile->ID3v1Tag()->setGenre(TagData.Genre);
 	} else { 
 		// do nothing.
