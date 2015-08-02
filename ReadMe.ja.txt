@@ -14,8 +14,9 @@ Winamp Ver2.9以降に対応しており，Winamp Ver.5.666にて動作確認し
  WinampのフォルダにあるPluginsフォルダにin_tta.dllをコピーしてください。
 
 *更新履歴
-2015-07-30 Beta18 24bitファイルの再生時にフリーズする問題を修正
+2015-08-02 Beta18 24bitファイルの再生時にフリーズする問題を修正
                   タイトル表示出力を廃止しWinamp本体に任せるように変更
+				  メタデータ読み込み時のファイルアクセス回数を削減
 				  プラグインをUNICODEベースモードに変更
 				  zlibを本体同梱のdllに変更
                   taglibを最新stable(2015/06/19 16:12:32 commit Hash:e90b5e5f2faded598688c48dd3bdd2fc6cd5cbab)ベースに変更
