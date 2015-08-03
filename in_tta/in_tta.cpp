@@ -554,19 +554,22 @@ extern "C"
 		return &mod;
 	}
 
-//	__declspec(dllexport) int __cdecl
-//	winampGetExtendedFileInfo(const char *fn, const char *data, char *dest, size_t destlen)
-//	{
-//
-//		return m_Tag.GetExtendedFileInfo(fn, data, dest, destlen);
-//	}
 
+#ifdef  UNICODE_INPUT_PLUGIN
 	__declspec(dllexport) int __cdecl
 		winampGetExtendedFileInfoW(const wchar_t *fn, const wchar_t *data, wchar_t *dest, size_t destlen)
 	{
 
 		return m_Tag.GetExtendedFileInfo(fn, data, dest, destlen);
 	}
+#else
+	__declspec(dllexport) int __cdecl
+	winampGetExtendedFileInfo(const char *fn, const char *data, char *dest, size_t destlen)
+	{
+
+		return m_Tag.GetExtendedFileInfo(fn, data, dest, destlen);
+	}
+#endif
 
 	__declspec(dllexport) int __cdecl winampUseUnifiedFileInfoDlg(const char * fn)
 	{
@@ -591,17 +594,19 @@ extern "C"
 	}
 
 
-//	__declspec( dllexport ) int __cdecl 
-//		winampSetExtendedFileInfo(const char *fn, const char *data, const char *val)
-//	{
-//		return m_Tag.SetExtendedFileInfo(fn, data, val);
-//	}
-
+#ifdef  UNICODE_INPUT_PLUGIN
 	__declspec(dllexport) int __cdecl
 		winampSetExtendedFileInfoW(const wchar_t *fn, const wchar_t *data, const wchar_t *val)
 	{
 		return m_Tag.SetExtendedFileInfo(fn, data, val);
 	}
+#else
+	__declspec(dllexport) int __cdecl
+		winampSetExtendedFileInfo(const char *fn, const char *data, const char *val)
+	{
+		return m_Tag.SetExtendedFileInfo(fn, data, val);
+	}
+#endif
 
 	__declspec(dllexport) int __cdecl winampWriteExtendedFileInfo()
 	{
@@ -620,9 +625,13 @@ extern "C"
 		else {
 			// do nothing
 		}
+		const char *mbFile = reinterpret_cast<const char*>(filename);
+		wchar_t wcsFileName[MAX_PATH + 1];
+		size_t strlen = 0;
+		mbstowcs_s(&strlen, wcsFileName, MAX_PATH + 1, mbFile, _TRUNCATE);
 
 		try {
-			dec->SetFileName(filename);
+			dec->SetFileName(wcsFileName);
 		}
 
 		catch (CDecodeFile_exception &ex) {
@@ -681,7 +690,7 @@ extern "C"
 		return (intptr_t)dec;
 	}
 #endif
-	
+
 #ifdef  UNICODE_INPUT_PLUGIN
 	__declspec( dllexport ) intptr_t __cdecl winampGetExtendedRead_getDataW(intptr_t handle, wchar_t *dest, int len, int *killswitch)
 	{
@@ -693,8 +702,9 @@ extern "C"
 		int32_t decoded_bytes = 0;
 
 		if (!dec->isDecodable()) {
-			return (intptr_t) -1;
-		} else {
+			return (intptr_t)-1;
+		}
+		else {
 			// do nothing
 		}
 
@@ -707,12 +717,13 @@ extern "C"
 				remain_data.data_length -= n;
 			}
 
-			if(remain_data.data_length != 0) {
-				delete [] remain_data.buffer;
+			if (remain_data.data_length != 0) {
+				delete[] remain_data.buffer;
 				remain_data.buffer = NULL;
 				return (intptr_t)dest_used;
-			} else {
-				delete [] remain_data.buffer;
+			}
+			else {
+				delete[] remain_data.buffer;
 				remain_data.buffer = NULL;
 			}
 		}
@@ -728,30 +739,33 @@ extern "C"
 					dest_used = -1;
 					break;
 				}
-				
+
 				if (0 == decoded_bytes) {
-					 break; // end of stream
-				 } else {
-					 decoded_bytes = decoded_bytes * dec->GetBitsperSample() / 8 * dec->GetNumberofChannel();
-					 n = min(len - dest_used, decoded_bytes);
-					 if (n > 0) {
-						 memcpy_s(dest + dest_used, len - dest_used, buf, n);
-						 dest_used += n;
-					 } else {
-						 // do nothing
-					 }
-				 }
-			} else {
+					break; // end of stream
+				}
+				else {
+					decoded_bytes = decoded_bytes * dec->GetBitsperSample() / 8 * dec->GetNumberofChannel();
+					n = min(len - dest_used, decoded_bytes);
+					if (n > 0) {
+						memcpy_s(dest + dest_used, len - dest_used, buf, n);
+						dest_used += n;
+					}
+					else {
+						// do nothing
+					}
+				}
+			}
+			else {
 				// do nothing
 			}
 		}
-      	
+
 		// copy as much as we can back to winamp
-		if (n > 0 && n < decoded_bytes)	{
+		if (n > 0 && n < decoded_bytes) {
 			remain_data.data_length = decoded_bytes - n;
 			if (NULL != remain_data.buffer)
 			{
-				delete [] remain_data.buffer;
+				delete[] remain_data.buffer;
 				remain_data.buffer = NULL;
 			}
 			else
@@ -765,6 +779,7 @@ extern "C"
 		return (intptr_t)dest_used;
 	}
 #else
+
 	__declspec(dllexport) intptr_t __cdecl winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
 	{
 		CDecodeFile *dec = (CDecodeFile *)handle;
