@@ -613,7 +613,7 @@ extern "C"
 		winampGetExtendedRead_openW(const wchar_t *filename, int *size, int *bps, int *nch, int *srate)
 	{
 
-		CDecodeFile *dec = new (&CDecodeFile_mem)CDecodeFile;
+		CDecodeFile *dec = &decode_ttafile;
 		if (!dec->isValid()) {
 			return (intptr_t)0;
 		}
