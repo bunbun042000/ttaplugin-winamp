@@ -615,7 +615,7 @@ extern "C"
 
 #ifdef  UNICODE_INPUT_PLUGIN
 	__declspec(dllexport) intptr_t __cdecl
-		winampGetExtendedRead_openW(const wchar_t *filename, int *size, int *bps, int *nch, int *srate)
+		winampGetExtendedRead_open(const wchar_t *filename, int *size, int *bps, int *nch, int *srate)
 	{
 
 		CDecodeFile *dec = new (&CDecodeFile_mem)CDecodeFile;
@@ -692,7 +692,7 @@ extern "C"
 #endif
 
 #ifdef  UNICODE_INPUT_PLUGIN
-	__declspec( dllexport ) intptr_t __cdecl winampGetExtendedRead_getDataW(intptr_t handle, wchar_t *dest, int len, int *killswitch)
+	__declspec(dllexport) intptr_t __cdecl winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
 	{
 		CDecodeFile *dec = (CDecodeFile *)handle;
 		unsigned char buf[BUFFER_SIZE];
