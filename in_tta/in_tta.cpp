@@ -52,7 +52,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 // For Support Transcoder input (2007/10/15)
 static __declspec(align(16)) CDecodeFile playing_ttafile;
-static __declspec(align(16)) CDecodeFile decode_ttafile;
+static __declspec(align(16)) CDecodeFile transcode_ttafile;
 CMediaLibrary m_Tag;
 
 static const __int32 PLAYING_BUFFER_SIZE = PLAYING_BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
@@ -619,7 +619,7 @@ extern "C"
 		winampGetExtendedRead_open(const wchar_t *filename, int *size, int *bps, int *nch, int *srate)
 	{
 
-		CDecodeFile *dec = &decode_ttafile;
+		CDecodeFile *dec = &transcode_ttafile;
 		if (!dec->isValid()) {
 			return (intptr_t)0;
 		}
@@ -636,7 +636,7 @@ extern "C"
 		}
 
 		catch (CDecodeFile_exception &ex) {
-			tta_error_message(ex.code(), filename);
+			tta_error_message(ex.code(), wcsFileName);
 			return (intptr_t)0;
 		}
 
