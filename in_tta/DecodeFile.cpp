@@ -87,7 +87,7 @@ CDecodeFile::~CDecodeFile(void)
 	signature = -1;
 
 	if (NULL != TTA) {
-		reinterpret_cast< tta::tta_decoder* >(TTA)->~tta_decoder();
+		reinterpret_cast< tta::tta_decoder* >(&ttadec_mem)->~tta_decoder();
 		TTA = NULL;
 	} else {
 		// do nothing
@@ -124,7 +124,7 @@ int CDecodeFile::SetFileName(const wchar_t *filename)
 	iocb_wrapper.iocb.seek = &seek_callback;
 
 	if (TTA != NULL) {
-		reinterpret_cast< tta::tta_decoder* >(TTA)->~tta_decoder();
+		reinterpret_cast< tta::tta_decoder* >(&ttadec_mem)->~tta_decoder();
 		TTA = NULL;
 	}
 	else {
