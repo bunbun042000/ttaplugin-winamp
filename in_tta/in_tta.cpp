@@ -505,7 +505,7 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 				PostMessage(mod.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
 				return 0;
 			} else {
-				Sleep(10);
+				::Sleep(1);
 			}
 		} else if (mod.outMod->CanWrite() >= 
 			((PLAYING_BUFFER_LENGTH * playing_ttafile.GetNumberofChannel() * 
@@ -540,7 +540,7 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 				}
 				mod.SetInfo(bitrate, playing_ttafile.GetSampleRate() / 1000, playing_ttafile.GetNumberofChannel(), 1);
 		} else {
-			Sleep(20);
+			::Sleep(1);
 		}
 	}
 
