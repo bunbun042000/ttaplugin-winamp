@@ -52,7 +52,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 // For Support Transcoder input (2007/10/15)
 static __declspec(align(16)) CDecodeFile playing_ttafile;
-static std::aligned_storage<sizeof(CDecodeFile), __alignof(CDecodeFile)>::type CDecodeFile_mem;
+static __declspec(align(16)) CDecodeFile decode_ttafile;
 CMediaLibrary m_Tag;
 
 static const __int32 BUFFER_SIZE = BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
@@ -618,7 +618,7 @@ extern "C"
 		winampGetExtendedRead_open(const wchar_t *filename, int *size, int *bps, int *nch, int *srate)
 	{
 
-		CDecodeFile *dec = new (&CDecodeFile_mem)CDecodeFile;
+		CDecodeFile *dec = &decode_ttafile;
 		if (!dec->isValid()) {
 			return (intptr_t)0;
 		}
