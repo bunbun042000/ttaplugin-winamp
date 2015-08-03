@@ -1,4 +1,4 @@
-﻿in_tta.dll Ver3.2 (Beta18) 
+﻿in_tta.dll Ver3.2 (Beta19) 
 =====================================================
 
 *このプラグインは
@@ -14,6 +14,7 @@ Winamp Ver2.9以降に対応しており，Winamp Ver.5.666にて動作確認し
  WinampのフォルダにあるPluginsフォルダにin_tta.dllをコピーしてください。
 
 *更新履歴
+2015-08-04 Beta19 トランスコーディングの動作不能を修正
 2015-08-02 Beta18 24bitファイルの再生時にフリーズする問題を修正
                   タイトル表示出力を廃止しWinamp本体に任せるように変更
 				  メタデータ読み込み時のファイルアクセス回数を削減
@@ -27,7 +28,6 @@ Winamp Ver2.9以降に対応しており，Winamp Ver.5.666にて動作確認し
                   taglibを最新stable(2014/10/23 2:31:14 commit Hash:072851869a2980dab4aefd471ad7dd707993d74f)ベースに変更
                   コンパイラをVC2013に変更
 2013-08-22 Beta15 taglibを最新stable(commit Hash:fddf3ed51b705d69e12df4a0cba01984ce82c638)ベースに変更
-                  トランスコーディング時のメモリリークを修正
 				  taglibをスタティックリンクに再変更
 2011-12-10 Beta14 Revert multibyte version
                   libttaからの例外チェックを追加
