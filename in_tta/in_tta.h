@@ -20,4 +20,5 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 #define UNICODE_INPUT_PLUGIN
 
-static const __int32 BUFFER_LENGTH = 576;
+static const __int32 PLAYING_BUFFER_LENGTH = 8192;
+static const __int32 TRANSCODING_BUFFER_LENGTH = 131072;

@@ -55,10 +55,11 @@ static __declspec(align(16)) CDecodeFile playing_ttafile;
 static __declspec(align(16)) CDecodeFile decode_ttafile;
 CMediaLibrary m_Tag;
 
-static const __int32 BUFFER_SIZE = BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
+static const __int32 PLAYING_BUFFER_SIZE = PLAYING_BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
+static const __int32 TRANSCODING_BUFFER_SIZE = TRANSCODING_BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
 
-static long	vis_buffer[BUFFER_SIZE * MAX_NCH];	// vis buffer
-static BYTE pcm_buffer[BUFFER_SIZE];
+static long	vis_buffer[PLAYING_BUFFER_SIZE * MAX_NCH];	// vis buffer
+static BYTE pcm_buffer[PLAYING_BUFFER_SIZE];
 
 static HANDLE decoder_handle = INVALID_HANDLE_VALUE;
 static DWORD WINAPI __stdcall DecoderThread (void *p);
@@ -508,10 +509,10 @@ DWORD WINAPI __stdcall DecoderThread (void *p)
 				Sleep(10);
 			}
 		} else if (mod.outMod->CanWrite() >= 
-			((BUFFER_LENGTH * playing_ttafile.GetNumberofChannel() * 
+			((PLAYING_BUFFER_LENGTH * playing_ttafile.GetNumberofChannel() * 
 			playing_ttafile.GetByteSize()) << (mod.dsp_isactive()? 1:0))) {
 				try {
-					len = playing_ttafile.GetSamples(pcm_buffer, BUFFER_SIZE, &bitrate);
+					len = playing_ttafile.GetSamples(pcm_buffer, PLAYING_BUFFER_SIZE, &bitrate);
 				}
 				catch (CDecodeFile_exception &ex) {
 #ifdef UNICODE_INPUT_PLUGIN
@@ -695,7 +696,7 @@ extern "C"
 	__declspec(dllexport) intptr_t __cdecl winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
 	{
 		CDecodeFile *dec = (CDecodeFile *)handle;
-		unsigned char buf[BUFFER_SIZE];
+		unsigned char buf[TRANSCODING_BUFFER_SIZE];
 		int dest_used = 0;
 		int n = 0;
 		int bitrate;
@@ -732,7 +733,7 @@ extern "C"
 			// do we need to decode more?
 			if (n >= decoded_bytes) {
 				try {
-					decoded_bytes = dec->GetSamples(buf, BUFFER_SIZE, &bitrate);
+					decoded_bytes = dec->GetSamples(buf, TRANSCODING_BUFFER_SIZE, &bitrate);
 				}
 				catch (CDecodeFile_exception &ex) {
 					tta_error_message(ex.code(), dec->GetFileNameW());
