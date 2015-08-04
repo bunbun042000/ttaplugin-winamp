@@ -136,22 +136,22 @@ static void tta_error_message(int error, const in_char *filename)
 #endif
 	switch (error) {
 		case TTA_OPEN_ERROR:	
-			wsprintf(message, "Can't open file:\n%s", name.c_str());
+			wsprintf(message, "Can't open file:\n%ls", name.c_str());
 			break;
 		case TTA_FORMAT_ERROR:
-			wsprintf(message, "Unknown TTA format version:\n%s", name.c_str());
+			wsprintf(message, "Unknown TTA format version:\n%ls", name.c_str());
 			break;
 		case TTA_NOT_SUPPORTED:
-			wsprintf(message, "Not supported file format:\n%s", name.c_str());
+			wsprintf(message, "Not supported file format:\n%ls", name.c_str());
 			break;
 		case TTA_FILE_ERROR:
-			wsprintf(message, "File is corrupted:\n%s", name.c_str());
+			wsprintf(message, "File is corrupted:\n%ls", name.c_str());
 			break;
 		case TTA_READ_ERROR:
-			wsprintf(message, "Can't read from file:\n%s", name.c_str());
+			wsprintf(message, "Can't read from file:\n%ls", name.c_str());
 			break;
 		case TTA_WRITE_ERROR:
-			wsprintf(message, "Can't write to file:\n%s", name.c_str());
+			wsprintf(message, "Can't write to file:\n%ls", name.c_str());
 			break;
 		case TTA_MEMORY_ERROR:	
 			wsprintf(message, "Insufficient memory available");
