@@ -1,4 +1,4 @@
-in_tta.dll Ver3.2 Modified(Beta19) 
+in_tta.dll Ver3.2 Modified(Beta20) 
 =====================================================
 
 *This plugin 
@@ -16,7 +16,8 @@ This plugin performs Winamp Ver.2.9 or newer and tested by Winamp Ver.5.666.
  Please copy in_tta.dll to Plugins folder in Winamp.
 
 *Release Notes
-2015-08-04 Beta19 Fix transcoding
+2015-08-04 Beta20 Fix some stablize issues.
+2015-08-04 Beta19 Fix transcoding.
 2015-08-02 Beta18 Fix freeze when playing 24bit/sample file.
                   Remove title name function and uses Winamp itself.
 				  Reduce file access when reading metadata.
