@@ -15,8 +15,8 @@
 ; !include "Sections.nsh"
 
 ; common defines for a generic DrO installer :o)
-!define VERSION "3.2 Beta19"
-!define ALT_VER "3_2_Beta19"
+!define VERSION "3.2 Beta20"
+!define ALT_VER "3_2_Beta20"
 !define PLUG "ttaplugin-winamp"
 !define PLUG_ALT "ttaplugin-winamp"
 !define PLUG_FILE "in_tta"
@@ -144,7 +144,7 @@ Section "Microsoft Visual C++ 2013 SP1 Redist" SEC_CRT2013
   DetailPrint "Visual C++ 2015 Redistributable registry key was not found; assumed to be uninstalled."
   StrCmp $R0 "1" 0 +3
     DetailPrint "Visual C++ 2015 Redistributable is already installed; skipping!"
-    Goto done
+    Goto doneS
 
   SetOutPath "$TEMP"
 

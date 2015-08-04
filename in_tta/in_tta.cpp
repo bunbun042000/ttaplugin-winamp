@@ -84,7 +84,7 @@ void setvolume(int volume);
 void setpan(int pan);
 void eq_set(int on, char data[10], int preamp);
 
-void SetPlayingTitle(const char *filename, char *title);
+//void SetPlayingTitle(const char *filename, char *title);
 
 In_Module mod = {
 	IN_VER,
