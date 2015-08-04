@@ -391,20 +391,19 @@ void stop()
 
 	if (INVALID_HANDLE_VALUE != decoder_handle) {
 		killDecoderThread = 1;
-		if (WaitForSingleObject(decoder_handle, INFINITE) == WAIT_TIMEOUT) {
-			TerminateThread(decoder_handle, 0);
-		}
+		WaitForSingleObject(decoder_handle, INFINITE);
 		CloseHandle(decoder_handle);
 		decoder_handle = INVALID_HANDLE_VALUE;
+	}
+	else
+	{
+		// Do nothing
 	}
 
 	mod.SetInfo(0, 0, 0, 1);
 	mod.outMod->Close();
 	mod.SAVSADeInit();
 
-	if (INVALID_HANDLE_VALUE != decoder_handle){
-		CloseHandle(decoder_handle);
-	}
 }
 
 int getlength()
@@ -695,7 +694,7 @@ extern "C"
 	__declspec(dllexport) intptr_t __cdecl winampGetExtendedRead_getData(intptr_t handle, char *dest, int len, int *killswitch)
 	{
 		CDecodeFile *dec = (CDecodeFile *)handle;
-		unsigned char buf[TRANSCODING_BUFFER_SIZE];
+		unsigned char *buf = NULL;
 		int dest_used = 0;
 		int n = 0;
 		int bitrate;
@@ -707,6 +706,8 @@ extern "C"
 		else {
 			// do nothing
 		}
+
+		buf = new unsigned char[TRANSCODING_BUFFER_SIZE];
 
 		// restore remain (not copied) data
 		if (remain_data.data_length != 0) {
@@ -720,6 +721,15 @@ extern "C"
 			if (remain_data.data_length != 0) {
 				delete[] remain_data.buffer;
 				remain_data.buffer = NULL;
+				if (NULL != buf)
+				{
+					delete[] buf;
+					buf = NULL;
+				}
+				else
+				{
+					// Do nothing
+				}
 				return (intptr_t)dest_used;
 			}
 			else {
@@ -774,6 +784,16 @@ extern "C"
 			}
 			remain_data.buffer = new BYTE[remain_data.data_length];
 			memcpy_s(remain_data.buffer, remain_data.data_length, buf + n, remain_data.data_length);
+		}
+
+		if (NULL != buf)
+		{
+			delete[] buf;
+			buf = NULL;
+		}
+		else
+		{
+			// Do nothing
 		}
 
 		return (intptr_t)dest_used;

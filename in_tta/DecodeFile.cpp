@@ -258,6 +258,7 @@ long double CDecodeFile::SeekPosition(int *done)
 	}
 
 	if (NULL == TTA) {
+		::LeaveCriticalSection(&CriticalSection);
 		return (double)0;
 	} else {
 		// do nothing
@@ -268,6 +269,7 @@ long double CDecodeFile::SeekPosition(int *done)
 	}
 
 	catch (tta::tta_exception &ex) {
+		::LeaveCriticalSection(&CriticalSection);
 		throw CDecodeFile_exception(ex.code());
 	}
 

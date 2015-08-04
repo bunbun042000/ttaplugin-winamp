@@ -388,6 +388,7 @@ int CMediaLibrary::WriteExtendedFileInfo()
 
 	if (FileName.empty())
 	{
+		::LeaveCriticalSection(&CriticalSection);
 		return 0;
 	}
 	else
@@ -397,6 +398,7 @@ int CMediaLibrary::WriteExtendedFileInfo()
 		wcstombs_s(&strlen, mbFileName, MAX_PATH + 1, FileName.c_str(), _TRUNCATE);
 		TagLib::TrueAudio::File TTAFile(mbFileName);
 		if (!TTAFile.isValid()) {
+			::LeaveCriticalSection(&CriticalSection);
 			return 0;
 		}
 		else {
