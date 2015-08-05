@@ -21,7 +21,7 @@
 !define PLUG_ALT "ttaplugin-winamp"
 !define PLUG_FILE "in_tta"
 !define LIBTTA_DLL "libtta"
-;!define TAGLIB_DLL "tag"
+!define TAGLIB_DLL "tag"
 
 !include x64.nsh
 
@@ -114,9 +114,7 @@ Section ""
   File "..\Release\${PLUG_FILE}.dll"
   SetOutPath "$INSTDIR"
   File "..\libtta++\Release\${LIBTTA_DLL}.dll"
-
-;  SetOutPath "$INSTDIR"
-;  File "..\..\libraries\bin\${TAGLIB_DLL}.dll"
+  File "..\..\libraries\bin\${TAGLIB_DLL}.dll"
 
   SetOverwrite off
 SectionEnd
