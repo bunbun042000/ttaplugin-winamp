@@ -17,9 +17,10 @@
 ; common defines for a generic DrO installer :o)
 !define VERSION "3.2 Beta20 debug"
 !define ALT_VER "3_2_Beta20_debug"
-!define PLUG "ttaplugin-winamp"
-!define PLUG_ALT "ttaplugin-winamp"
-!define PLUG_FILE "in_tta"
+!define PLUG "ttaplugins-winamp"
+!define PLUG_ALT "ttaplugins-winamp"
+!define IN_PLUG_FILE "in_tta"
+!define ENC_PLUG_FILE "enc_tta"
 !define LIBTTA_DLL "libtta"
 !define TAGLIB_DLL "tagd"
 
@@ -109,7 +110,8 @@ Section ""
   ; File "${PLUG_FILE}.dll"
   ; if you're script is in the project folder then the following file path is
   ; likely to apply otherwise just alter the path as needed
-  File "..\Debug\${PLUG_FILE}.dll"
+  File "..\Debug\${IN_PLUG_FILE}.dll"
+  File "..\Debug\${ENC_PLUG_FILE}.dll"
   SetOutPath "$INSTDIR"
   File "..\libtta++\Debug\${LIBTTA_DLL}.dll"
   File "..\..\libraries\bin\${TAGLIB_DLL}.dll"

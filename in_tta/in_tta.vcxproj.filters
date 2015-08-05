@@ -60,9 +60,5 @@
     <None Include="info.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\ReadMe.txt" />
-    <None Include="..\ReadMe.ja.txt" />
-    <None Include="..\NSIS\in_tta_installer.nsi" />
-    <None Include="..\NSIS\in_tta_installer_debug.nsi" />
   </ItemGroup>
 </Project>
