@@ -21,6 +21,7 @@
 !define PLUG_ALT "ttaplugin-winamp"
 !define PLUG_FILE "in_tta"
 ;!define TAGLIB_DLL "tagd"
+!define LIBTTA_DLL "libtta"
 
 ; use leet compression
 SetCompressor lzma
@@ -109,8 +110,9 @@ Section ""
   ; if you're script is in the project folder then the following file path is
   ; likely to apply otherwise just alter the path as needed
   File "..\Debug\${PLUG_FILE}.dll"
-;  SetOutPath "$INSTDIR"
 ;  File "..\..\libraries\bin\${TAGLIB_DLL}.dll"
+  SetOutPath "$INSTDIR"
+  File "..\libtta++\Debug\${LIBTTA_DLL}.dll"
 
   SetOverwrite off
 SectionEnd

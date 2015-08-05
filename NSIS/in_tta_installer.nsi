@@ -20,6 +20,7 @@
 !define PLUG "ttaplugin-winamp"
 !define PLUG_ALT "ttaplugin-winamp"
 !define PLUG_FILE "in_tta"
+!define LIBTTA_DLL "libtta"
 ;!define TAGLIB_DLL "tag"
 
 !include x64.nsh
@@ -111,6 +112,8 @@ Section ""
   ; if you're script is in the project folder then the following file path is
   ; likely to apply otherwise just alter the path as needed
   File "..\Release\${PLUG_FILE}.dll"
+  SetOutPath "$INSTDIR"
+  File "..\libtta++\Release\${LIBTTA_DLL}.dll"
 
 ;  SetOutPath "$INSTDIR"
 ;  File "..\..\libraries\bin\${TAGLIB_DLL}.dll"
