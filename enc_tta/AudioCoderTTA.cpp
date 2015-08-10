@@ -295,6 +295,11 @@ void AudioCoderTTA::writer_done() {
 		if (len != buffer_size)
 			throw AudioCoderTTA_exception(TTA_WRITE_ERROR);
 		remain_data_buffer.current_end_pos += len;
+		if (remain_data_buffer.current_pos == remain_data_buffer.current_end_pos)
+		{
+			remain_data_buffer.current_end_pos = 0;
+			remain_data_buffer.current_pos = 0;
+		}
 		fifo.pos -= len;
 	}
 } // writer_done
@@ -457,7 +462,6 @@ void AudioCoderTTA::init_set_info(TTAuint64 pos) {
 
 	if (info.samples != MAX_SAMPLES)
 	{
-		writer_skip_bytes((frames + 1) * 4);
 		pos += (frames + 1) * 4;
 	}
 	else
@@ -784,7 +788,6 @@ int AudioCoderTTA::Encode(int framepos, void *in0, int in_avail, int *in_used, v
 				{
 					flush_bit_cache();
 					seek_table[fnum++] = fifo.count;
-					writer_done();
 					lastblock = 2;
 				}
 				else
@@ -868,8 +871,6 @@ void AudioCoderTTA::FinishAudio(const wchar_t *filename)
 {
 	info.samples = samplecount;
 	TTAuint64 old_offset = header_and_seektable_offset;
-//	writer_reset(&fifo);
-//	TTAuint32 len = write_tta_header(&fifo);
 
 	wchar_t lpTempPathBuffer[MAX_PATH];
 	wchar_t szTempFileName[MAX_PATH];
@@ -912,25 +913,33 @@ void AudioCoderTTA::FinishAudio(const wchar_t *filename)
 	BOOL fSuccess = FALSE;
 	hTempFile = CreateFileW(szTempFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
-	remain_data_buffer.current_pos = 0;
-	remain_data_buffer.current_end_pos = 0;
 
 	init_set_info(0);
+	remain_data_buffer.current_pos = 0;
+	remain_data_buffer.current_end_pos = 0;
+	tta_free(remain_data_buffer.buffer);
+	remain_data_buffer.buffer = (TTAuint8 *)tta_malloc(header_and_seektable_offset);
+	remain_data_buffer.data_length = header_and_seektable_offset;
 	writer_done();
 
 	fSuccess = WriteFile(hTempFile, (remain_data_buffer.buffer + remain_data_buffer.current_pos),
-		(DWORD)(remain_data_buffer.current_end_pos - remain_data_buffer.current_pos), &dwBytesWritten, NULL);
+		(DWORD)(header_offset), &dwBytesWritten, NULL);
 
 	if (!fSuccess)
 	{
 		return;
 	}
+	else
+	{
+		// Do nothing
+	}
 
 	dwRetVal = SetFilePointer(hTempFile, (LONG)header_offset, NULL, FILE_BEGIN);
-
 	remain_data_buffer.current_pos = 0;
 	remain_data_buffer.current_end_pos = 0;
+
 	write_seek_table();
+	writer_done();
 
 
 	fSuccess = WriteFile(hTempFile, remain_data_buffer.buffer + remain_data_buffer.current_pos, 
@@ -939,6 +948,10 @@ void AudioCoderTTA::FinishAudio(const wchar_t *filename)
 	if (!fSuccess)
 	{
 		return;
+	}
+	else
+	{
+		// Do nothing
 	}
 
 	dwRetVal = SetFilePointer(hFile, (LONG)old_offset, NULL, FILE_BEGIN);
@@ -985,5 +998,8 @@ void AudioCoderTTA::FinishAudio(const wchar_t *filename)
 
 void AudioCoderTTA::FinishAudio(const char *filename)
 {
-	//finalize();
+	wchar_t *wfilename = new wchar_t[MAX_PATH + 1];
+	size_t converted = 0;
+	mbstowcs_s(&converted, wfilename, MAX_PATH, filename, MAX_PATH);
+	FinishAudio(wfilename);
 }
