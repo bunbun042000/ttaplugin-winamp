@@ -29,11 +29,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define PRODUCTVER 3,2,20,1
 #define STRFILEVER    VERSION "\0"
 #define STRPRODUCTVER STRFILEVER
-#define COPYRIGHT     BASE_VERSION ", (C)2005 Alexander Djourik. All rights reserved. " EXTENDED_VERSION " (C)" COPYRIGHT_YEARS " Yamagta Fumihiro. All right reserved."
+#define COPYRIGHT_IN_TTA     BASE_VERSION ", (C)2005 Alexander Djourik. All rights reserved. " EXTENDED_VERSION " (C)" COPYRIGHT_YEARS " Yamagta Fumihiro. All right reserved."
+#define COPYRIGHT_ENC_TTA    BASE_VERSION " " EXTENDED_VERSION " (C)" COPYRIGHT_YEARS " Yamagata Fumihiro. All right reserved."
 #define PLUGIN_VERSION VERSION
 
 #define  PROJECT_URL "<https://github.com/bunbun042000/ttaplugin-winamp>"
-#define  LIBTTA_VERSION "based on libtta++2.3"
+#define  LIBTTA_VERSION "libtta++2.3"
 #define  ORIGINAL_CREADIT01 "Plugin is written by Alexander Djourik, Pavel Zhilin and Anton Gorbunov.\n"
 #define  ORIGINAL_CREADIT02 "Copyright (c) 2003 Alexander Djourik.\n"
 #define  ORIGINAL_CREADIT03 "All rights reserved.\n"

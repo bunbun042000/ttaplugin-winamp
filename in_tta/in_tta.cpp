@@ -197,7 +197,7 @@ static BOOL CALLBACK about_dialog(HWND dialog, UINT message,
 	switch (message) {
 	case WM_INITDIALOG:
 		SetDlgItemText(dialog, IDC_PLUGIN_VERSION,
-			"Winamp plug-in version " PLUGIN_VERSION "\n" 
+			"Winamp plug-in version " PLUGIN_VERSION "\nbased on " 
 			LIBTTA_VERSION "\n" PROJECT_URL);
 		SetDlgItemText(dialog, IDC_PLUGIN_CREADIT,
 			ORIGINAL_CREADIT01 ORIGINAL_CREADIT02 ORIGINAL_CREADIT03

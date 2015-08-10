@@ -46,7 +46,6 @@ BEGIN
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)\r\n"
     "LANGUAGE 17, 1\r\n"
     "#pragma code_page(932)\r\n"
-    "#include ""res\\in_tta.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
     "#include ""afxres.rc""     // Standard components\r\n"
     "#endif\r\n"
     "\0"
@@ -55,6 +54,43 @@ END
 #endif    // APSTUDIO_INVOKED
 
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+#include "..\common\VersionNo.h"
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION FILEVER
+ PRODUCTVERSION PRODUCTVER
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "041104b0"
+        BEGIN
+            VALUE "CompanyName", "Yamagata Fumihiro"
+            VALUE "FileDescription", "Winamp input extension for tta audio file"
+            VALUE "FileVersion", STRFILEVER
+            VALUE "InternalName", "in_tta.dll"
+            VALUE "LegalCopyright", COPYRIGHT_IN_TTA
+            VALUE "OriginalFilename", "in_tta.dll"
+            VALUE "ProductName", "in_tta"
+            VALUE "ProductVersion", STRPRODUCTVER
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x411, 1200
+    END
+END
 
 #endif    // “ú–{Œê (“ú–{) resources
 /////////////////////////////////////////////////////////////////////////////
@@ -147,7 +183,6 @@ IDI_INFO_ICON           ICON                    "info.ico"
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
 LANGUAGE 17, 1
 #pragma code_page(932)
-#include "res\in_tta.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"     // Standard components
 #endif
 
