@@ -5,6 +5,7 @@
 #include <malloc.h>
 #include <windows.h>
 #include <stdexcept>
+#include <stdlib.h>
 
 static const int PCM_BUFFER_LENGTH = 5210;
 static const TTAuint64 MAX_SAMPLES = 4294967295;
@@ -90,7 +91,6 @@ public:
 	void frame_reset(TTAuint32 frame, TTA_io_callback *iocb);
 	void process_stream();
 	void process_frame(TTAuint8 *input, TTAuint32 in_bytes);
-//	void finalize();
 	TTAuint32 get_rate();
 	
 protected:
