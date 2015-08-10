@@ -719,17 +719,10 @@ extern "C"
 			}
 
 			if (remain_data.data_length != 0) {
+				memcpy_s(buf, TRANSCODING_BUFFER_SIZE, remain_data.buffer + dest_used, remain_data.data_length);
 				delete[] remain_data.buffer;
-				remain_data.buffer = NULL;
-				if (NULL != buf)
-				{
-					delete[] buf;
-					buf = NULL;
-				}
-				else
-				{
-					// Do nothing
-				}
+				remain_data.buffer = new BYTE[remain_data.data_length];
+				memcpy_s(remain_data.buffer, remain_data.data_length, buf, remain_data.data_length);
 				return (intptr_t)dest_used;
 			}
 			else {
@@ -826,8 +819,10 @@ extern "C"
 			}
 
 			if (remain_data.data_length != 0) {
+				memcpy_s(buf, TRANSCODING_BUFFER_SIZE, remain_data.buffer + dest_used, remain_data.data_length);
 				delete[] remain_data.buffer;
-				remain_data.buffer = NULL;
+				remain_data.buffer = new BYTE[remain_data.data_length];
+				memcpy_s(remain_data.buffer, remain_data.data_length, buf, remain_data.data_length);
 				return (intptr_t)dest_used;
 			}
 			else {
