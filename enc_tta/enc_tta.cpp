@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "AudioCoderTTA.h"
 #include "enc_tta.h"
+#include "..\common\VersionNo.h"
 
 // wasabi based services for localisation support
 #include <api/service/waServiceFactory.h>
@@ -100,7 +101,7 @@ extern "C"
 		if (idx == 0)
 		{
 			GetLocalisationApiService();
-			StringCchPrintf(desc, 1024, WASABI_API_LNGSTRING(IDS_ENC_TTA_DESC), PACKAGE_STRING);
+			StringCchPrintfA(desc, 1024, WASABI_API_LNGSTRING(IDS_ENC_TTA_DESC), VERSION, LIBTTA_VERSION);
 			return mmioFOURCC('T', 'T', 'A', ' ');
 		}
 		return 0;
@@ -214,43 +215,43 @@ extern "C"
 
 static void tta_error_message(int error, const wchar_t *filename)
 {
-	char message[1024];
+	wchar_t message[1024];
 
 	std::wstring name(filename);
 	switch (error) {
 	case TTA_OPEN_ERROR:
-		wsprintf(message, "Can't open file:\n%ls", name.c_str());
+		wsprintf(message, L"Can't open file:\n%ls", name.c_str());
 		break;
 	case TTA_FORMAT_ERROR:
-		wsprintf(message, "Unknown TTA format version:\n%ls", name.c_str());
+		wsprintf(message, L"Unknown TTA format version:\n%ls", name.c_str());
 		break;
 	case TTA_NOT_SUPPORTED:
-		wsprintf(message, "Not supported file format:\n%ls", name.c_str());
+		wsprintf(message, L"Not supported file format:\n%ls", name.c_str());
 		break;
 	case TTA_FILE_ERROR:
-		wsprintf(message, "File is corrupted:\n%ls", name.c_str());
+		wsprintf(message, L"File is corrupted:\n%ls", name.c_str());
 		break;
 	case TTA_READ_ERROR:
-		wsprintf(message, "Can't read from file:\n%ls", name.c_str());
+		wsprintf(message, L"Can't read from file:\n%ls", name.c_str());
 		break;
 	case TTA_WRITE_ERROR:
-		wsprintf(message, "Can't write to file:\n%ls", name.c_str());
+		wsprintf(message, L"Can't write to file:\n%ls", name.c_str());
 		break;
 	case TTA_MEMORY_ERROR:
-		wsprintf(message, "Insufficient memory available");
+		wsprintf(message, L"Insufficient memory available");
 		break;
 	case TTA_SEEK_ERROR:
-		wsprintf(message, "file seek error");
+		wsprintf(message, L"file seek error");
 		break;
 	case TTA_PASSWORD_ERROR:
-		wsprintf(message, "password protected file");
+		wsprintf(message, L"password protected file");
 		break;
 	default:
-		wsprintf(message, "Unknown TTA decoder error");
+		wsprintf(message, L"Unknown TTA decoder error");
 		break;
 	}
 
-	MessageBox(winampwnd, message, "TTA Decoder Error",
+	MessageBox(winampwnd, message, L"TTA Decoder Error",
 		MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
 
 }
