@@ -81,10 +81,7 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 {
 	if (FileName != fn)
 	{
-		char mbFileName[MAX_PATH + 1];
-		size_t strlen = 0;
-		wcstombs_s(&strlen, mbFileName, MAX_PATH + 1, fn.c_str(), _TRUNCATE);
-		TagLib::TrueAudio::File TTAFile(mbFileName);
+		TagLib::TrueAudio::File TTAFile(fn.c_str());
 
 		if (!TTAFile.isValid())
 		{
@@ -92,7 +89,7 @@ bool CMediaLibrary::GetTagInfo(const std::wstring fn)
 		}
 		else
 		{
-			FileName = fn;
+//			FileName = fn;
 			isValidFile = true;
 		}
 		TagDataW.Length = (unsigned long)(TTAFile.audioProperties()->length() * 1000.L);
@@ -309,6 +306,7 @@ int CMediaLibrary::SetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadat
 
 	if (std::wstring(fn) != FileName)
 	{
+		FileName = std::wstring(fn);
 		FindTag = GetTagInfo(FileName);
 	}
 	else
@@ -373,7 +371,7 @@ int CMediaLibrary::SetExtendedFileInfo(const wchar_t *fn, const wchar_t *Metadat
 
 	}
 	else {
-		FileName = L"";
+//		FileName = L"";
 		RetCode = 0;
 	}
 
@@ -393,10 +391,10 @@ int CMediaLibrary::WriteExtendedFileInfo()
 	}
 	else
 	{
-		char mbFileName[MAX_PATH + 1];
-		size_t strlen = 0;
-		wcstombs_s(&strlen, mbFileName, MAX_PATH + 1, FileName.c_str(), _TRUNCATE);
-		TagLib::TrueAudio::File TTAFile(mbFileName);
+//		char mbFileName[MAX_PATH + 1];
+//		size_t strlen = 0;
+//		wcstombs_s(&strlen, mbFileName, MAX_PATH, FileName.c_str(), _TRUNCATE);
+		TagLib::TrueAudio::File TTAFile(FileName.c_str());
 		if (!TTAFile.isValid()) {
 			::LeaveCriticalSection(&CriticalSection);
 			return 0;
@@ -405,7 +403,7 @@ int CMediaLibrary::WriteExtendedFileInfo()
 			// do nothing
 		}
 
-		if (NULL != TTAFile.ID3v2Tag()) {
+		if (NULL != TTAFile.ID3v2Tag(true)) {
 			TagLib::String temp;
 			temp = TagLib::String(TagDataW.Title);
 			TTAFile.ID3v2Tag()->setTitle(temp);
@@ -431,10 +429,10 @@ int CMediaLibrary::WriteExtendedFileInfo()
 			TTAFile.ID3v2Tag()->setDisc(temp);
 			temp = TagLib::String(TagDataW.BPM);
 			TTAFile.ID3v2Tag()->setBPM(temp);
-			TTAFile.ID3v2Tag()->setAlbumArt(albumArtInfo.Albumart, albumArtInfo.arttype, albumArtInfo.mimetype);
+//			TTAFile.ID3v2Tag()->setAlbumArt(albumArtInfo.Albumart, albumArtInfo.arttype, albumArtInfo.mimetype);
 
 		}
-		else if (NULL != TTAFile.ID3v1Tag()) {
+		else if (NULL != TTAFile.ID3v1Tag(true)) {
 			TTAFile.ID3v1Tag()->setTitle(TagDataW.Title);
 			TTAFile.ID3v1Tag()->setArtist(TagDataW.Artist);
 			TTAFile.ID3v1Tag()->setAlbum(TagDataW.Album);
