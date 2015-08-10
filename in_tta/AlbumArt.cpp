@@ -52,7 +52,8 @@ protected:
 };
 
 extern In_Module mod; // TODO: change if you called yours something else
-extern CMediaLibrary m_Tag;
+extern CMediaLibrary m_ReadTag;
+extern CMediaLibrary m_WriteTag;
 
 #define WASABI_API_MEMMGR memmgr
 
@@ -222,12 +223,12 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 
 	if (!isSucceed || _wcsicmp(FileName.c_str(), filename))
 	{
-		if (m_Tag.isValid() && m_Tag.GetCurrentFileName() == filename)
+		if (m_ReadTag.isValid() && m_ReadTag.GetCurrentFileName() == filename)
 		{
 			FileName = filename;
 			// read Album Art
 			AlbumArt =
-				m_Tag.GetAlbumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
+				m_ReadTag.GetAlbumArt(TagLib::ID3v2::AttachedPictureFrame::FrontCover, mimeType);
 			extension = mimeType.substr(mimeType.find("/") + 1);
 			isSucceed = true;
 		}
@@ -353,11 +354,11 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 		AlbumArt.setData((const char *)bits, (TagLib::uint)size);
 	}
 
-	if (m_Tag.isValid() && m_Tag.GetCurrentFileName() == filename)
+	if (m_WriteTag.isValid() && m_WriteTag.GetCurrentFileName() == filename)
 	{
 		FileName = filename;
 		// read Album Art
-		m_Tag.SetAlbumArt(AlbumArt, artType, mimeType);
+		m_WriteTag.SetAlbumArt(AlbumArt, artType, mimeType);
 		isSucceed = false;
 		retval = ALBUMARTPROVIDER_SUCCESS;
 	}

@@ -53,7 +53,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 // For Support Transcoder input (2007/10/15)
 static __declspec(align(16)) CDecodeFile playing_ttafile;
 static __declspec(align(16)) CDecodeFile transcode_ttafile;
-CMediaLibrary m_Tag;
+CMediaLibrary m_ReadTag;
+CMediaLibrary m_WriteTag;
 
 static const __int32 PLAYING_BUFFER_SIZE = PLAYING_BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
 static const __int32 TRANSCODING_BUFFER_SIZE = TRANSCODING_BUFFER_LENGTH * MAX_DEPTH * MAX_NCH;
@@ -559,14 +560,14 @@ extern "C"
 		winampGetExtendedFileInfoW(const wchar_t *fn, const wchar_t *data, wchar_t *dest, size_t destlen)
 	{
 
-		return m_Tag.GetExtendedFileInfo(fn, data, dest, destlen);
+		return m_ReadTag.GetExtendedFileInfo(fn, data, dest, destlen);
 	}
 #else
 	__declspec(dllexport) int __cdecl
 	winampGetExtendedFileInfo(const char *fn, const char *data, char *dest, size_t destlen)
 	{
 
-		return m_Tag.GetExtendedFileInfo(fn, data, dest, destlen);
+		return m_ReadTag.GetExtendedFileInfo(fn, data, dest, destlen);
 	}
 #endif
 
@@ -597,19 +598,19 @@ extern "C"
 	__declspec(dllexport) int __cdecl
 		winampSetExtendedFileInfoW(const wchar_t *fn, const wchar_t *data, const wchar_t *val)
 	{
-		return m_Tag.SetExtendedFileInfo(fn, data, val);
+		return m_WriteTag.SetExtendedFileInfo(fn, data, val);
 	}
 #else
 	__declspec(dllexport) int __cdecl
 		winampSetExtendedFileInfo(const char *fn, const char *data, const char *val)
 	{
-		return m_Tag.SetExtendedFileInfo(fn, data, val);
+		return m_WriteTag.SetExtendedFileInfo(fn, data, val);
 	}
 #endif
 
 	__declspec(dllexport) int __cdecl winampWriteExtendedFileInfo()
 	{
-		return m_Tag.WriteExtendedFileInfo();
+		return m_WriteTag.WriteExtendedFileInfo();
 	}
 
 #ifdef  UNICODE_INPUT_PLUGIN
