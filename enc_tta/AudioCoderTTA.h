@@ -1,14 +1,29 @@
+/*
+The ttaplugin-winamp project.
+Copyright (C) 2005-2015 Yamagata Fumihiro
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
 #pragma once
 #include <nsv/enc_if.h>
-#include "libtta++\libtta.h"
 #include <memory.h>
 #include <malloc.h>
 #include <windows.h>
 #include <stdexcept>
 #include <stdlib.h>
-
-static const int PCM_BUFFER_LENGTH = 5210;
-static const TTAuint64 MAX_SAMPLES = 4294967295;
 
 typedef __int8(TTAint8);
 typedef __int16(TTAint16);
@@ -19,10 +34,35 @@ typedef unsigned __int16(TTAuint16);
 typedef unsigned __int32(TTAuint32);
 typedef unsigned __int64(TTAuint64);
 
+static const int PCM_BUFFER_LENGTH = 5210;
+static const TTAuint64 MAX_SAMPLES = 4294967295;
+static const int TTA_FIFO_BUFFER_SIZE = 5120;
+static const int MAX_DEPTH = 3;
+static const int MAX_BPS = (MAX_DEPTH * 8);
+static const int MIN_BPS = 16;
+static const int MAX_NCH = 6;
+
+// TTA audio format
+static const int TTA_FORMAT_SIMPLE = 1;
+static const int TTA_FORMAT_ENCRYPTED = 2;
+
 #define TTA_ALIGNED(n) __declspec(align(n))
 
+typedef enum tta_error {
+	TTA_NO_ERROR,	// no known errors found
+	TTA_OPEN_ERROR,	// can't open file
+	TTA_FORMAT_ERROR,	// not compatible file format
+	TTA_FILE_ERROR,	// file is corrupted
+	TTA_READ_ERROR,	// can't read from input file
+	TTA_WRITE_ERROR,	// can't write to output file
+	TTA_SEEK_ERROR,	// file seek error
+	TTA_MEMORY_ERROR,	// insufficient memory available
+	TTA_PASSWORD_ERROR,	// password protected file
+	TTA_NOT_SUPPORTED	// unsupported architecture
+} TTA_CODEC_STATUS;
 
-	   /////////////////////// TTA encoder functions /////////////////////////
+
+/////////////////////// TTA encoder functions /////////////////////////
 class AudioCoderTTA : public AudioCoder
 {
 public:
@@ -88,7 +128,7 @@ public:
 
 	void init_set_info(TTAuint64 pos);
 	void set_password(void const *pstr, TTAuint32 len);
-	void frame_reset(TTAuint32 frame, TTA_io_callback *iocb);
+	void frame_reset(TTAuint32 frame);
 	void process_stream();
 	void process_frame(TTAuint8 *input, TTAuint32 in_bytes);
 	TTAuint32 get_rate();
@@ -121,9 +161,9 @@ protected:
 
 
 	typedef struct _buffer {
-		TTAuint64	data_length;
-		TTAuint64	current_pos;
-		TTAuint64	current_end_pos;
+		size_t	data_length;
+		size_t	current_pos;
+		size_t	current_end_pos;
 		TTAuint8   *buffer;
 	} data_buf;
 	
