@@ -17,10 +17,12 @@
 ; common defines for a generic DrO installer :o)
 !define VERSION "3.2 Beta20 debug"
 !define ALT_VER "3_2_Beta20_debug"
-!define PLUG "ttaplugin-winamp"
-!define PLUG_ALT "ttaplugin-winamp"
-!define PLUG_FILE "in_tta"
-;!define TAGLIB_DLL "tagd"
+!define PLUG "ttaplugins-winamp"
+!define PLUG_ALT "ttaplugins-winamp"
+!define IN_PLUG_FILE "in_tta"
+!define ENC_PLUG_FILE "enc_tta"
+!define LIBTTA_DLL "libtta"
+!define TAGLIB_DLL "tagd"
 
 ; use leet compression
 SetCompressor lzma
