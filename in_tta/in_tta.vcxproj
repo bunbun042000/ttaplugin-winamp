@@ -251,7 +251,6 @@
     <ClInclude Include="in_tta.h" />
     <ClInclude Include="MediaLibrary.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="VersionNo.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="in_tta.rc" />

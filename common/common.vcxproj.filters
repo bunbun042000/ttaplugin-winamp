@@ -23,4 +23,9 @@
     <None Include="..\NSIS\ttaplugins-winamp_installer.nsi" />
     <None Include="..\NSIS\ttaplugins-winamp_installer_debug.nsi" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="VersionNo.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
