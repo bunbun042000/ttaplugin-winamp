@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "stdafx.h"
 
-//#include "AudioCoderFlake.h"
+#include "AudioCoderTTA.h"
 #include "enc_tta.h"
 
 // wasabi based services for localisation support
@@ -113,36 +113,36 @@ extern "C"
 //			configtype cfg;
 //			readconfig(configfile, &cfg);
 			*outt = mmioFOURCC('T', 'T', 'A', ' ');
-//			AudioCoderFlake *t = 0;
-//			t = new AudioCoderFlake(nch, srate, bps, &cfg);
-//			if (t->GetLastError())
-//			{
-//				delete t;
-//				return NULL;
-//			}
-//			return t;
+			AudioCoderTTA *t = 0;
+			t = new AudioCoderTTA(nch, srate, bps);
+			if (t->GetLastError())
+			{
+				delete t;
+				return NULL;
+			}
+			return t;
 		}
 		return NULL;
 	}
 
 	void __declspec(dllexport) FinishAudio3(const char *filename, AudioCoder *coder)
 	{
-//		((AudioCoderFlake*)coder)->FinishAudio(filename);
+		((AudioCoderTTA*)coder)->FinishAudio(filename);
 	}
 
 	void __declspec(dllexport) FinishAudio3W(const wchar_t *filename, AudioCoder *coder)
 	{
-//		((AudioCoderFlake*)coder)->FinishAudio(filename);
+		((AudioCoderTTA*)coder)->FinishAudio(filename);
 	}
 
 	void __declspec(dllexport) PrepareToFinish(const char *filename, AudioCoder *coder)
 	{
-//		((AudioCoderFlake*)coder)->PrepareToFinish();
+		((AudioCoderTTA*)coder)->PrepareToFinish();
 	}
 
 	void __declspec(dllexport) PrepareToFinishW(const wchar_t *filename, AudioCoder *coder)
 	{
-//		((AudioCoderFlake*)coder)->PrepareToFinish();
+		((AudioCoderTTA*)coder)->PrepareToFinish();
 	}
 
 	BOOL CALLBACK DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -212,3 +212,45 @@ extern "C"
 	}
 };
 
+static void tta_error_message(int error, const wchar_t *filename)
+{
+	char message[1024];
+
+	std::wstring name(filename);
+	switch (error) {
+	case TTA_OPEN_ERROR:
+		wsprintf(message, "Can't open file:\n%ls", name.c_str());
+		break;
+	case TTA_FORMAT_ERROR:
+		wsprintf(message, "Unknown TTA format version:\n%ls", name.c_str());
+		break;
+	case TTA_NOT_SUPPORTED:
+		wsprintf(message, "Not supported file format:\n%ls", name.c_str());
+		break;
+	case TTA_FILE_ERROR:
+		wsprintf(message, "File is corrupted:\n%ls", name.c_str());
+		break;
+	case TTA_READ_ERROR:
+		wsprintf(message, "Can't read from file:\n%ls", name.c_str());
+		break;
+	case TTA_WRITE_ERROR:
+		wsprintf(message, "Can't write to file:\n%ls", name.c_str());
+		break;
+	case TTA_MEMORY_ERROR:
+		wsprintf(message, "Insufficient memory available");
+		break;
+	case TTA_SEEK_ERROR:
+		wsprintf(message, "file seek error");
+		break;
+	case TTA_PASSWORD_ERROR:
+		wsprintf(message, "password protected file");
+		break;
+	default:
+		wsprintf(message, "Unknown TTA decoder error");
+		break;
+	}
+
+	MessageBox(winampwnd, message, "TTA Decoder Error",
+		MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
+
+}
