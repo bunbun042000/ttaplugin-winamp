@@ -207,7 +207,7 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 
 	::EnterCriticalSection(&CriticalSection);
 
-	if(!filename || _wcsicmp (type, L"cover")) {
+	if(_wcsicmp (type, L"cover")) {
 		::LeaveCriticalSection(&CriticalSection);
         return retval;
 	} else {
@@ -330,7 +330,7 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 
 	::EnterCriticalSection(&CriticalSection);
 
-	if(!filename || !*filename) {
+	if(std::wstring(filename) == L"") {
 		::LeaveCriticalSection(&CriticalSection);
         return retval;
 	}
@@ -343,7 +343,7 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 		//delete AlbumArt
 		AlbumArt.setData(NULL, 0);
 
-	} else if(bits || !len || !mime_type) {
+	} else if(len == 0 || wcscmp(mime_type, L"")==0) {
 		::LeaveCriticalSection(&CriticalSection);
 		return retval;
 	} else {
@@ -354,48 +354,22 @@ int TTA_AlbumArtProvider::SetAlbumArtData(const wchar_t *filename, const wchar_t
 		AlbumArt.setData((const char *)bits, (TagLib::uint)size);
 	}
 
-	if (m_WriteTag.isValid() && m_WriteTag.GetCurrentFileName() == filename)
+	TagLib::TrueAudio::File TTAFile(filename);
+
+	if (TTAFile.isValid())
 	{
-		FileName = filename;
-		// read Album Art
-		m_WriteTag.SetAlbumArt(AlbumArt, artType, mimeType);
+		TTAFile.ID3v2Tag()->setAlbumArt(AlbumArt, artType, mimeType);
+		TTAFile.save();
 		isSucceed = false;
 		retval = ALBUMARTPROVIDER_SUCCESS;
 	}
 	else
 	{
-		FileName = filename;
-		char mbFileName[MAX_PATH + 1];
-		wcstombs_s(&string_len, mbFileName, MAX_PATH + 1, FileName.c_str(), _TRUNCATE);
-
-		TagLib::TrueAudio::File TagFile(mbFileName);
-
-		if (!TagFile.isValid()) {
-			::LeaveCriticalSection(&CriticalSection);
-			return retval;
-		}
-		else {
-			// Do nothing
-		}
-
-
-		TagFile.ID3v2Tag()->setAlbumArt(AlbumArt, artType, mimeType);
-		if (TagFile.save())
-		{
-			retval = ALBUMARTPROVIDER_SUCCESS;
-		}
-		else
-		{
-			// Do nothing
-		}
-		isSucceed = false;
-
+		// Do nothing
 	}
-
 	::LeaveCriticalSection(&CriticalSection);
 
 	return retval;
-
 }
 
 int TTA_AlbumArtProvider::DeleteAlbumArt(const wchar_t *filename, const wchar_t *type)

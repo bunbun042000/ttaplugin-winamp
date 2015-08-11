@@ -395,6 +395,7 @@ int CMediaLibrary::WriteExtendedFileInfo()
 //		size_t strlen = 0;
 //		wcstombs_s(&strlen, mbFileName, MAX_PATH, FileName.c_str(), _TRUNCATE);
 		TagLib::TrueAudio::File TTAFile(FileName.c_str());
+		
 		if (!TTAFile.isValid()) {
 			::LeaveCriticalSection(&CriticalSection);
 			return 0;
@@ -429,7 +430,7 @@ int CMediaLibrary::WriteExtendedFileInfo()
 			TTAFile.ID3v2Tag()->setDisc(temp);
 			temp = TagLib::String(TagDataW.BPM);
 			TTAFile.ID3v2Tag()->setBPM(temp);
-//			TTAFile.ID3v2Tag()->setAlbumArt(albumArtInfo.Albumart, albumArtInfo.arttype, albumArtInfo.mimetype);
+			TTAFile.ID3v2Tag()->setAlbumArt(albumArtInfo.Albumart, albumArtInfo.arttype, albumArtInfo.mimetype);
 
 		}
 		else if (NULL != TTAFile.ID3v1Tag(true)) {
