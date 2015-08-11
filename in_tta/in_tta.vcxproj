@@ -132,8 +132,8 @@
       <MapExports>true</MapExports>
     </Link>
     <PostBuildEvent>
-      <Command>"$(ProgramFiles)\NSIS\makensis" /V1 "$(SolutionDir)NSIS\in_tta_installer_debug.nsi"
-"$(SolutionDir)NSIS\$(SolutionName)_v3_2_Beta20_debug.exe" /S</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release1|Win32'">
