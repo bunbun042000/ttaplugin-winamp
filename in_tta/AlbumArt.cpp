@@ -235,10 +235,8 @@ int TTA_AlbumArtProvider::GetAlbumArtData(const wchar_t *filename, const wchar_t
 		else
 		{
 			FileName = filename;
-			char mbFileName[MAX_PATH + 1];
-			wcstombs_s(&string_len, mbFileName, MAX_PATH + 1, FileName.c_str(), _TRUNCATE);
 
-			TagLib::TrueAudio::File TagFile(mbFileName);
+			TagLib::TrueAudio::File TagFile(FileName.c_str());
 
 			if (!TagFile.isValid())
 			{
